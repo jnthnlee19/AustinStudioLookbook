@@ -300,6 +300,94 @@
     }
 
 
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status-badge.active {
+      background: #edf8f2;
+      color: #2f7a57;
+    }
+
+    .status-badge.disabled {
+      background: #f2f3f4;
+      color: #7a8087;
+    }
+
+    .status-badge::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .row-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .status-btn {
+      border: 1px solid #d7dbe0;
+      border-radius: 8px;
+      padding: 8px 11px;
+      background: #fff;
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .status-btn:hover {
+      background: #f7f8f9;
+    }
+
+    .status-btn.disable {
+      color: #a33b34;
+      border-color: #e3c7c4;
+      background: #fffafa;
+    }
+
+    .status-btn.disable:hover {
+      background: #fff1f0;
+    }
+
+    .status-btn.enable {
+      color: #2f7a57;
+      border-color: #cfe4d8;
+      background: #f7fcf9;
+    }
+
+    .status-btn.enable:hover {
+      background: #edf8f2;
+    }
+
+    tr.lookbook-disabled td {
+      background: #fafafa;
+      color: #8a8f96;
+    }
+
+    tr.lookbook-disabled .lookbook-name,
+    tr.lookbook-disabled .money-cell {
+      color: #777d84;
+    }
+
+    tr.lookbook-disabled .open-btn {
+      background: #e7e9ec;
+      color: #7a8087;
+    }
+
+
     .money-cell {
       font-weight: 800;
       color: var(--navy);
@@ -482,6 +570,7 @@
                 <th>Created</th>
                 <th>Last Updated</th>
                 <th>Selected Total</th>
+                <th>Status</th>
                 <th></th>
               </tr>
             </thead>
@@ -731,6 +820,16 @@
           document.createElement("tr");
 
 
+        const isActive =
+          lookbook.active !== false;
+
+
+        row.classList.toggle(
+          "lookbook-disabled",
+          !isActive
+        );
+
+
         row.dataset.search =
           `${lookbook.name || ""} ${lookbook.createdAt || ""} ${lookbook.updatedAt || ""}`
           .toLowerCase();
@@ -772,18 +871,43 @@
 
 
           <td>
+            <span class="status-badge ${isActive ? "active" : "disabled"}">
+              ${isActive ? "Active" : "Disabled"}
+            </span>
+          </td>
 
-            <a
-              class="open-btn"
-              href="${escapeHTML(
-                lookbook.url || "#"
-              )}"
-              target="_blank"
-              rel="noopener"
-            >
-              Open
-            </a>
 
+          <td>
+            <div class="row-actions">
+
+              <a
+                class="open-btn"
+                href="${escapeHTML(
+                  lookbook.url || "#"
+                )}"
+                target="_blank"
+                rel="noopener"
+              >
+                Open
+              </a>
+
+              <button
+                class="status-btn ${isActive ? "disable" : "enable"}"
+                type="button"
+                onclick="setLookbookStatus(
+                  '${escapeHTML(lookbook.id)}',
+                  ${isActive ? "false" : "true"},
+                  '${escapeHTML(
+                    String(lookbook.name || "Untitled Lookbook")
+                      .replaceAll("\\", "\\\\")
+                      .replaceAll("'", "\\'")
+                  )}'
+                )"
+              >
+                ${isActive ? "Disable" : "Re-enable"}
+              </button>
+
+            </div>
           </td>
 
         `;
@@ -821,6 +945,87 @@
               : "none";
 
         });
+
+    }
+
+
+    async function setLookbookStatus(
+      id,
+      active,
+      name
+    ) {
+
+      if (!active) {
+
+        const confirmed =
+          window.confirm(
+            `Disable this Lookbook?\n\n` +
+            `${name}\n\n` +
+            `The customer's current Lookbook link will stop working. ` +
+            `Their saved selections will NOT be deleted, and you can ` +
+            `re-enable the Lookbook later.\n\n` +
+            `Click OK to disable this Lookbook.`
+          );
+
+
+        if (!confirmed) {
+          return;
+        }
+
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/set-lookbook-status",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+              },
+              body: JSON.stringify({
+                id,
+                active
+              })
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to update this Lookbook."
+          );
+
+        }
+
+
+        await loadLookbooks();
+
+
+      } catch (error) {
+
+        console.error(
+          "LOOKBOOK STATUS ERROR:",
+          error
+        );
+
+
+        alert(
+          error.message ||
+          "This Lookbook could not be updated."
+        );
+
+      }
 
     }
 
