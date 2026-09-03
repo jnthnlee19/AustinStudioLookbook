@@ -7,6 +7,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@netlify/blobs": "^11.0.3"
+    "@netlify/blobs": "^11.0.3",
+    "xlsx": "^0.18.5"
   }
 }
