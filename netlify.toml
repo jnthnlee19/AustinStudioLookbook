@@ -1,2 +1,7 @@
 [functions]
   directory = "netlify/functions"
+
+
+[[edge_functions]]
+  function = "dashboard-password"
+  path = "/"
