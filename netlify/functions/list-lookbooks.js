@@ -4,8 +4,7 @@ import * as XLSX from "xlsx";
 
 /* =========================================================
    AUSTIN STUDIO LOOKBOOK
-   LIST SAVED LOOKBOOKS FOR DASHBOARD
-   Includes current Selected Total
+   LIST SAVED LOOKBOOKS
    ========================================================= */
 
 
@@ -28,6 +27,10 @@ function jsonResponse(
 }
 
 
+/* =========================================================
+   MONEY / PRICE HELPERS
+   ========================================================= */
+
 function parsePrice(
   value
 ) {
@@ -41,13 +44,24 @@ function parsePrice(
   }
 
 
+  if (
+    typeof value === "number" &&
+    Number.isFinite(value)
+  ) {
+    return value;
+  }
+
+
   const cleaned =
     String(value)
-      .replace(/[$,\s]/g, "");
+      .replace(
+        /[$,\s]/g,
+        ""
+      );
 
 
   const number =
-    Number.parseFloat(cleaned);
+    Number(cleaned);
 
 
   return Number.isFinite(number)
@@ -57,27 +71,60 @@ function parsePrice(
 }
 
 
+
+/* =========================================================
+   CALCULATE CURRENT SELECTED TOTAL
+
+   The workbook is stored inside each Lookbook.
+
+   We read Sheet2 and recreate the option-number → price
+   relationship using the same columns as the Lookbook:
+
+   A = Option Number
+   C = Description
+   N = Amount
+
+   Then we total the customer's currently saved selections.
+   ========================================================= */
+
 function calculateSelectedTotal(
   lookbook
 ) {
 
+  /*
+    Future-friendly:
+
+    If we later decide to save selectedTotal directly
+    into the Lookbook record, this function will use it
+    automatically.
+  */
+
   if (
+    typeof lookbook?.selectedTotal ===
+      "number" &&
     Number.isFinite(
-      Number(
-        lookbook?.selectedTotal
-      )
+      lookbook.selectedTotal
     )
   ) {
 
-    return Number(
-      lookbook.selectedTotal
-    );
+    return lookbook.selectedTotal;
 
   }
 
 
   const workbookBase64 =
     lookbook?.workbook;
+
+
+  if (
+    !workbookBase64 ||
+    typeof workbookBase64 !==
+      "string"
+  ) {
+
+    return 0;
+
+  }
 
 
   const selections =
@@ -89,10 +136,11 @@ function calculateSelectedTotal(
 
 
   if (
-    !workbookBase64 ||
-    !selections.length
+    selections.length === 0
   ) {
+
     return 0;
+
   }
 
 
@@ -112,7 +160,9 @@ function calculateSelectedTotal(
 
 
     if (!sheetObject) {
+
       return 0;
+
     }
 
 
@@ -125,9 +175,16 @@ function calculateSelectedTotal(
       );
 
 
-    const priceByOption =
+    const pricesByOption =
       new Map();
 
+
+    /*
+      This matches the Lookbook's
+      existing workbook parsing.
+
+      Data begins at row index 14.
+    */
 
     for (
       let i = 14;
@@ -147,29 +204,37 @@ function calculateSelectedTotal(
         row[2];
 
 
+      /*
+        Category/header rows do not
+        have a description in column C,
+        so only actual option rows are
+        added to the price map.
+      */
+
       if (
-        !optionNumber ||
-        !description
+        optionNumber &&
+        description
       ) {
-        continue;
+
+        pricesByOption.set(
+          String(
+            optionNumber
+          ),
+          parsePrice(
+            row[13]
+          )
+        );
+
       }
-
-
-      priceByOption.set(
-        String(optionNumber).trim(),
-        parsePrice(
-          row[13]
-        )
-      );
 
     }
 
 
-    return selections.reduce(
-      (
-        total,
-        selection
-      ) => {
+    let total = 0;
+
+
+    selections.forEach(
+      selection => {
 
         const option =
           String(
@@ -177,35 +242,50 @@ function calculateSelectedTotal(
           );
 
 
+        if (!option) {
+          return;
+        }
+
+
+        const price =
+          pricesByOption.get(
+            option
+          ) || 0;
+
+
         const qty =
           Math.max(
             1,
-            Number.parseInt(
+            parseInt(
               selection?.qty || 1
             ) || 1
           );
 
 
-        const unitPrice =
-          priceByOption.get(option)
-          || 0;
+        total +=
+          price * qty;
 
-
-        return total +
-          unitPrice * qty;
-
-      },
-      0
+      }
     );
+
+
+    return total;
 
 
   } catch (error) {
 
     console.error(
-      "TOTAL CALCULATION ERROR:",
+      "LOOKBOOK TOTAL ERROR:",
+      lookbook?.id,
       error
     );
 
+
+    /*
+      A damaged workbook should not
+      prevent the dashboard from
+      loading the Lookbook list.
+    */
 
     return 0;
 
@@ -214,15 +294,23 @@ function calculateSelectedTotal(
 }
 
 
+
+/* =========================================================
+   MAIN FUNCTION
+   ========================================================= */
+
 export default async function handler(
   request
 ) {
 
-  if (request.method !== "GET") {
+  if (
+    request.method !== "GET"
+  ) {
 
     return jsonResponse(
       {
-        error: "Method not allowed."
+        error:
+          "Method not allowed."
       },
       405
     );
@@ -242,84 +330,165 @@ export default async function handler(
       });
 
 
-    const result =
+    /*
+      List every customer Lookbook
+      stored under:
+
+      lookbooks/<UUID>
+    */
+
+    const listed =
       await store.list({
-        prefix: "lookbooks/"
+        prefix:
+          "lookbooks/"
       });
 
 
-    const records =
-      await Promise.all(
-        (result.blobs || []).map(
-          async blob => {
-
-            const lookbook =
-              await store.get(
-                blob.key,
-                {
-                  type: "json"
-                }
-              );
-
-
-            if (!lookbook) {
-              return null;
-            }
-
-
-            const selectedTotal =
-              calculateSelectedTotal(
-                lookbook
-              );
-
-
-            return {
-              id:
-                lookbook.id,
-
-              name:
-                lookbook.name ||
-                "Untitled Lookbook",
-
-              createdAt:
-                lookbook.createdAt || "",
-
-              updatedAt:
-                lookbook.updatedAt ||
-                lookbook.createdAt ||
-                "",
-
-              selectedTotal,
-
-              url:
-                `/customer.html?id=${encodeURIComponent(
-                  lookbook.id
-                )}`
-            };
-
-          }
-        )
-      );
+    const blobs =
+      Array.isArray(
+        listed?.blobs
+      )
+        ? listed.blobs
+        : [];
 
 
     const lookbooks =
-      records
+      await Promise.all(
+
+        blobs.map(
+          async blob => {
+
+            try {
+
+              const lookbook =
+                await store.get(
+                  blob.key,
+                  {
+                    type:
+                      "json"
+                  }
+                );
+
+
+              if (
+                !lookbook ||
+                !lookbook.id
+              ) {
+
+                return null;
+
+              }
+
+
+              const selectedTotal =
+                calculateSelectedTotal(
+                  lookbook
+                );
+
+
+              return {
+
+                id:
+                  lookbook.id,
+
+                name:
+                  lookbook.name ||
+                  "Untitled Lookbook",
+
+                createdAt:
+                  lookbook.createdAt ||
+                  "",
+
+                updatedAt:
+                  lookbook.updatedAt ||
+                  lookbook.createdAt ||
+                  "",
+
+                selectedTotal,
+
+                /*
+                  EXISTING LOOKBOOKS:
+
+                  Any Lookbook that does not
+                  already have an active field
+                  is treated as ACTIVE.
+
+                  Only an explicit:
+                  active: false
+
+                  means the Lookbook is disabled.
+                */
+                active:
+                  lookbook.active !== false,
+
+                url:
+                  `/customer.html?id=${encodeURIComponent(
+                    lookbook.id
+                  )}`
+
+              };
+
+
+            } catch (error) {
+
+              console.error(
+                "LOOKBOOK LIST ITEM ERROR:",
+                blob.key,
+                error
+              );
+
+
+              return null;
+
+            }
+
+          }
+        )
+
+      );
+
+
+    const cleaned =
+      lookbooks
         .filter(Boolean)
         .sort(
-          (a, b) =>
-            new Date(
-              b.updatedAt || 0
-            ) -
-            new Date(
-              a.updatedAt || 0
-            )
+          (
+            a,
+            b
+          ) => {
+
+            const aTime =
+              new Date(
+                a.updatedAt ||
+                a.createdAt ||
+                0
+              )
+              .getTime();
+
+
+            const bTime =
+              new Date(
+                b.updatedAt ||
+                b.createdAt ||
+                0
+              )
+              .getTime();
+
+
+            return (
+              bTime -
+              aTime
+            );
+
+          }
         );
 
 
     return jsonResponse(
       {
         success: true,
-        lookbooks
+        lookbooks:
+          cleaned
       }
     );
 
@@ -335,7 +504,7 @@ export default async function handler(
     return jsonResponse(
       {
         error:
-          "Something went wrong while loading saved Lookbooks."
+          "Unable to load saved Lookbooks."
       },
       500
     );
