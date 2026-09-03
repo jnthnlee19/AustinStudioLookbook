@@ -1217,6 +1217,71 @@
 
 
     /* =========================================================
+       DISABLED LOOKBOOK MESSAGE
+       ========================================================= */
+
+    .disabled-lookbook-card {
+      max-width: 720px;
+      margin: 60px auto;
+
+      background: #fff;
+
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--yellow);
+
+      border-radius: 16px;
+
+      box-shadow: var(--shadow);
+
+      padding: 44px 34px;
+
+      text-align: center;
+    }
+
+
+    .disabled-lookbook-icon {
+      width: 58px;
+      height: 58px;
+
+      margin: 0 auto 18px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: var(--yellow-soft);
+
+      color: var(--dark);
+
+      font-size: 1.55rem;
+      font-weight: 900;
+    }
+
+
+    .disabled-lookbook-card h2 {
+      margin: 0 0 10px;
+
+      color: var(--dark);
+
+      font-size: 1.5rem;
+    }
+
+
+    .disabled-lookbook-card p {
+      margin: 0 auto;
+
+      max-width: 560px;
+
+      color: var(--muted);
+
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+
+
+    /* =========================================================
        RESPONSIVE
        ========================================================= */
 
@@ -1855,6 +1920,18 @@
           await response.json();
 
 
+        if (
+          response.status === 403 &&
+          result.code === "LOOKBOOK_DISABLED"
+        ) {
+
+          showDisabledLookbook();
+
+          return;
+
+        }
+
+
         if (!response.ok) {
 
           throw new Error(
@@ -2012,6 +2089,18 @@
 
         const result =
           await response.json();
+
+
+        if (
+          response.status === 403 &&
+          result.code === "LOOKBOOK_DISABLED"
+        ) {
+
+          showDisabledLookbook();
+
+          return;
+
+        }
 
 
         if (!response.ok) {
@@ -2231,6 +2320,64 @@
       updateMasterCheckbox();
 
     }
+
+
+    function showDisabledLookbook() {
+
+      activeCustomerLookbook = null;
+
+      const container =
+        document.getElementById(
+          "lookbook-container"
+        );
+
+
+      if (!container) {
+        return;
+      }
+
+
+      const noResults =
+        document.getElementById(
+          "no-results"
+        );
+
+
+      if (noResults) {
+        noResults.style.display = "none";
+      }
+
+
+      container.innerHTML = `
+
+        <div class="disabled-lookbook-card">
+
+          <div class="disabled-lookbook-icon">
+            ×
+          </div>
+
+          <h2>
+            This Lookbook is no longer active.
+          </h2>
+
+          <p>
+            This Lookbook link has been disabled by the Austin Design Studio.
+            Your saved selections have not been deleted.
+            Please contact your Austin Design Studio representative if you need assistance.
+          </p>
+
+        </div>
+
+      `;
+
+
+      setAutosaveStatus(
+        "",
+        ""
+      );
+
+    }
+
 
 
     function showCustomerLoadError(
