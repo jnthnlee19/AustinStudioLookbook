@@ -782,30 +782,41 @@
 
       border-bottom: 1px solid #ebecea;
 
-      min-height: 150px;
+      /* Keep every image in its own dedicated viewing area.
+         This prevents tall/large images from ever flowing into
+         the option number or description below. */
+      height: 230px;
+      min-height: 230px;
+      flex: 0 0 230px;
 
       display: flex;
       align-items: center;
       justify-content: center;
+
+      overflow: hidden;
+      padding: 8px;
     }
 
 
     .option-image img {
       width: 100%;
-      height: 205px;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
 
       object-fit: contain;
+      object-position: center;
 
       display: block;
 
       cursor: zoom-in;
 
-      padding: 8px;
+      padding: 0;
     }
 
 
     .image-placeholder {
-      height: 205px;
+      height: 100%;
       width: 100%;
 
       display: flex;
@@ -832,7 +843,11 @@
 
       height: 100%;
 
-      padding: 13px;
+      /* Extra separation between the photo and option text */
+      padding: 15px 13px 13px;
+      position: relative;
+      z-index: 1;
+      background: #fff;
     }
 
 
