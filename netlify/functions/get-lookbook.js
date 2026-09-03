@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 
 /* =========================================================
    AUSTIN STUDIO LOOKBOOK
-   GET SAVED CUSTOMER LOOKBOOK
+   GET CUSTOMER LOOKBOOK
    ========================================================= */
 
 
@@ -42,15 +42,14 @@ export default async function handler(
   request
 ) {
 
-  /* -------------------------------------------------------
-     ONLY ALLOW GET
-     ------------------------------------------------------- */
-
-  if (request.method !== "GET") {
+  if (
+    request.method !== "GET"
+  ) {
 
     return jsonResponse(
       {
-        error: "Method not allowed."
+        error:
+          "Method not allowed."
       },
       405
     );
@@ -60,13 +59,6 @@ export default async function handler(
 
   try {
 
-    /* -----------------------------------------------------
-       READ LOOKBOOK ID FROM URL
-
-       Example:
-       /customer.html?id=81f959ed-aa6a...
-       ----------------------------------------------------- */
-
     const url =
       new URL(
         request.url
@@ -75,31 +67,26 @@ export default async function handler(
 
     const id =
       String(
-        url.searchParams.get("id") || ""
+        url.searchParams.get("id") ||
+        ""
       )
       .trim();
 
 
-    /* -----------------------------------------------------
-       VALIDATE PRIVATE LOOKBOOK ID
-       ----------------------------------------------------- */
-
-    if (!validLookbookId(id)) {
+    if (
+      !validLookbookId(id)
+    ) {
 
       return jsonResponse(
         {
           error:
-            "This Lookbook link is invalid."
+            "This Lookbook ID is invalid."
         },
         400
       );
 
     }
 
-
-    /* -----------------------------------------------------
-       OPEN SAME NETLIFY BLOB STORE USED WHEN CREATING
-       ----------------------------------------------------- */
 
     const store =
       getStore({
@@ -111,19 +98,9 @@ export default async function handler(
       });
 
 
-    /* -----------------------------------------------------
-       EACH CUSTOMER LOOKBOOK IS STORED UNDER:
-
-       lookbooks/<private-id>
-       ----------------------------------------------------- */
-
     const key =
       `lookbooks/${id}`;
 
-
-    /* -----------------------------------------------------
-       LOAD SAVED LOOKBOOK
-       ----------------------------------------------------- */
 
     const lookbook =
       await store.get(
@@ -133,10 +110,6 @@ export default async function handler(
         }
       );
 
-
-    /* -----------------------------------------------------
-       NOT FOUND
-       ----------------------------------------------------- */
 
     if (!lookbook) {
 
@@ -151,17 +124,39 @@ export default async function handler(
     }
 
 
-    /* -----------------------------------------------------
-       SUCCESS
+    /* =====================================================
+       DISABLED LOOKBOOK CHECK
 
-       Sends customer.html:
-       - id
-       - name
-       - workbook
-       - selections
-       - createdAt
-       - updatedAt
-       ----------------------------------------------------- */
+       Existing Lookbooks without an "active" property
+       are treated as active.
+
+       Only:
+         active: false
+
+       blocks access.
+
+       The Lookbook remains safely stored in Netlify Blobs.
+       ===================================================== */
+
+    if (
+      lookbook.active === false
+    ) {
+
+      return jsonResponse(
+        {
+          success: false,
+
+          code:
+            "LOOKBOOK_DISABLED",
+
+          error:
+            "This Lookbook is no longer active. Please contact your Austin Design Studio representative if you need assistance."
+        },
+        403
+      );
+
+    }
+
 
     return jsonResponse(
       {
@@ -182,7 +177,7 @@ export default async function handler(
     return jsonResponse(
       {
         error:
-          "Something went wrong while loading this Lookbook."
+          "Unable to load this Lookbook."
       },
       500
     );
