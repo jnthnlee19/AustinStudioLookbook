@@ -1146,36 +1146,75 @@
     .autosave-status {
       display: none;
       align-items: center;
+      justify-content: flex-end;
       gap: 7px;
-      margin-top: 8px;
+
+      margin-top: 5px;
+
       color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 650;
+
+      font-size: 0.72rem;
+      font-weight: 700;
+
+      white-space: nowrap;
     }
+
 
     body.customer-mode .autosave-status {
       display: flex;
     }
 
+
     .autosave-dot {
       width: 8px;
       height: 8px;
+
       border-radius: 50%;
+
       background: #aeb4bb;
+
       flex: 0 0 auto;
     }
 
+
+    .autosave-status.saving {
+      color: #806713;
+    }
+
+
     .autosave-status.saving .autosave-dot {
       background: var(--yellow);
+
+      box-shadow:
+        0 0 0 3px rgba(243,198,63,.16);
     }
+
+
+    .autosave-status.saved {
+      color: var(--green);
+    }
+
 
     .autosave-status.saved .autosave-dot {
       background: var(--green);
+
+      box-shadow:
+        0 0 0 3px rgba(60,139,100,.12);
     }
+
+
+    .autosave-status.error {
+      color: var(--red);
+    }
+
 
     .autosave-status.error .autosave-dot {
       background: var(--red);
+
+      box-shadow:
+        0 0 0 3px rgba(199,72,61,.12);
     }
+
 
     /* =========================================================
        RESPONSIVE
@@ -1362,6 +1401,18 @@
 
           <div id="total-bar">
             $0.00
+          </div>
+
+          <div
+            class="autosave-status saved"
+            id="autosave-status"
+            aria-live="polite"
+          >
+            <span class="autosave-dot"></span>
+
+            <span id="autosave-status-text">
+              ✓ All changes saved
+            </span>
           </div>
 
         </div>
@@ -1719,7 +1770,7 @@
 
       text.textContent =
         message ||
-        "Changes save automatically";
+        "✓ All changes saved";
 
     }
 
@@ -1743,7 +1794,7 @@
 
       setAutosaveStatus(
         "saving",
-        "Saving changes..."
+        "Saving..."
       );
 
 
@@ -1828,7 +1879,7 @@
 
         setAutosaveStatus(
           "saved",
-          `Saved ${savedTime.toLocaleTimeString([], {
+          `✓ Saved at ${savedTime.toLocaleTimeString([], {
             hour: "numeric",
             minute: "2-digit"
           })}`
@@ -1845,7 +1896,7 @@
 
         setAutosaveStatus(
           "error",
-          "Save failed — your changes have not been saved."
+          "⚠ Changes not saved"
         );
 
 
@@ -2059,11 +2110,11 @@
         setAutosaveStatus(
           "saved",
           activeCustomerLookbook.updatedAt
-            ? `Saved ${new Date(activeCustomerLookbook.updatedAt).toLocaleTimeString([], {
+            ? `✓ Saved at ${new Date(activeCustomerLookbook.updatedAt).toLocaleTimeString([], {
                 hour: "numeric",
                 minute: "2-digit"
               })}`
-            : "Changes save automatically"
+            : "✓ All changes saved"
         );
 
 
