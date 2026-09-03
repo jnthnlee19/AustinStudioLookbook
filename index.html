@@ -603,15 +603,23 @@
         document.getElementById("emptyState");
 
 
-      tableWrap.style.display = "none";
+      /*
+        Only show the loading screen on the initial load.
+        Background refreshes update the existing table quietly.
+      */
+      if (lookbooks.length === 0) {
 
-      emptyState.style.display = "block";
+        tableWrap.style.display = "none";
 
-      emptyState.innerHTML = `
-        <div class="empty-icon">⌂</div>
-        <strong>Loading saved Lookbooks...</strong>
-        Checking the Austin Studio Lookbook library.
-      `;
+        emptyState.style.display = "block";
+
+        emptyState.innerHTML = `
+          <div class="empty-icon">⌂</div>
+          <strong>Loading saved Lookbooks...</strong>
+          Checking the Austin Studio Lookbook library.
+        `;
+
+      }
 
 
       try {
@@ -887,7 +895,42 @@
     }
 
 
+    /* =====================================================
+       LIVE DASHBOARD REFRESH
+       Initial load + quiet refresh every 5 seconds.
+       ===================================================== */
+
     loadLookbooks();
+
+
+    const lookbookRefreshInterval =
+      setInterval(
+        () => {
+
+          /*
+            Skip background refresh while the browser tab
+            is hidden. It will refresh immediately when the
+            user returns to the dashboard.
+          */
+          if (!document.hidden) {
+            loadLookbooks();
+          }
+
+        },
+        5000
+      );
+
+
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+
+        if (!document.hidden) {
+          loadLookbooks();
+        }
+
+      }
+    );
 
   </script>
 
