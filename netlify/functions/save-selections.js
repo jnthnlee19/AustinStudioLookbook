@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 
 /* =========================================================
    AUSTIN STUDIO LOOKBOOK
-   AUTOSAVE CUSTOMER SELECTIONS
+   SAVE CUSTOMER SELECTIONS
    ========================================================= */
 
 
@@ -42,11 +42,14 @@ export default async function handler(
   request
 ) {
 
-  if (request.method !== "POST") {
+  if (
+    request.method !== "POST"
+  ) {
 
     return jsonResponse(
       {
-        error: "Method not allowed."
+        error:
+          "Method not allowed."
       },
       405
     );
@@ -75,7 +78,9 @@ export default async function handler(
         : [];
 
 
-    if (!validLookbookId(id)) {
+    if (
+      !validLookbookId(id)
+    ) {
 
       return jsonResponse(
         {
@@ -124,13 +129,45 @@ export default async function handler(
     }
 
 
+    /* =====================================================
+       DISABLED LOOKBOOK CHECK
+
+       Once Studio disables a Lookbook, customer changes
+       should no longer be allowed to save.
+
+       The saved Lookbook data remains untouched.
+       ===================================================== */
+
+    if (
+      current.active === false
+    ) {
+
+      return jsonResponse(
+        {
+          success: false,
+
+          code:
+            "LOOKBOOK_DISABLED",
+
+          error:
+            "This Lookbook is no longer active."
+        },
+        403
+      );
+
+    }
+
+
     const updatedAt =
-      new Date().toISOString();
+      new Date()
+        .toISOString();
 
 
     const updatedLookbook = {
       ...current,
+
       selections,
+
       updatedAt
     };
 
@@ -141,11 +178,19 @@ export default async function handler(
       {
         metadata: {
           id,
+
           name:
-            current.name || "",
+            current.name ||
+            "",
+
           createdAt:
-            current.createdAt || "",
-          updatedAt
+            current.createdAt ||
+            "",
+
+          updatedAt,
+
+          active:
+            current.active !== false
         }
       }
     );
@@ -154,7 +199,9 @@ export default async function handler(
     return jsonResponse(
       {
         success: true,
+
         id,
+
         updatedAt
       }
     );
@@ -171,7 +218,7 @@ export default async function handler(
     return jsonResponse(
       {
         error:
-          "Something went wrong while saving selections."
+          "Unable to save selections."
       },
       500
     );
