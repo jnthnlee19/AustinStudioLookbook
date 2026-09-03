@@ -299,6 +299,26 @@
       font-size: 0.86rem;
     }
 
+
+    .money-cell {
+      font-weight: 800;
+      color: var(--navy);
+      white-space: nowrap;
+    }
+
+    .table-status {
+      padding: 34px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .table-status strong {
+      display: block;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+
     .empty-state {
       padding: 48px 24px;
       text-align: center;
@@ -461,6 +481,7 @@
                 <th>Lookbook</th>
                 <th>Created</th>
                 <th>Last Updated</th>
+                <th>Selected Total</th>
                 <th></th>
               </tr>
             </thead>
@@ -563,13 +584,100 @@
 
     /* =====================================================
        SAVED LOOKBOOKS
-       This is SAMPLE/placeholder infrastructure.
-
-       Later this will pull live records from:
+       Loads live records from Netlify Blobs through:
        /.netlify/functions/list-lookbooks
        ===================================================== */
 
     let lookbooks = [];
+
+
+    async function loadLookbooks() {
+
+      const tbody =
+        document.getElementById("lookbookTableBody");
+
+      const tableWrap =
+        document.getElementById("lookbookTableWrap");
+
+      const emptyState =
+        document.getElementById("emptyState");
+
+
+      tableWrap.style.display = "none";
+
+      emptyState.style.display = "block";
+
+      emptyState.innerHTML = `
+        <div class="empty-icon">⌂</div>
+        <strong>Loading saved Lookbooks...</strong>
+        Checking the Austin Studio Lookbook library.
+      `;
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/list-lookbooks",
+            {
+              headers: {
+                "Accept": "application/json"
+              },
+              cache: "no-store"
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to load saved Lookbooks."
+          );
+
+        }
+
+
+        lookbooks =
+          Array.isArray(result.lookbooks)
+            ? result.lookbooks
+            : [];
+
+
+        renderLookbooks();
+
+
+      } catch (error) {
+
+        console.error(
+          "LOAD LOOKBOOKS ERROR:",
+          error
+        );
+
+
+        tbody.innerHTML = "";
+
+        tableWrap.style.display = "none";
+
+        emptyState.style.display = "block";
+
+        emptyState.innerHTML = `
+          <div class="empty-icon">!</div>
+          <strong>Saved Lookbooks could not be loaded</strong>
+          ${escapeHTML(
+            error.message ||
+            "Please refresh the page and try again."
+          )}
+        `;
+
+      }
+
+    }
 
 
     function renderLookbooks() {
@@ -590,7 +698,14 @@
       if (lookbooks.length === 0) {
 
         tableWrap.style.display = "none";
+
         emptyState.style.display = "block";
+
+        emptyState.innerHTML = `
+          <div class="empty-icon">⌂</div>
+          <strong>No saved Lookbooks yet</strong>
+          Once you create your first Lookbook, it will appear here automatically.
+        `;
 
         return;
 
@@ -598,15 +713,18 @@
 
 
       emptyState.style.display = "none";
+
       tableWrap.style.display = "block";
 
 
       lookbooks.forEach(lookbook => {
 
-        const row = document.createElement("tr");
+        const row =
+          document.createElement("tr");
+
 
         row.dataset.search =
-          `${lookbook.name} ${lookbook.createdAt} ${lookbook.updatedAt}`
+          `${lookbook.name || ""} ${lookbook.createdAt || ""} ${lookbook.updatedAt || ""}`
           .toLowerCase();
 
 
@@ -615,39 +733,49 @@
           <td>
 
             <div class="lookbook-name">
-              ${escapeHTML(lookbook.name)}
+              ${escapeHTML(
+                lookbook.name ||
+                "Untitled Lookbook"
+              )}
             </div>
 
-            ${
-              lookbook.subtitle
-                ? `<div class="secondary-text">
-                    ${escapeHTML(lookbook.subtitle)}
-                   </div>`
-                : ""
-            }
-
           </td>
 
 
           <td>
-            ${formatDate(lookbook.createdAt)}
+            ${formatDate(
+              lookbook.createdAt
+            )}
           </td>
 
 
           <td>
-            ${formatDate(lookbook.updatedAt)}
+            ${formatDate(
+              lookbook.updatedAt
+            )}
+          </td>
+
+
+          <td class="money-cell">
+            ${formatMoney(
+              lookbook.selectedTotal
+            )}
           </td>
 
 
           <td>
+
             <a
               class="open-btn"
-              href="${lookbook.url}"
+              href="${escapeHTML(
+                lookbook.url || "#"
+              )}"
               target="_blank"
               rel="noopener"
             >
               Open
             </a>
+
           </td>
 
         `;
@@ -657,8 +785,10 @@
 
       });
 
-    }
 
+      filterLookbooks();
+
+    }
 
 
     function filterLookbooks() {
@@ -672,7 +802,9 @@
 
 
       document
-        .querySelectorAll("#lookbookTableBody tr")
+        .querySelectorAll(
+          "#lookbookTableBody tr"
+        )
         .forEach(row => {
 
           row.style.display =
@@ -685,27 +817,62 @@
     }
 
 
-
     function formatDate(value) {
 
-      if (!value) return "—";
+      if (!value) {
+        return "—";
+      }
 
-      const date = new Date(value);
 
-      if (Number.isNaN(date.getTime())) {
+      const date =
+        new Date(value);
+
+
+      if (
+        Number.isNaN(
+          date.getTime()
+        )
+      ) {
         return value;
       }
 
-      return date.toLocaleString([], {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit"
-      });
+
+      return date.toLocaleString(
+        [],
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }
+      );
 
     }
 
+
+    function formatMoney(value) {
+
+      const number =
+        Number(value);
+
+
+      if (!Number.isFinite(number)) {
+        return "$0.00";
+      }
+
+
+      return number.toLocaleString(
+        undefined,
+        {
+          style: "currency",
+          currency: "USD",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }
+      );
+
+    }
 
 
     function escapeHTML(value) {
@@ -720,15 +887,7 @@
     }
 
 
-
-    /*
-      For now the array is empty.
-
-      Once our Netlify Blob functions are added,
-      this page will automatically load saved Lookbooks.
-    */
-
-    renderLookbooks();
+    loadLookbooks();
 
   </script>
 
