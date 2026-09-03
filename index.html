@@ -1,1 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Austin Studio Lookbook</title>
 
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --navy: #1f2f46;
+      --navy-hover: #162337;
+      --yellow: #f4c542;
+      --yellow-soft: #fff7d6;
+      --shadow: 0 14px 38px rgba(31, 41, 55, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page-shell {
+      min-height: 100vh;
+      padding: 36px 24px 60px;
+    }
+
+    .dashboard {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    /* =========================
+       HEADER
+       ========================= */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .eyebrow {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1;
+      color: var(--navy);
+      letter-spacing: -0.03em;
+    }
+
+    .subheading {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      box-shadow: 0 4px 14px rgba(31, 41, 55, 0.04);
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #38a169;
+    }
+
+    /* =========================
+       CREATE LOOKBOOK CARD
+       ========================= */
+    .hero-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(229, 231, 235, 0.8);
+      margin-bottom: 28px;
+    }
+
+    .hero-accent {
+      height: 6px;
+      background: var(--yellow);
+    }
+
+    .hero-content {
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .hero-copy h2 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: 1.55rem;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 620px;
+    }
+
+    .upload-area {
+      border: 2px dashed #d8dce2;
+      border-radius: 14px;
+      padding: 22px;
+      background: #fafafa;
+      transition: 0.2s ease;
+    }
+
+    .upload-area:hover {
+      border-color: var(--yellow);
+      background: var(--yellow-soft);
+    }
+
+    .upload-label {
+      font-weight: 700;
+      display: block;
+      margin-bottom: 10px;
+      color: var(--navy);
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: white;
+      margin-bottom: 14px;
+    }
+
+    .primary-btn {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 18px;
+      background: var(--navy);
+      color: white;
+      font-weight: 700;
+      font-size: 0.98rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .primary-btn:hover {
+      background: var(--navy-hover);
+      transform: translateY(-1px);
+    }
+
+    .file-status {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      min-height: 20px;
+    }
+
+    /* =========================
+       SAVED LOOKBOOKS
+       ========================= */
+    .section-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid rgba(229, 231, 235, 0.8);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 24px 26px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--navy);
+    }
+
+    .section-title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .search-box {
+      width: min(320px, 100%);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .search-box input:focus {
+      border-color: #b9bec7;
+      box-shadow: 0 0 0 3px rgba(31, 47, 70, 0.06);
+    }
+
+    .lookbook-table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 15px 18px;
+      border-bottom: 1px solid #edf0f2;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #fbfbfb;
+      font-weight: 700;
+    }
+
+    td {
+      font-size: 0.92rem;
+    }
+
+    .lookbook-name {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .secondary-text {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-top: 3px;
+    }
+
+    .open-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 13px;
+      background: var(--yellow);
+      color: #2a2a2a;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.86rem;
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      width: 54px;
+      height: 54px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--yellow-soft);
+      font-size: 1.4rem;
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--navy);
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 22px;
+      color: #8a8f98;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 820px) {
+      .header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-content {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-shell">
+    <main class="dashboard">
+
+      <!-- =========================
+           PAGE HEADER
+           ========================= -->
+      <header class="header">
+        <div class="brand-block">
+          <div class="eyebrow">KB Home • Austin Design Studio</div>
+          <h1>Austin Studio Lookbook</h1>
+          <div class="subheading">
+            Create, manage, and reopen customer lookbooks.
+          </div>
+        </div>
+
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          Lookbook System
+        </div>
+      </header>
+
+
+      <!-- =========================
+           CREATE NEW LOOKBOOK
+           ========================= -->
+      <section class="hero-card">
+        <div class="hero-accent"></div>
+
+        <div class="hero-content">
+
+          <div class="hero-copy">
+            <h2>Create a New Lookbook</h2>
+            <p>
+              Upload the customer's Excel selection file to build a new
+              interactive Lookbook. You'll review it before creating the
+              customer's saved Lookbook.
+            </p>
+          </div>
+
+          <div class="upload-area">
+            <label class="upload-label" for="upload">
+              Upload Excel File
+            </label>
+
+            <input
+              type="file"
+              id="upload"
+              accept=".xlsx"
+            />
+
+            <button
+              class="primary-btn"
+              id="generateBtn"
+            >
+              Generate Lookbook
+            </button>
+
+            <div
+              class="file-status"
+              id="fileStatus"
+            >
+              No file selected
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- =========================
+           SAVED LOOKBOOKS
+           ========================= -->
+      <section class="section-card">
+
+        <div class="section-header">
+
+          <div class="section-title">
+            <h2>Saved Lookbooks</h2>
+            <p>
+              Customer Lookbooks created by the Austin Design Studio.
+            </p>
+          </div>
+
+          <div class="search-box">
+            <input
+              id="lookbookSearch"
+              type="text"
+              placeholder="Search saved lookbooks..."
+              oninput="filterLookbooks()"
+            />
+          </div>
+
+        </div>
+
+
+        <!-- This table will populate from Netlify Blobs later -->
+        <div
+          class="lookbook-table-wrap"
+          id="lookbookTableWrap"
+          style="display:none;"
+        >
+
+          <table>
+            <thead>
+              <tr>
+                <th>Lookbook</th>
+                <th>Created</th>
+                <th>Last Updated</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody id="lookbookTableBody"></tbody>
+          </table>
+
+        </div>
+
+
+        <!-- Empty state shown until saved Lookbooks exist -->
+        <div
+          class="empty-state"
+          id="emptyState"
+        >
+          <div class="empty-icon">⌂</div>
+
+          <strong>No saved Lookbooks yet</strong>
+
+          Once you create your first Lookbook, it will appear here
+          automatically.
+        </div>
+
+      </section>
+
+
+      <div class="footer-note">
+        Austin Design Studio • Internal Lookbook Tool
+      </div>
+
+    </main>
+  </div>
+
+
+  <script>
+
+    /* =====================================================
+       EXCEL UPLOAD
+       Same basic workflow as your original Lookbook.
+       ===================================================== */
+
+    const uploadInput = document.getElementById("upload");
+    const generateBtn = document.getElementById("generateBtn");
+    const fileStatus = document.getElementById("fileStatus");
+
+
+    uploadInput.addEventListener("change", function(event) {
+
+      const file = event.target.files[0];
+
+      if (!file) {
+        fileStatus.textContent = "No file selected";
+        return;
+      }
+
+      fileStatus.textContent = file.name;
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+
+        const base64 = e.target.result.split(",")[1];
+
+        /*
+          Temporary workbook storage.
+
+          The workbook stays here while Studio moves
+          from the dashboard to the Lookbook preview.
+        */
+        localStorage.setItem("workbook", base64);
+
+      };
+
+      reader.readAsDataURL(file);
+
+    });
+
+
+    generateBtn.addEventListener("click", function() {
+
+      const savedWorkbook = localStorage.getItem("workbook");
+
+      if (!savedWorkbook) {
+
+        alert("Please upload an Excel file first.");
+
+        return;
+      }
+
+      /*
+        Next step:
+        lookbook.html will become our Lookbook preview/editor.
+      */
+
+      window.location.href = "lookbook.html";
+
+    });
+
+
+
+    /* =====================================================
+       SAVED LOOKBOOKS
+       This is SAMPLE/placeholder infrastructure.
+
+       Later this will pull live records from:
+       /.netlify/functions/list-lookbooks
+       ===================================================== */
+
+    let lookbooks = [];
+
+
+    function renderLookbooks() {
+
+      const tbody =
+        document.getElementById("lookbookTableBody");
+
+      const tableWrap =
+        document.getElementById("lookbookTableWrap");
+
+      const emptyState =
+        document.getElementById("emptyState");
+
+
+      tbody.innerHTML = "";
+
+
+      if (lookbooks.length === 0) {
+
+        tableWrap.style.display = "none";
+        emptyState.style.display = "block";
+
+        return;
+
+      }
+
+
+      emptyState.style.display = "none";
+      tableWrap.style.display = "block";
+
+
+      lookbooks.forEach(lookbook => {
+
+        const row = document.createElement("tr");
+
+        row.dataset.search =
+          `${lookbook.name} ${lookbook.createdAt} ${lookbook.updatedAt}`
+          .toLowerCase();
+
+
+        row.innerHTML = `
+
+          <td>
+
+            <div class="lookbook-name">
+              ${escapeHTML(lookbook.name)}
+            </div>
+
+            ${
+              lookbook.subtitle
+                ? `<div class="secondary-text">
+                    ${escapeHTML(lookbook.subtitle)}
+                   </div>`
+                : ""
+            }
+
+          </td>
+
+
+          <td>
+            ${formatDate(lookbook.createdAt)}
+          </td>
+
+
+          <td>
+            ${formatDate(lookbook.updatedAt)}
+          </td>
+
+
+          <td>
+            <a
+              class="open-btn"
+              href="${lookbook.url}"
+              target="_blank"
+              rel="noopener"
+            >
+              Open
+            </a>
+          </td>
+
+        `;
+
+
+        tbody.appendChild(row);
+
+      });
+
+    }
+
+
+
+    function filterLookbooks() {
+
+      const query =
+        document
+          .getElementById("lookbookSearch")
+          .value
+          .trim()
+          .toLowerCase();
+
+
+      document
+        .querySelectorAll("#lookbookTableBody tr")
+        .forEach(row => {
+
+          row.style.display =
+            row.dataset.search.includes(query)
+              ? ""
+              : "none";
+
+        });
+
+    }
+
+
+
+    function formatDate(value) {
+
+      if (!value) return "—";
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return value;
+      }
+
+      return date.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+
+    }
+
+
+
+    function escapeHTML(value) {
+
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    }
+
+
+
+    /*
+      For now the array is empty.
+
+      Once our Netlify Blob functions are added,
+      this page will automatically load saved Lookbooks.
+    */
+
+    renderLookbooks();
+
+  </script>
+
+</body>
+</html>
