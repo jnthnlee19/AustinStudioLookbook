@@ -1138,6 +1138,45 @@
     }
 
 
+
+    /* =========================================================
+       CUSTOMER AUTOSAVE STATUS
+       ========================================================= */
+
+    .autosave-status {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 650;
+    }
+
+    body.customer-mode .autosave-status {
+      display: flex;
+    }
+
+    .autosave-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #aeb4bb;
+      flex: 0 0 auto;
+    }
+
+    .autosave-status.saving .autosave-dot {
+      background: var(--yellow);
+    }
+
+    .autosave-status.saved .autosave-dot {
+      background: var(--green);
+    }
+
+    .autosave-status.error .autosave-dot {
+      background: var(--red);
+    }
+
     /* =========================================================
        RESPONSIVE
        ========================================================= */
@@ -1640,6 +1679,243 @@
 
     let activeCustomerLookbook = null;
 
+    let autosaveTimer = null;
+    let autosaveInFlight = false;
+    let autosaveQueued = false;
+
+
+    function setAutosaveStatus(
+      state,
+      message
+    ) {
+
+      const box =
+        document.getElementById(
+          "autosave-status"
+        );
+
+      const text =
+        document.getElementById(
+          "autosave-status-text"
+        );
+
+
+      if (!box || !text) {
+        return;
+      }
+
+
+      box.classList.remove(
+        "saving",
+        "saved",
+        "error"
+      );
+
+
+      if (state) {
+        box.classList.add(state);
+      }
+
+
+      text.textContent =
+        message ||
+        "Changes save automatically";
+
+    }
+
+
+    function scheduleAutosave() {
+
+      if (
+        !document.body.classList.contains(
+          "customer-mode"
+        ) ||
+        !activeCustomerLookbook?.id
+      ) {
+        return;
+      }
+
+
+      clearTimeout(
+        autosaveTimer
+      );
+
+
+      setAutosaveStatus(
+        "saving",
+        "Saving changes..."
+      );
+
+
+      autosaveTimer =
+        setTimeout(
+          saveCustomerSelections,
+          900
+        );
+
+    }
+
+
+    async function saveCustomerSelections() {
+
+      if (!activeCustomerLookbook?.id) {
+        return;
+      }
+
+
+      if (autosaveInFlight) {
+
+        autosaveQueued = true;
+
+        return;
+
+      }
+
+
+      autosaveInFlight = true;
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/save-selections",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  id:
+                    activeCustomerLookbook.id,
+
+                  selections:
+                    getCurrentSelections()
+                })
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to save selections."
+          );
+
+        }
+
+
+        activeCustomerLookbook.updatedAt =
+          result.updatedAt ||
+          new Date().toISOString();
+
+
+        const savedTime =
+          new Date(
+            activeCustomerLookbook.updatedAt
+          );
+
+
+        setAutosaveStatus(
+          "saved",
+          `Saved ${savedTime.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+          })}`
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "AUTOSAVE ERROR:",
+          error
+        );
+
+
+        setAutosaveStatus(
+          "error",
+          "Save failed — your changes have not been saved."
+        );
+
+
+      } finally {
+
+        autosaveInFlight = false;
+
+
+        if (autosaveQueued) {
+
+          autosaveQueued = false;
+
+          scheduleAutosave();
+
+        }
+
+      }
+
+    }
+
+
+    function enableCustomerAutosave() {
+
+      document
+        .getElementById(
+          "lookbook-container"
+        )
+        ?.addEventListener(
+          "change",
+          event => {
+
+            if (
+              event.target.matches(
+                ".option-checkbox, .option-qty, .option-comment"
+              )
+            ) {
+
+              scheduleAutosave();
+
+            }
+
+          }
+        );
+
+
+      document
+        .getElementById(
+          "lookbook-container"
+        )
+        ?.addEventListener(
+          "input",
+          event => {
+
+            if (
+              event.target.matches(
+                ".option-qty, .option-comment"
+              )
+            ) {
+
+              scheduleAutosave();
+
+            }
+
+          }
+        );
+
+    }
+
+
+
 
     async function loadCustomerLookbook() {
 
@@ -1777,6 +2053,17 @@
 
         restoreSavedSelections(
           activeCustomerLookbook.selections || []
+        );
+
+
+        setAutosaveStatus(
+          "saved",
+          activeCustomerLookbook.updatedAt
+            ? `Saved ${new Date(activeCustomerLookbook.updatedAt).toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit"
+              })}`
+            : "Changes save automatically"
         );
 
 
@@ -4166,7 +4453,13 @@
 
     document.addEventListener(
       "DOMContentLoaded",
-      loadCustomerLookbook
+      function() {
+
+        enableCustomerAutosave();
+
+        loadCustomerLookbook();
+
+      }
     );
 
   </script>
