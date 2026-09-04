@@ -814,7 +814,27 @@
       tableWrap.style.display = "block";
 
 
-      lookbooks.forEach(lookbook => {
+      const sortedLookbooks =
+        [...lookbooks].sort((a, b) => {
+
+          const aActive = a.active !== false;
+          const bActive = b.active !== false;
+
+          // Active Lookbooks always appear first.
+          if (aActive !== bActive) {
+            return aActive ? -1 : 1;
+          }
+
+          // Within each group, keep the most recently updated Lookbooks first.
+          const aUpdated = new Date(a.updatedAt || a.createdAt || 0).getTime();
+          const bUpdated = new Date(b.updatedAt || b.createdAt || 0).getTime();
+
+          return bUpdated - aUpdated;
+
+        });
+
+
+      sortedLookbooks.forEach(lookbook => {
 
         const row =
           document.createElement("tr");
