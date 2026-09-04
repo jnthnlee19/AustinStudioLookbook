@@ -1607,7 +1607,7 @@
       }
 
       if (
-        /\\bincluded\\b/i.test(
+        /\bincluded\b/i.test(
           String(value)
         )
       ) {
@@ -1625,6 +1625,37 @@
           minimumFractionDigits: 0,
           maximumFractionDigits: 2
         }
+      );
+
+    }
+
+
+    function isIncludedOption(option) {
+
+      const amountIsZero =
+        parsePrice(
+          option?.amount
+        ) === 0;
+
+      const includedText =
+        [
+          option?.amount,
+          option?.description,
+          option?.salesDesc
+        ]
+          .filter(
+            value =>
+              value !== null &&
+              value !== undefined &&
+              value !== ""
+          )
+          .join(" ");
+
+      return (
+        amountIsZero &&
+        /\bincluded\b/i.test(
+          includedText
+        )
       );
 
     }
@@ -2279,9 +2310,11 @@
 
 
       price.textContent =
-        formatPrice(
-          option.amount
-        );
+        isIncludedOption(option)
+          ? "Included"
+          : formatPrice(
+              option.amount
+            );
 
 
 
@@ -3670,13 +3703,25 @@
                       <strong>
 
                         ${
-                          lineTotal.toLocaleString(
-                            undefined,
-                            {
-                              style:"currency",
-                              currency:"USD"
-                            }
+                          (
+                            price === 0 &&
+                            /\bincluded\b/i.test(
+                              [
+                                description,
+                                sales
+                              ]
+                                .filter(Boolean)
+                                .join(" ")
+                            )
                           )
+                            ? "Included"
+                            : lineTotal.toLocaleString(
+                                undefined,
+                                {
+                                  style:"currency",
+                                  currency:"USD"
+                                }
+                              )
                         }
 
                       </strong>
