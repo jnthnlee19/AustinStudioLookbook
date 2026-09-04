@@ -1598,9 +1598,6 @@
 
     function formatPrice(value) {
 
-      const number =
-        parsePrice(value);
-
       if (
         value === null ||
         value === undefined ||
@@ -1608,6 +1605,17 @@
       ) {
         return "TBD";
       }
+
+      if (
+        /\\bincluded\\b/i.test(
+          String(value)
+        )
+      ) {
+        return "Included";
+      }
+
+      const number =
+        parsePrice(value);
 
       return number.toLocaleString(
         undefined,
