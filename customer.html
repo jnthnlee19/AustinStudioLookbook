@@ -968,54 +968,6 @@
     }
 
 
-
-    /* =========================================================
-       OPTION VARIATION DROPDOWNS
-       ========================================================= */
-
-    .option-variations {
-      display: grid;
-      gap: 8px;
-      margin: 0 0 10px;
-      padding: 10px;
-      border: 1px solid #e2e4e6;
-      border-radius: 8px;
-      background: #fafaf9;
-    }
-
-    .variation-field { display: grid; gap: 4px; }
-
-    .variation-field label {
-      color: var(--muted);
-      font-size: 0.69rem;
-      font-weight: 750;
-      text-transform: uppercase;
-      letter-spacing: 0.045em;
-    }
-
-    .variation-select {
-      width: 100%;
-      min-width: 0;
-      padding: 8px 30px 8px 9px;
-      border: 1px solid #d2d6da;
-      border-radius: 7px;
-      background: #fff;
-      color: var(--text);
-      font-size: 0.76rem;
-      outline: none;
-    }
-
-    .variation-select:focus {
-      border-color: #a9afb6;
-      box-shadow: 0 0 0 3px rgba(38,51,65,0.06);
-    }
-
-    .variation-select:disabled {
-      background: #f0f1f1;
-      color: #92979c;
-      cursor: not-allowed;
-    }
-
     /* =========================================================
        COMMENTS
        ========================================================= */
@@ -2373,28 +2325,6 @@
           }
 
 
-          const primaryVariation =
-            card.querySelector(
-              ".variation-primary"
-            );
-
-          const secondaryVariation =
-            card.querySelector(
-              ".variation-secondary"
-            );
-
-          if (primaryVariation && saved?.variation1) {
-            primaryVariation.value = saved.variation1;
-            primaryVariation.dispatchEvent(
-              new Event("change")
-            );
-          }
-
-          if (secondaryVariation && saved?.variation2) {
-            secondaryVariation.value = saved.variation2;
-          }
-
-
           card.classList.add(
             "selected"
           );
@@ -2810,402 +2740,6 @@
 
 
 
-
-    /* =========================================================
-       OPTION VARIATIONS — EASY EDIT SECTION
-
-       SIMPLE:
-       "1234567": {
-         "label": "Color",
-         "choices": ["White", "Black", "Gray"]
-       }
-
-       DOUBLE:
-       "1234567": {
-         "label": "Collection",
-         "secondLabel": "Color",
-         "options": {
-           "Collection A": ["White", "Gray"],
-           "Collection B": ["Blue", "Black"]
-         }
-       }
-
-       Add future variations in THIS section.
-       ========================================================= */
-
-    const OPTION_VARIATIONS = {
-  "2001031": {
-    "label": "Color",
-    "choices": [
-      "White",
-      "Adobe"
-    ]
-  },
-  "2021067": {
-    "label": "Pattern",
-    "choices": [
-      "Herringbone",
-      "Horizontal Stack",
-      "Vertical Brick",
-      "Vertical Stack"
-    ]
-  },
-  "2005382": {
-    "label": "Collection",
-    "secondLabel": "Color",
-    "options": {
-      "Artezen Picket": [
-        "Elegant White",
-        "Nordic Sand",
-        "Ideal Gray",
-        "Classic Blue",
-        "Dark Blue",
-        "Metallic Vibe"
-      ],
-      "Artezen 2X4 Brick": [
-        "Elegant White",
-        "Nordic Sand",
-        "Ideal Gray",
-        "Classic Blue",
-        "Dark Blue",
-        "Metallic Vibe"
-      ],
-      "Artezen 2X4 Herringbone": [
-        "Elegant White",
-        "Nordic Sand",
-        "Ideal Gray",
-        "Classic Blue",
-        "Dark Blue",
-        "Metallic Vibe"
-      ],
-      "Artezen 2X4 Hexagon": [
-        "Elegant White",
-        "Nordic Sand",
-        "Ideal Gray",
-        "Classic Blue",
-        "Dark Blue",
-        "Metallic Vibe"
-      ],
-      "Revalia Bevel": [
-        "Centiennial White",
-        "Festive Gray",
-        "Jubilee Beige",
-        "Celebration Teal"
-      ],
-      "Marble Obsession": [
-        "Calacatta Gold",
-        "Grigio"
-      ],
-      "Miramo": [
-        "Pearl",
-        "Oyster",
-        "Sand",
-        "Aqua",
-        "Horizon",
-        "Reef"
-      ],
-      "Revalia Fan": [
-        "Felicity White",
-        "Gaceful Greige",
-        "Sublime Gray",
-        "Delightful Tan",
-        "Exquisite Sky"
-      ],
-      "Conrad": [
-        "Polar",
-        "Linen",
-        "Tin",
-        "Stark",
-        "Sage",
-        "Siren",
-        "Marine"
-      ],
-      "Florentine": [
-        "Carrara"
-      ],
-      "CF Prime": [
-        "Heirlum White",
-        "Lineage Greige",
-        "Historic Gray"
-      ],
-      "Calligo": [
-        "Tusk",
-        "Almond",
-        "Nimbus"
-      ],
-      "Articulo": [
-        "Editorial White",
-        "Feature Beige",
-        "Column Gray"
-      ]
-    }
-  },
-  "2005380": {
-    "label": "Collection",
-    "secondLabel": "Color",
-    "options": {
-      "Haverford White": [
-        "3X6",
-        "4X12",
-        "4X16"
-      ],
-      "Moroccan Concrete 8\" Hexagaon": [
-        "Off-White",
-        "Taupe",
-        "Gray",
-        "Light Moss",
-        "Blue-Gray",
-        "Ochre",
-        "Terra-Cotta",
-        "Charcoal"
-      ],
-      "Stagecraft": [
-        "White",
-        "Desert Gray",
-        "Spa",
-        "Galaxy",
-        "Black"
-      ]
-    }
-  },
-  "2005381": {
-    "label": "Collection",
-    "secondLabel": "Color",
-    "options": {
-      "Mesmerist 3X6": [
-        "Spirit",
-        "Trance",
-        "Whimsy",
-        "Charm",
-        "Mystique",
-        "Allure"
-      ],
-      "Mesmerist 3X12": [
-        "Spirit",
-        "Trance",
-        "Whimsy",
-        "Charm",
-        "Mystique",
-        "Allure"
-      ],
-      "Mesmerist Arabesque": [
-        "Spirit",
-        "Trance",
-        "Whimsy",
-        "Charm",
-        "Mystique",
-        "Allure"
-      ],
-      "Zellige": [
-        "Gesso",
-        "Lana",
-        "Argilla",
-        "Bosco",
-        "China"
-      ],
-      "Remedy": [
-        "Elixir",
-        "Zen",
-        "Herbal",
-        "Alchemy",
-        "Hydro",
-        "Antidote"
-      ],
-      "Memoir 12X12": [
-        "Petal Gray",
-        "Petal Black",
-        "Crystal Gray",
-        "Crystal Black",
-        "Jewel Gray",
-        "Jewel Black",
-        "Cosmo Gray",
-        "Cosmo Blue"
-      ],
-      "Prime Balans": [
-        "White",
-        "Charcoal"
-      ],
-      "CF Advantage": [
-        "Washed White",
-        "Distressed Beige",
-        "Aged Gray"
-      ]
-    }
-  },
-  "2004310": {
-    "label": "Color",
-    "choices": [
-      "Toffee",
-      "Ginger"
-    ]
-  },
-  "2004315": {
-    "label": "Color",
-    "choices": [
-      "Barley",
-      "Ash",
-      "Smolder",
-      "Smoke"
-    ]
-  },
-  "2004316": {
-    "label": "Color",
-    "choices": [
-      "White",
-      "Pebble"
-    ]
-  },
-  "2023077": {
-    "label": "Color",
-    "choices": [
-      "White Napoli",
-      "Iberian White",
-      "New Caledonia"
-    ]
-  },
-  "2023078": {
-    "label": "Color",
-    "choices": [
-      "Blanco Perla",
-      "Azul Platino",
-      "Verde UbaTuba"
-    ]
-  },
-  "2022913": {
-    "label": "Color",
-    "choices": [
-      "Lyra",
-      "Blanco Maple",
-      "Linen Cream",
-      "Grey Expo"
-    ]
-  },
-  "2022914": {
-    "label": "Color",
-    "choices": [
-      "Miami White",
-      "Miami Vena",
-      "Siberian",
-      "Motion Grey",
-      "Coral Clay",
-      "Helix",
-      "Lagoon",
-      "Miami Oro"
-    ]
-  },
-  "2022915": {
-    "label": "Color",
-    "choices": [
-      "Desert Silver",
-      "Pietra",
-      "Pearl Jasmine",
-      "Lusso"
-    ]
-  },
-  "2022916": {
-    "label": "Color",
-    "choices": [
-      "Calacatta Tova",
-      "Bronze Rivers",
-      "Calacatta Gold",
-      "Copper Mist",
-      "Charcoal Soapstone",
-      "Calacatta Themis"
-    ]
-  }
-};
-
-
-    function createVariationField(labelText, className) {
-      const field = document.createElement("div");
-      field.className = "variation-field";
-
-      const label = document.createElement("label");
-      label.textContent = labelText || "Option";
-
-      const select = document.createElement("select");
-      select.className = `variation-select ${className}`;
-
-      field.appendChild(label);
-      field.appendChild(select);
-      return { field, select };
-    }
-
-
-    function fillVariationSelect(select, choices, placeholder) {
-      select.innerHTML = "";
-
-      const blank = document.createElement("option");
-      blank.value = "";
-      blank.textContent = placeholder || "Select";
-      select.appendChild(blank);
-
-      (choices || []).forEach(choice => {
-        const item = document.createElement("option");
-        item.value = choice;
-        item.textContent = choice;
-        select.appendChild(item);
-      });
-    }
-
-
-    function createVariationControls(optionNumber) {
-      const config = OPTION_VARIATIONS[String(optionNumber)];
-      if (!config) return null;
-
-      const wrap = document.createElement("div");
-      wrap.className = "option-variations";
-
-      const first = createVariationField(
-        config.label || "Option",
-        "variation-primary"
-      );
-      wrap.appendChild(first.field);
-
-      if (Array.isArray(config.choices)) {
-        fillVariationSelect(
-          first.select,
-          config.choices,
-          `Select ${config.label || "Option"}`
-        );
-        return wrap;
-      }
-
-      fillVariationSelect(
-        first.select,
-        Object.keys(config.options || {}),
-        `Select ${config.label || "Option"}`
-      );
-
-      const second = createVariationField(
-        config.secondLabel || "Color",
-        "variation-secondary"
-      );
-      second.select.disabled = true;
-
-      fillVariationSelect(
-        second.select,
-        [],
-        `Select ${config.secondLabel || "Color"}`
-      );
-
-      first.select.addEventListener("change", function() {
-        const parent = first.select.value;
-
-        fillVariationSelect(
-          second.select,
-          parent ? (config.options[parent] || []) : [],
-          `Select ${config.secondLabel || "Color"}`
-        );
-
-        second.select.disabled = !parent;
-      });
-
-      wrap.appendChild(second.field);
-      return wrap;
-    }
-
-
     /* =========================================================
        RENDER LOOKBOOK
        ========================================================= */
@@ -3571,16 +3105,6 @@
 
 
       /* =======================================================
-         OPTION VARIATIONS
-         ======================================================= */
-
-      const variationControls =
-        createVariationControls(
-          option.optionNumber
-        );
-
-
-      /* =======================================================
          SELECT + QUANTITY
          ======================================================= */
 
@@ -3741,17 +3265,6 @@
       comment.dataset.option =
         option.optionNumber;
 
-      if (variationControls) {
-        variationControls
-          .querySelectorAll(".variation-select")
-          .forEach(select => {
-            select.addEventListener(
-              "change",
-              queueCustomerAutosave
-            );
-          });
-      }
-
 
 
       /* =======================================================
@@ -3822,14 +3335,6 @@
       body.appendChild(
         price
       );
-
-
-      
-      if (variationControls) {
-        body.appendChild(
-          variationControls
-        );
-      }
 
 
       body.appendChild(
@@ -4349,19 +3854,6 @@
                 ?.value
                 ?.trim()
                 || "";
-            const variation1 =
-              card
-                .querySelector(".variation-primary")
-                ?.value
-                ?.trim()
-                || "";
-
-            const variation2 =
-              card
-                .querySelector(".variation-secondary")
-                ?.value
-                ?.trim()
-                || "";
 
 
             selections.push({
@@ -4371,11 +3863,7 @@
 
               qty,
 
-              comment,
-
-              variation1,
-
-              variation2
+              comment
 
             });
 
