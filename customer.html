@@ -1779,7 +1779,7 @@
       }
 
       if (
-        /\\bincluded\\b/i.test(
+        /\bincluded\b/i.test(
           String(value)
         )
       ) {
@@ -3079,12 +3079,18 @@
         "price";
       const includedOption =
         parsePrice(option.amount) === 0 &&
-        /included/i.test(
+        /\bincluded\b/i.test(
           [
+            option.amount,
             option.description,
             option.salesDesc
           ]
-            .filter(Boolean)
+            .filter(
+              value =>
+                value !== null &&
+                value !== undefined &&
+                value !== ""
+            )
             .join(" ")
         );
 
