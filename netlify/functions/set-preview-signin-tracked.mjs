@@ -1,0 +1,2527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Austin Design Studio</title>
+
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --navy: #1f2f46;
+      --navy-hover: #162337;
+      --yellow: #f4c542;
+      --yellow-soft: #fff7d6;
+      --shadow: 0 14px 38px rgba(31, 41, 55, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page-shell {
+      min-height: 100vh;
+      padding: 36px 24px 60px;
+    }
+
+    .dashboard {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    /* =========================
+       HEADER
+       ========================= */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .eyebrow {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1;
+      color: var(--navy);
+      letter-spacing: -0.03em;
+    }
+
+    .subheading {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      box-shadow: 0 4px 14px rgba(31, 41, 55, 0.04);
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #38a169;
+    }
+
+    /* =========================
+       CREATE LOOKBOOK CARD
+       ========================= */
+    .hero-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(229, 231, 235, 0.8);
+      margin-bottom: 28px;
+    }
+
+    .hero-accent {
+      height: 6px;
+      background: var(--yellow);
+    }
+
+    .hero-content {
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .hero-copy h2 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: 1.55rem;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 620px;
+    }
+
+    .upload-area {
+      border: 2px dashed #d8dce2;
+      border-radius: 14px;
+      padding: 22px;
+      background: #fafafa;
+      transition: 0.2s ease;
+    }
+
+    .upload-area:hover {
+      border-color: var(--yellow);
+      background: var(--yellow-soft);
+    }
+
+    .upload-label {
+      font-weight: 700;
+      display: block;
+      margin-bottom: 10px;
+      color: var(--navy);
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: white;
+      margin-bottom: 14px;
+    }
+
+    .primary-btn {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 18px;
+      background: var(--navy);
+      color: white;
+      font-weight: 700;
+      font-size: 0.98rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .primary-btn:hover {
+      background: var(--navy-hover);
+      transform: translateY(-1px);
+    }
+
+    .file-status {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      min-height: 20px;
+    }
+
+    /* =========================
+       HEADER STUDIO LINKS
+       ========================= */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .header-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 12px;
+      border: 1px solid #d8dde2;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--navy);
+      text-decoration: none;
+      font-size: .78rem;
+      font-weight: 750;
+      transition: .18s ease;
+    }
+
+    .header-link:hover {
+      background: var(--yellow-soft);
+      border-color: #ead98e;
+      transform: translateY(-1px);
+    }
+
+    /* =========================
+       TWO-COLUMN STUDIO HUB
+       ========================= */
+
+    .studio-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.62fr) minmax(340px, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .right-dashboard-column {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .hub-column {
+      min-width: 0;
+      background: var(--card);
+      border: 1px solid rgba(229, 231, 235, 0.8);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hub-column-header {
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hub-column-header h2 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 1.15rem;
+    }
+
+    .hub-column-header p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.45;
+    }
+
+    .hub-column-body {
+      padding: 18px;
+    }
+
+    .lookbook-create-compact {
+      margin-bottom: 16px;
+      padding: 16px;
+      background: #fafafa;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .lookbook-create-compact .upload-label {
+      margin-bottom: 8px;
+    }
+
+    .lookbook-create-compact input[type="file"] {
+      margin-bottom: 10px;
+    }
+
+    .lookbook-create-compact .primary-btn {
+      padding: 11px 15px;
+    }
+
+    .hub-search {
+      margin-bottom: 14px;
+    }
+
+    .hub-search input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      outline: none;
+      font-size: .88rem;
+    }
+
+    .hub-search input:focus {
+      border-color: #b9bec7;
+      box-shadow: 0 0 0 3px rgba(31, 47, 70, 0.06);
+    }
+
+    /* Keep the Lookbook table fully visible inside its column */
+    .lookbooks-column .lookbook-table-wrap {
+      overflow-x: visible;
+    }
+
+    .lookbooks-column table {
+      width: 100%;
+      table-layout: fixed;
+      font-size: 0.76rem;
+    }
+
+    .lookbooks-column th,
+    .lookbooks-column td {
+      padding: 10px 6px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      vertical-align: middle;
+    }
+
+    .lookbooks-column th:nth-child(1) { width: 23%; }
+    .lookbooks-column th:nth-child(2) { width: 13%; }
+    .lookbooks-column th:nth-child(3) { width: 15%; }
+    .lookbooks-column th:nth-child(4) { width: 16%; }
+    .lookbooks-column th:nth-child(5) { width: 10%; }
+    .lookbooks-column th:nth-child(6) { width: 23%; }
+
+    .lookbooks-column td:nth-child(5) {
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    .lookbooks-column td:nth-child(6) {
+      padding-left: 8px;
+      padding-right: 4px;
+      white-space: nowrap;
+    }
+
+    .lookbooks-column .action-cell {
+      white-space: nowrap;
+    }
+
+    .lookbooks-column .action-cell button,
+    .lookbooks-column .action-cell a {
+      font-size: 0.70rem;
+    }
+
+    .lookbooks-column .action-cell button {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .plot-selector {
+      display: grid;
+      gap: 10px;
+    }
+
+    .plot-selector label {
+      color: var(--navy);
+      font-size: .78rem;
+      font-weight: 750;
+    }
+
+    .plot-selector select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #cfd4d9;
+      border-radius: 9px;
+      background: #fff;
+      color: #30353a;
+      font: inherit;
+      font-size: .85rem;
+      outline: none;
+    }
+
+    .plot-selector select:focus {
+      border-color: #b9a040;
+      box-shadow: 0 0 0 3px rgba(243,198,63,.16);
+    }
+
+    .plot-open-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 11px 13px;
+      background: var(--yellow);
+      color: #24272a;
+      font: inherit;
+      font-size: .82rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .plot-open-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .hub-link-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .hub-link {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 12px;
+      border: 1px solid #e7e9ec;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--navy);
+      text-decoration: none;
+      font-size: .86rem;
+      font-weight: 700;
+      transition: .18s ease;
+    }
+
+    a.hub-link:hover {
+      background: var(--yellow-soft);
+      border-color: #ead98e;
+      transform: translateY(-1px);
+    }
+
+    .hub-link.disabled {
+      color: #8b9198;
+      background: #fafafa;
+      cursor: default;
+    }
+
+    .hub-link-note {
+      color: #9a9fa5;
+      font-size: .69rem;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: .035em;
+      white-space: nowrap;
+    }
+
+    .misc-placeholder {
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px dashed #d9dde2;
+      border-radius: 10px;
+      color: #9a9fa5;
+      text-align: center;
+      font-size: .78rem;
+    }
+
+    /* =========================
+       SAVED LOOKBOOKS
+       ========================= */
+    .section-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid rgba(229, 231, 235, 0.8);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 24px 26px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--navy);
+    }
+
+    .section-title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .search-box {
+      width: min(320px, 100%);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .search-box input:focus {
+      border-color: #b9bec7;
+      box-shadow: 0 0 0 3px rgba(31, 47, 70, 0.06);
+    }
+
+    .lookbook-table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #edf0f2;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #fbfbfb;
+      font-weight: 700;
+    }
+
+    td {
+      font-size: 0.92rem;
+    }
+
+    .lookbook-name {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .secondary-text {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-top: 3px;
+    }
+
+    .open-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 13px;
+      background: var(--yellow);
+      color: #2a2a2a;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.86rem;
+    }
+
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status-badge.active {
+      background: #edf8f2;
+      color: #2f7a57;
+    }
+
+    .status-badge.disabled {
+      background: #f2f3f4;
+      color: #7a8087;
+    }
+
+    .status-badge::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .row-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .status-btn {
+      border: 1px solid #d7dbe0;
+      border-radius: 8px;
+      padding: 8px 11px;
+      background: #fff;
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .status-btn:hover {
+      background: #f7f8f9;
+    }
+
+    .status-btn.disable {
+      color: #a33b34;
+      border-color: #e3c7c4;
+      background: #fffafa;
+    }
+
+    .status-btn.disable:hover {
+      background: #fff1f0;
+    }
+
+    .status-btn.enable {
+      color: #2f7a57;
+      border-color: #cfe4d8;
+      background: #f7fcf9;
+    }
+
+    .status-btn.enable:hover {
+      background: #edf8f2;
+    }
+
+    tr.lookbook-disabled td {
+      background: #fafafa;
+      color: #8a8f96;
+    }
+
+    tr.lookbook-disabled .lookbook-name,
+    tr.lookbook-disabled .money-cell {
+      color: #777d84;
+    }
+
+    tr.lookbook-disabled .open-btn {
+      background: #e7e9ec;
+      color: #7a8087;
+    }
+
+
+    .money-cell {
+      font-weight: 800;
+      color: var(--navy);
+      white-space: nowrap;
+    }
+
+    .table-status {
+      padding: 34px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .table-status strong {
+      display: block;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      width: 54px;
+      height: 54px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--yellow-soft);
+      font-size: 1.4rem;
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--navy);
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+
+    /* =========================
+       PREVIEW EVENT SIGN-INS
+       ========================= */
+    .preview-signins {
+      margin-top: 20px;
+      background: var(--card);
+      border: 1px solid rgba(229,231,235,.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .preview-signins-header {
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:18px;
+      padding:20px 22px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .preview-signins-header h2 {
+      margin:0;
+      color:var(--navy);
+      font-size:1.15rem;
+    }
+
+    .preview-signins-header p {
+      margin:5px 0 0;
+      color:var(--muted);
+      font-size:.84rem;
+    }
+
+    .preview-signins-actions {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .preview-signins-actions a,
+    .preview-signins-actions button {
+      border:1px solid #d9dde2;
+      background:#fff;
+      color:var(--navy);
+      border-radius:8px;
+      padding:9px 11px;
+      text-decoration:none;
+      font-size:.78rem;
+      font-weight:750;
+      cursor:pointer;
+    }
+
+    .preview-signins-body {
+      padding:18px;
+    }
+
+    .preview-signin-search {
+      margin-bottom:14px;
+    }
+
+    .preview-signin-search input {
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:9px;
+      outline:none;
+      font-size:.86rem;
+    }
+
+    .preview-signin-list {
+      display:grid;
+      gap:12px;
+    }
+
+    .preview-entry {
+      border:1px solid #e6e9ec;
+      border-radius:11px;
+      background:#fff;
+      padding:15px;
+    }
+
+    .preview-entry-top {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:12px;
+    }
+
+    .preview-entry-name {
+      color:var(--navy);
+      font-weight:800;
+      font-size:.96rem;
+    }
+
+    .preview-name-row {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .preview-entry.tracked .preview-entry-name {
+      text-decoration:line-through;
+      opacity:.55;
+    }
+
+    .event-tracked-label {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:.72rem;
+      font-weight:750;
+      color:#5d636a;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .event-tracked-label input {
+      width:15px;
+      height:15px;
+      cursor:pointer;
+      accent-color:#26384a;
+    }
+
+    .event-tracked-label.saving {
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    .preview-modal-backdrop {
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background:rgba(19,28,38,.58);
+    }
+
+    .preview-modal-backdrop.open {
+      display:flex;
+    }
+
+    .preview-modal {
+      width:min(680px,100%);
+      max-height:82vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 24px 70px rgba(0,0,0,.28);
+    }
+
+    .preview-modal-header {
+      position:sticky;
+      top:0;
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      padding:20px 22px 17px;
+      background:#fff;
+      border-bottom:1px solid #e6e9ec;
+    }
+
+    .preview-modal-title {
+      margin:0;
+      color:var(--navy);
+      font-size:1.1rem;
+      font-weight:850;
+    }
+
+    .preview-modal-subtitle {
+      margin-top:4px;
+      color:var(--muted);
+      font-size:.78rem;
+    }
+
+    .preview-modal-close {
+      width:34px;
+      height:34px;
+      border:1px solid #d9dde2;
+      border-radius:9px;
+      background:#fff;
+      cursor:pointer;
+      font-size:1.2rem;
+    }
+
+    .preview-modal-body {
+      padding:20px 22px 24px;
+    }
+
+    .preview-modal-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px 20px;
+    }
+
+    @media (max-width:620px) {
+      .preview-modal-backdrop {
+        padding:12px;
+      }
+
+      .preview-modal-grid {
+        grid-template-columns:1fr;
+      }
+    }
+
+    .preview-entry-meta {
+      margin-top:3px;
+      color:var(--muted);
+      font-size:.75rem;
+    }
+
+    .copy-subject-btn {
+      border:0;
+      background:var(--yellow);
+      color:#22272d;
+      border-radius:8px;
+      padding:9px 11px;
+      font-size:.76rem;
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .preview-entry-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px 14px;
+      padding-top: 12px;
+      margin-top: 10px;
+      border-top: 1px solid #edf0f2;
+    }
+
+    .preview-entry-details {
+      display: none;
+    }
+
+    .preview-entry.open .preview-entry-details {
+      display: grid;
+    }
+
+    .preview-entry-actions {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .view-details-btn {
+      border: 1px solid #d9dde2;
+      background: #fff;
+      color: var(--navy);
+      border-radius: 8px;
+      padding: 9px 11px;
+      font-size: .76rem;
+      font-weight: 750;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .preview-data {
+      min-width:0;
+    }
+
+    .preview-data-label {
+      color:#8d9298;
+      font-size:.65rem;
+      font-weight:800;
+      letter-spacing:.045em;
+      text-transform:uppercase;
+      margin-bottom:3px;
+    }
+
+    .preview-data-value {
+      color:#30353a;
+      font-size:.8rem;
+      line-height:1.4;
+      overflow-wrap:anywhere;
+    }
+
+    .preview-empty {
+      padding:26px 10px;
+      text-align:center;
+      color:var(--muted);
+      font-size:.85rem;
+    }
+
+    @media (max-width: 1000px) {
+      .preview-entry-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+
+    @media (max-width: 620px) {
+      .preview-signins-header,
+      .preview-entry-top {
+        align-items:stretch;
+        flex-direction:column;
+      }
+
+      .preview-entry-grid { grid-template-columns:1fr; }
+      .copy-subject-btn { width:100%; }
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 22px;
+      color: #8a8f98;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 1050px) {
+      .studio-grid {
+        grid-template-columns: minmax(0, 1.45fr) minmax(310px, .9fr);
+      }
+    }
+
+    @media (max-width: 820px) {
+      .studio-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-content {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-shell">
+    <main class="dashboard">
+
+      <!-- =========================
+           PAGE HEADER
+           ========================= -->
+      <header class="header">
+        <div class="brand-block">
+          <div class="eyebrow">KB Home • Austin Design Studio</div>
+          <h1>Austin Design Studio</h1>
+          <div class="subheading">
+            Studio management hub for Lookbooks, Plot Maps, and resources.
+          </div>
+        </div>
+
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          Studio Hub
+        </div>
+          <div class="header-actions">
+            <a class="header-link" href="https://kbplanogram.netlify.app/" target="_blank" rel="noopener">Plan-o-Gram ↗</a>
+            <a class="header-link" href="/preview-signin.html" target="_blank" rel="noopener">Preview Sign-In ↗</a>
+          </div>
+      </header>
+
+
+      <!-- =========================
+           THREE-COLUMN STUDIO HUB
+           ========================= -->
+      <div class="studio-grid">
+
+        <!-- LOOKBOOKS -->
+        <section class="hub-column lookbooks-column">
+
+          <div class="hub-column-header">
+            <h2>Lookbooks</h2>
+            <p>Create, search, reopen, and manage customer Lookbooks.</p>
+          </div>
+
+          <div class="hub-column-body">
+
+            <div class="lookbook-create-compact">
+              <label class="upload-label" for="upload">
+                Create New Lookbook
+              </label>
+
+              <input
+                type="file"
+                id="upload"
+                accept=".xlsx"
+              />
+
+              <button
+                class="primary-btn"
+                id="generateBtn"
+              >
+                Generate Lookbook
+              </button>
+
+              <div
+                class="file-status"
+                id="fileStatus"
+              >
+                No file selected
+              </div>
+            </div>
+
+            <div class="hub-search">
+              <input
+                id="lookbookSearch"
+                type="text"
+                placeholder="Search saved Lookbooks..."
+                oninput="filterLookbooks()"
+              />
+            </div>
+
+            <div
+              class="lookbook-table-wrap"
+              id="lookbookTableWrap"
+              style="display:none;"
+            >
+              <table>
+                <thead>
+                  <tr>
+                    <th>Lookbook</th>
+                    <th>Created</th>
+                    <th>Last Updated</th>
+                    <th>Selected Total</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="lookbookTableBody"></tbody>
+              </table>
+            </div>
+
+            <div
+              class="empty-state"
+              id="emptyState"
+            >
+              <div class="empty-icon">⌂</div>
+              <strong>No saved Lookbooks yet</strong>
+              Once you create your first Lookbook, it will appear here automatically.
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- RIGHT DASHBOARD COLUMN -->
+        <div class="right-dashboard-column">
+
+          <!-- PLOT MAPS -->
+          <section class="hub-column plots-column">
+
+            <div class="hub-column-header">
+              <h2>Plot Maps</h2>
+              <p>Select a community to open its exterior control map.</p>
+            </div>
+
+            <div class="hub-column-body">
+
+              <div class="plot-selector">
+
+                <label for="plotMapCommunity">
+                  Community
+                </label>
+
+                <select
+                  id="plotMapCommunity"
+                  onchange="updatePlotMapButton()"
+                >
+                  <option value="">Select a Community</option>
+
+                  <option value="https://austinplotmaps.netlify.app/adelton/">
+                    Adelton
+                  </option>
+
+                  <option disabled>
+                    Creekside at Estancia — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Hidden Trails — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Mustang Valley — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Overlook Ranch — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Riverbluff — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Salerno — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Sonterra — Coming Soon
+                  </option>
+
+                  <option value="https://austinplotmaps.netlify.app/stoney-chase/">
+                    Stoney Chase
+                  </option>
+
+                  <option disabled>
+                    Sunset Oaks — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Watermill — Coming Soon
+                  </option>
+                </select>
+
+                <button
+                  class="plot-open-btn"
+                  id="plotMapOpenBtn"
+                  type="button"
+                  onclick="openSelectedPlotMap()"
+                  disabled
+                >
+                  Open Plot Map
+                </button>
+
+              </div>
+
+            </div>
+          </section>
+
+
+          <!-- PREVIEW EVENT SIGN-INS -->
+          <section class="preview-signins">
+
+            <div class="preview-signins-header">
+              <div>
+                <h2>Preview Event Sign-Ins</h2>
+                <p>Newest customer submissions appear first.</p>
+              </div>
+
+              <div class="preview-signins-actions">
+                <button type="button" onclick="loadPreviewSignins()">
+                  Refresh
+                </button>
+              </div>
+            </div>
+
+            <div class="preview-signins-body">
+
+              <div class="preview-signin-search">
+                <input
+                  id="previewSigninSearch"
+                  type="text"
+                  placeholder="Search sign-ins..."
+                  oninput="renderPreviewSignins()"
+                />
+              </div>
+
+              <div id="previewSigninList" class="preview-signin-list">
+                <div class="preview-empty">
+                  Loading Preview Event sign-ins...
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="footer-note">
+        Austin Design Studio • Internal Studio Hub
+      </div>
+
+    </main>
+  </div>
+
+
+  <script>
+
+    /* =====================================================
+       EXCEL UPLOAD
+       Same basic workflow as your original Lookbook.
+       ===================================================== */
+
+    const uploadInput = document.getElementById("upload");
+    const generateBtn = document.getElementById("generateBtn");
+    const fileStatus = document.getElementById("fileStatus");
+
+
+    uploadInput.addEventListener("change", function(event) {
+
+      const file = event.target.files[0];
+
+      if (!file) {
+        fileStatus.textContent = "No file selected";
+        return;
+      }
+
+      fileStatus.textContent = file.name;
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+
+        const base64 = e.target.result.split(",")[1];
+
+        /*
+          Temporary workbook storage.
+
+          The workbook stays here while Studio moves
+          from the dashboard to the Lookbook preview.
+        */
+        localStorage.setItem("workbook", base64);
+
+      };
+
+      reader.readAsDataURL(file);
+
+    });
+
+
+    generateBtn.addEventListener("click", function() {
+
+      const savedWorkbook = localStorage.getItem("workbook");
+
+      if (!savedWorkbook) {
+
+        alert("Please upload an Excel file first.");
+
+        return;
+      }
+
+      /*
+        Next step:
+        lookbook.html will become our Lookbook preview/editor.
+      */
+
+      window.location.href = "lookbook.html";
+
+    });
+
+
+
+    /* =====================================================
+       SAVED LOOKBOOKS
+       Loads live records from Netlify Blobs through:
+       /.netlify/functions/list-lookbooks
+       ===================================================== */
+
+    let lookbooks = [];
+
+
+    async function loadLookbooks() {
+
+      const tbody =
+        document.getElementById("lookbookTableBody");
+
+      const tableWrap =
+        document.getElementById("lookbookTableWrap");
+
+      const emptyState =
+        document.getElementById("emptyState");
+
+
+      /*
+        Only show the loading screen on the initial load.
+        Background refreshes update the existing table quietly.
+      */
+      if (lookbooks.length === 0) {
+
+        tableWrap.style.display = "none";
+
+        emptyState.style.display = "block";
+
+        emptyState.innerHTML = `
+          <div class="empty-icon">⌂</div>
+          <strong>Loading saved Lookbooks...</strong>
+          Checking the Austin Studio Lookbook library.
+        `;
+
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/list-lookbooks",
+            {
+              headers: {
+                "Accept": "application/json"
+              },
+              cache: "no-store"
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to load saved Lookbooks."
+          );
+
+        }
+
+
+        lookbooks =
+          Array.isArray(result.lookbooks)
+            ? result.lookbooks
+            : [];
+
+
+        renderLookbooks();
+
+
+      } catch (error) {
+
+        console.error(
+          "LOAD LOOKBOOKS ERROR:",
+          error
+        );
+
+
+        tbody.innerHTML = "";
+
+        tableWrap.style.display = "none";
+
+        emptyState.style.display = "block";
+
+        emptyState.innerHTML = `
+          <div class="empty-icon">!</div>
+          <strong>Saved Lookbooks could not be loaded</strong>
+          ${escapeHTML(
+            error.message ||
+            "Please refresh the page and try again."
+          )}
+        `;
+
+      }
+
+    }
+
+
+    function renderLookbooks() {
+
+      const tbody =
+        document.getElementById("lookbookTableBody");
+
+      const tableWrap =
+        document.getElementById("lookbookTableWrap");
+
+      const emptyState =
+        document.getElementById("emptyState");
+
+
+      tbody.innerHTML = "";
+
+
+      if (lookbooks.length === 0) {
+
+        tableWrap.style.display = "none";
+
+        emptyState.style.display = "block";
+
+        emptyState.innerHTML = `
+          <div class="empty-icon">⌂</div>
+          <strong>No saved Lookbooks yet</strong>
+          Once you create your first Lookbook, it will appear here automatically.
+        `;
+
+        return;
+
+      }
+
+
+      emptyState.style.display = "none";
+
+      tableWrap.style.display = "block";
+
+
+      const sortedLookbooks =
+        [...lookbooks].sort((a, b) => {
+
+          const aActive = a.active !== false;
+          const bActive = b.active !== false;
+
+          // Active Lookbooks always appear first.
+          if (aActive !== bActive) {
+            return aActive ? -1 : 1;
+          }
+
+          // Within each group, keep the most recently updated Lookbooks first.
+          const aUpdated = new Date(a.updatedAt || a.createdAt || 0).getTime();
+          const bUpdated = new Date(b.updatedAt || b.createdAt || 0).getTime();
+
+          return bUpdated - aUpdated;
+
+        });
+
+
+      sortedLookbooks.forEach(lookbook => {
+
+        const row =
+          document.createElement("tr");
+
+
+        const isActive =
+          lookbook.active !== false;
+
+
+        row.classList.toggle(
+          "lookbook-disabled",
+          !isActive
+        );
+
+
+        row.dataset.search =
+          `${lookbook.name || ""} ${lookbook.createdAt || ""} ${lookbook.updatedAt || ""}`
+          .toLowerCase();
+
+
+        row.innerHTML = `
+
+          <td>
+
+            <div class="lookbook-name">
+              ${escapeHTML(
+                lookbook.name ||
+                "Untitled Lookbook"
+              )}
+            </div>
+
+          </td>
+
+
+          <td>
+            ${formatDate(
+              lookbook.createdAt
+            )}
+          </td>
+
+
+          <td>
+            ${formatDate(
+              lookbook.updatedAt
+            )}
+          </td>
+
+
+          <td class="money-cell">
+            ${formatMoney(
+              lookbook.selectedTotal
+            )}
+          </td>
+
+
+          <td>
+            <span class="status-badge ${isActive ? "active" : "disabled"}">
+              ${isActive ? "Active" : "Disabled"}
+            </span>
+          </td>
+
+
+          <td>
+            <div class="row-actions">
+
+              <a
+                class="open-btn"
+                href="${escapeHTML(
+                  lookbook.url || "#"
+                )}"
+                target="_blank"
+                rel="noopener"
+              >
+                Open
+              </a>
+
+              <button
+                class="status-btn ${isActive ? "disable" : "enable"}"
+                type="button"
+                onclick="setLookbookStatus(
+                  '${escapeHTML(lookbook.id)}',
+                  ${isActive ? "false" : "true"},
+                  '${escapeHTML(
+                    String(lookbook.name || "Untitled Lookbook")
+                      .replaceAll("\\", "\\\\")
+                      .replaceAll("'", "\\'")
+                  )}'
+                )"
+              >
+                ${isActive ? "Disable" : "Re-enable"}
+              </button>
+
+            </div>
+          </td>
+
+        `;
+
+
+        tbody.appendChild(row);
+
+      });
+
+
+      filterLookbooks();
+
+    }
+
+
+    function filterLookbooks() {
+
+      const query =
+        document
+          .getElementById("lookbookSearch")
+          .value
+          .trim()
+          .toLowerCase();
+
+
+      document
+        .querySelectorAll(
+          "#lookbookTableBody tr"
+        )
+        .forEach(row => {
+
+          row.style.display =
+            row.dataset.search.includes(query)
+              ? ""
+              : "none";
+
+        });
+
+    }
+
+
+    async function setLookbookStatus(
+      id,
+      active,
+      name
+    ) {
+
+      if (!active) {
+
+        const confirmed =
+          window.confirm(
+            `Disable this Lookbook?\n\n` +
+            `${name}\n\n` +
+            `The customer's current Lookbook link will stop working. ` +
+            `Their saved selections will NOT be deleted, and you can ` +
+            `re-enable the Lookbook later.\n\n` +
+            `Click OK to disable this Lookbook.`
+          );
+
+
+        if (!confirmed) {
+          return;
+        }
+
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/set-lookbook-status",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+              },
+              body: JSON.stringify({
+                id,
+                active
+              })
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to update this Lookbook."
+          );
+
+        }
+
+
+        await loadLookbooks();
+
+
+      } catch (error) {
+
+        console.error(
+          "LOOKBOOK STATUS ERROR:",
+          error
+        );
+
+
+        alert(
+          error.message ||
+          "This Lookbook could not be updated."
+        );
+
+      }
+
+    }
+
+
+    function formatDate(value) {
+
+      if (!value) {
+        return "—";
+      }
+
+
+      const date =
+        new Date(value);
+
+
+      if (
+        Number.isNaN(
+          date.getTime()
+        )
+      ) {
+        return value;
+      }
+
+
+      return date.toLocaleString(
+        [],
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }
+      );
+
+    }
+
+
+    function formatMoney(value) {
+
+      const number =
+        Number(value);
+
+
+      if (!Number.isFinite(number)) {
+        return "$0.00";
+      }
+
+
+      return number.toLocaleString(
+        undefined,
+        {
+          style: "currency",
+          currency: "USD",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }
+      );
+
+    }
+
+
+    function escapeHTML(value) {
+
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    }
+
+
+    /* =====================================================
+       LIVE DASHBOARD REFRESH
+       Initial load + quiet refresh every 5 seconds.
+       ===================================================== */
+
+    loadLookbooks();
+
+
+    const lookbookRefreshInterval =
+      setInterval(
+        () => {
+
+          /*
+            Skip background refresh while the browser tab
+            is hidden. It will refresh immediately when the
+            user returns to the dashboard.
+          */
+          if (!document.hidden) {
+            loadLookbooks();
+          }
+
+        },
+        5000
+      );
+
+
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+
+        if (!document.hidden) {
+          loadLookbooks();
+        }
+
+      }
+    );
+
+
+
+    /* =====================================================
+       PLOT MAP SELECTOR
+       ===================================================== */
+
+    function updatePlotMapButton() {
+
+      const select =
+        document.getElementById(
+          "plotMapCommunity"
+        );
+
+      const button =
+        document.getElementById(
+          "plotMapOpenBtn"
+        );
+
+
+      if (!select || !button) {
+        return;
+      }
+
+
+      button.disabled =
+        !select.value;
+
+    }
+
+
+    function openSelectedPlotMap() {
+
+      const select =
+        document.getElementById(
+          "plotMapCommunity"
+        );
+
+
+      if (
+        !select ||
+        !select.value
+      ) {
+        return;
+      }
+
+
+      window.open(
+        select.value,
+        "_blank",
+        "noopener"
+      );
+
+    }
+
+
+    function openPreviewDetails(
+      submissionId
+    ) {
+
+      const item =
+        previewSignins.find(
+          entry =>
+            String(entry.id || "") ===
+            String(submissionId || "")
+        );
+
+      if (!item) {
+        return;
+      }
+
+      document.getElementById(
+        "previewDetailsTitle"
+      ).textContent =
+        item.name ||
+        "Preview Event Sign-In";
+
+      document.getElementById(
+        "previewDetailsSubtitle"
+      ).textContent =
+        [
+          item.community || "",
+          formatPreviewDate(
+            item.createdAt
+          )
+        ]
+          .filter(Boolean)
+          .join(" · ");
+
+      document.getElementById(
+        "previewDetailsBody"
+      ).innerHTML = `
+        <div class="preview-modal-grid">
+          ${previewData("Phone Number", item.phone)}
+          ${previewData("Email Address", item.email)}
+          ${previewData("Under Contract?", item.underContract)}
+          ${previewData("Home Type", item.homeType)}
+          ${previewData("KB Future Address", item.futureAddress)}
+          ${previewData("Community", item.community)}
+          ${previewData("Sales Counselor", item.salesCounselor)}
+          ${previewData("Home Plan", item.homePlan)}
+          ${previewData("Elevation", item.elevation)}
+        </div>
+      `;
+
+      document.getElementById(
+        "previewDetailsModal"
+      ).classList.add(
+        "open"
+      );
+
+      document.body.style.overflow =
+        "hidden";
+
+    }
+
+
+    function closePreviewDetails() {
+
+      const modal =
+        document.getElementById(
+          "previewDetailsModal"
+        );
+
+      if (!modal) {
+        return;
+      }
+
+      modal.classList.remove(
+        "open"
+      );
+
+      document.body.style.overflow =
+        "";
+
+    }
+
+
+    function handlePreviewModalBackdrop(
+      event
+    ) {
+
+      if (
+        event.target ===
+        event.currentTarget
+      ) {
+        closePreviewDetails();
+      }
+
+    }
+
+
+    async function setPreviewEventTracked(
+      checkbox,
+      submissionId,
+      createdAt
+    ) {
+
+      const label =
+        checkbox.closest(
+          ".event-tracked-label"
+        );
+
+      const card =
+        checkbox.closest(
+          ".preview-entry"
+        );
+
+      const tracked =
+        checkbox.checked;
+
+      if (label) {
+        label.classList.add(
+          "saving"
+        );
+      }
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/set-preview-signin-tracked",
+            {
+              method:"POST",
+              credentials:"same-origin",
+              headers:{
+                "Content-Type":
+                  "application/json"
+              },
+              body:JSON.stringify({
+                id:submissionId,
+                createdAt,
+                eventTracked:tracked
+              })
+            }
+          );
+
+        const result =
+          await response
+            .json()
+            .catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(
+            result.error ||
+            "Unable to update Event Tracked status."
+          );
+        }
+
+        const item =
+          previewSignins.find(
+            entry =>
+              String(entry.id || "") ===
+              String(submissionId || "")
+          );
+
+        if (item) {
+          item.eventTracked =
+            tracked;
+        }
+
+        if (card) {
+          card.classList.toggle(
+            "tracked",
+            tracked
+          );
+        }
+
+      } catch (error) {
+
+        checkbox.checked =
+          !tracked;
+
+        alert(
+          error.message ||
+          "Unable to update Event Tracked status."
+        );
+
+      } finally {
+
+        if (label) {
+          label.classList.remove(
+            "saving"
+          );
+        }
+
+      }
+
+    }
+
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Escape"
+        ) {
+          closePreviewDetails();
+        }
+
+      }
+    );
+
+
+
+    /* =====================================================
+       PREVIEW EVENT SIGN-INS
+       Protected by the same dashboard authentication cookie.
+       ===================================================== */
+
+    let previewSignins = [];
+
+
+    async function loadPreviewSignins() {
+
+      const list =
+        document.getElementById(
+          "previewSigninList"
+        );
+
+      if (!list) {
+        return;
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/list-preview-signins",
+            {
+              headers: {
+                "Accept": "application/json"
+              },
+              cache: "no-store",
+              credentials: "same-origin"
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to load Preview Event sign-ins."
+          );
+
+        }
+
+
+        previewSignins =
+          Array.isArray(
+            result.submissions
+          )
+            ? result.submissions
+            : [];
+
+
+        renderPreviewSignins();
+
+
+      } catch (error) {
+
+        console.error(
+          "PREVIEW SIGN-INS LOAD ERROR:",
+          error
+        );
+
+
+        list.innerHTML = `
+          <div class="preview-empty">
+            ${escapeHTML(
+              error.message ||
+              "Unable to load Preview Event sign-ins."
+            )}
+          </div>
+        `;
+
+      }
+
+    }
+
+
+    function renderPreviewSignins() {
+
+      const list =
+        document.getElementById(
+          "previewSigninList"
+        );
+
+
+      if (!list) {
+        return;
+      }
+
+
+      const query =
+        (
+          document
+            .getElementById(
+              "previewSigninSearch"
+            )
+            ?.value || ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const filtered =
+        previewSignins.filter(
+          item => {
+
+            const haystack =
+              [
+                item.name,
+                item.phone,
+                item.email,
+                item.underContract,
+                item.homeType,
+                item.futureAddress,
+                item.community,
+                item.salesCounselor,
+                item.homePlan,
+                item.elevation
+              ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+
+            return (
+              !query ||
+              haystack.includes(query)
+            );
+
+          }
+        );
+
+
+      if (
+        filtered.length === 0
+      ) {
+
+        list.innerHTML = `
+          <div class="preview-empty">
+            ${
+              previewSignins.length === 0
+                ? "No Preview Event sign-ins yet."
+                : "No sign-ins match your search."
+            }
+          </div>
+        `;
+
+        return;
+
+      }
+
+
+      list.innerHTML =
+        filtered
+          .map(
+            item => {
+
+              const subject =
+                `Preview Event ${
+                  item.community || ""
+                } ${
+                  item.name || ""
+                }`
+                  .replace(
+                    /\s+/g,
+                    " "
+                  )
+                  .trim();
+
+
+              return `
+
+                <article class="preview-entry ${item.eventTracked ? "tracked" : ""}">
+
+                  <div class="preview-entry-top">
+
+                    <div>
+
+                      <div class="preview-name-row">
+
+                        <div class="preview-entry-name">
+                          ${escapeHTML(item.name || "Unnamed Visitor")}
+                        </div>
+
+                        <label class="event-tracked-label">
+                          <input
+                            type="checkbox"
+                            ${item.eventTracked ? "checked" : ""}
+                            onchange='setPreviewEventTracked(this, ${JSON.stringify(item.id || "")}, ${JSON.stringify(item.createdAt || "")})'
+                          >
+                          Event Tracked?
+                        </label>
+
+                      </div>
+
+                      <div class="preview-entry-meta">
+                        ${escapeHTML(item.community || "No Community")}
+                        ·
+                        ${escapeHTML(formatPreviewDate(item.createdAt))}
+                      </div>
+
+                    </div>
+
+
+                    <div class="preview-entry-actions">
+
+                      <button
+                        class="copy-subject-btn"
+                        type="button"
+                        onclick='copyPreviewSubject(this, ${JSON.stringify(subject)})'
+                      >
+                        Copy Subject
+                      </button>
+
+                      <button
+                        class="view-details-btn"
+                        type="button"
+                        onclick='openPreviewDetails(${JSON.stringify(item.id || "")})'
+                      >
+                        View Details
+                      </button>
+
+                    </div>
+
+                  </div>
+
+
+
+                </article>
+
+              `;
+
+            }
+          )
+          .join("");
+
+    }
+
+
+    function previewData(
+      label,
+      value
+    ) {
+
+      return `
+
+        <div class="preview-data">
+
+          <div class="preview-data-label">
+            ${escapeHTML(label)}
+          </div>
+
+          <div class="preview-data-value">
+            ${escapeHTML(value || "—")}
+          </div>
+
+        </div>
+
+      `;
+
+    }
+
+
+    async function copyPreviewSubject(
+      button,
+      subject
+    ) {
+
+      try {
+
+        await navigator
+          .clipboard
+          .writeText(
+            subject
+          );
+
+
+        if (button) {
+
+          const original =
+            button.textContent;
+
+
+          button.textContent =
+            "Copied!";
+
+
+          setTimeout(
+            () => {
+              button.textContent =
+                original;
+            },
+            1200
+          );
+
+        }
+
+
+      } catch (error) {
+
+        window.prompt(
+          "Copy this subject:",
+          subject
+        );
+
+      }
+
+    }
+
+
+    function formatPreviewDate(
+      value
+    ) {
+
+      if (!value) {
+        return "";
+      }
+
+
+      const date =
+        new Date(value);
+
+
+      if (
+        Number.isNaN(
+          date.getTime()
+        )
+      ) {
+        return value;
+      }
+
+
+      return date.toLocaleString(
+        [],
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }
+      );
+
+    }
+
+
+    loadPreviewSignins();
+
+
+    const previewSigninRefreshInterval =
+      setInterval(
+        () => {
+
+          if (!document.hidden) {
+            loadPreviewSignins();
+          }
+
+        },
+        5000
+      );
+
+  </script>
+
+
+  <div
+    id="previewDetailsModal"
+    class="preview-modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="previewDetailsTitle"
+    onclick="handlePreviewModalBackdrop(event)"
+  >
+    <div class="preview-modal">
+
+      <div class="preview-modal-header">
+
+        <div>
+          <h2
+            id="previewDetailsTitle"
+            class="preview-modal-title"
+          >
+            Preview Event Sign-In
+          </h2>
+
+          <div
+            id="previewDetailsSubtitle"
+            class="preview-modal-subtitle"
+          ></div>
+        </div>
+
+        <button
+          class="preview-modal-close"
+          type="button"
+          aria-label="Close"
+          onclick="closePreviewDetails()"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <div
+        id="previewDetailsBody"
+        class="preview-modal-body"
+      ></div>
+
+    </div>
+  </div>
+
+</body>
+</html>
