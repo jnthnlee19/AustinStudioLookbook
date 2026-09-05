@@ -5155,9 +5155,15 @@
       "DOMContentLoaded",
       function() {
 
-        enableCustomerAutosave();
+        /*
+          Studio lookbook.html is opened from the Hub after
+          the Excel workbook is stored in localStorage.
 
-        loadCustomerLookbook();
+          Customer Lookbooks now use customer.html separately,
+          so this page should load the Studio workbook preview
+          and should NOT require a customer ID.
+        */
+        loadWorkbook();
 
       }
     );
