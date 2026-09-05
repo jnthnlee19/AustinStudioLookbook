@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview Event Sign-In | KB Home Austin</title>
+  <style>
+    :root{
+      --navy:#1f2f46;
+      --yellow:#f3c63f;
+      --cream:#f7f3eb;
+      --card:#ffffff;
+      --line:#dfe3e7;
+      --muted:#707780;
+      --success:#2d7a54;
+      --danger:#a33b34;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background:var(--cream);
+      font-family:"Segoe UI",Arial,sans-serif;
+      color:#2a2e33;
+    }
+
+    .shell{
+      width:min(920px,calc(100% - 32px));
+      margin:0 auto;
+      padding:34px 0 50px;
+    }
+
+    .header{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-top:5px solid var(--yellow);
+      border-radius:16px;
+      padding:26px 28px;
+      box-shadow:0 12px 34px rgba(31,47,70,.08);
+      margin-bottom:18px;
+    }
+
+    .eyebrow{
+      font-size:.72rem;
+      font-weight:800;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:#8b9096;
+      margin-bottom:6px;
+    }
+
+    h1{
+      margin:0 0 7px;
+      color:var(--navy);
+      font-size:1.8rem;
+    }
+
+    .header p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.55;
+      font-size:.94rem;
+    }
+
+    .form-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:28px;
+      box-shadow:0 12px 34px rgba(31,47,70,.06);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:18px;
+    }
+
+    .field.full{grid-column:1/-1}
+
+    label{
+      display:block;
+      margin-bottom:7px;
+      color:var(--navy);
+      font-size:.83rem;
+      font-weight:750;
+    }
+
+    .optional{
+      color:#92979d;
+      font-weight:500;
+    }
+
+    input,select{
+      width:100%;
+      border:1px solid #cfd4d9;
+      border-radius:9px;
+      padding:12px 13px;
+      background:#fff;
+      font:inherit;
+      color:#2a2e33;
+      outline:none;
+    }
+
+    input:focus,select:focus{
+      border-color:#b9a040;
+      box-shadow:0 0 0 3px rgba(243,198,63,.18);
+    }
+
+    .submit-row{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-top:24px;
+    }
+
+    button{
+      border:0;
+      border-radius:9px;
+      padding:13px 20px;
+      background:var(--yellow);
+      color:#22272d;
+      font:inherit;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    button:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .status{
+      font-size:.84rem;
+      color:var(--muted);
+    }
+
+    .success{
+      padding:30px;
+      text-align:center;
+      background:#f4fbf7;
+      border:1px solid #cfe8d9;
+      border-radius:14px;
+    }
+
+    .success h2{
+      margin:0 0 8px;
+      color:var(--success);
+    }
+
+    .success p{
+      margin:0;
+      color:#59636b;
+    }
+
+    .error{
+      margin-top:16px;
+      padding:11px 13px;
+      background:#fff1f0;
+      border:1px solid #f0cbc8;
+      border-radius:8px;
+      color:var(--danger);
+      font-size:.84rem;
+      display:none;
+    }
+
+    .hp{
+      position:absolute;
+      left:-10000px;
+      width:1px;
+      height:1px;
+      overflow:hidden;
+    }
+
+    @media(max-width:700px){
+      .grid{grid-template-columns:1fr}
+      .field.full{grid-column:auto}
+      .header,.form-card{padding:22px}
+      .shell{width:min(100% - 20px,920px);padding-top:18px}
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="header">
+      <div class="eyebrow">KB Home • Austin Design Studio</div>
+      <h1>Preview Event Sign-In</h1>
+      <p>Please complete the information below so our Studio team can better assist you during your visit.</p>
+    </section>
+
+    <section class="form-card" id="formCard">
+      <form id="previewForm">
+        <div class="grid">
+
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" maxlength="120" autocomplete="name" required>
+          </div>
+
+          <div class="field">
+            <label for="phone">Phone Number</label>
+            <input id="phone" name="phone" type="tel" maxlength="40" autocomplete="tel" required>
+          </div>
+
+          <div class="field full">
+            <label for="email">Email Address</label>
+            <input id="email" name="email" type="email" maxlength="180" autocomplete="email" required>
+          </div>
+
+          <div class="field">
+            <label for="underContract">Are you currently under contract?</label>
+            <select id="underContract" name="underContract" required>
+              <option value="">Select one</option>
+              <option>Yes</option>
+              <option>No</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="homeType">What type of home are you purchasing?</label>
+            <select id="homeType" name="homeType" required>
+              <option value="">Select one</option>
+              <option>Personalized</option>
+              <option>Move-in Ready</option>
+            </select>
+          </div>
+
+          <div class="field full">
+            <label for="futureAddress">KB Home Future Address <span class="optional" id="futureAddressOptional">(If Applicable)</span></label>
+            <input id="futureAddress" name="futureAddress" type="text" maxlength="220" autocomplete="street-address">
+          </div>
+
+          <div class="field">
+            <label for="community">What Community?</label>
+            <input id="community" name="community" type="text" maxlength="120" required>
+          </div>
+
+          <div class="field">
+            <label for="salesCounselor">Sales Counselor <span class="optional">(If Applicable)</span></label>
+            <input id="salesCounselor" name="salesCounselor" type="text" maxlength="120">
+          </div>
+
+          <div class="field">
+            <label for="homePlan">What Home Plan are you building/interested in? <span class="optional" id="homePlanOptional">(If Applicable)</span></label>
+            <input id="homePlan" name="homePlan" type="text" maxlength="100">
+          </div>
+
+          <div class="field">
+            <label for="elevation">Elevation <span class="optional" id="elevationOptional">(If Applicable)</span></label>
+            <input id="elevation" name="elevation" type="text" maxlength="80">
+          </div>
+
+          <div class="hp" aria-hidden="true">
+            <label for="website">Website</label>
+            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+        </div>
+
+        <div class="submit-row">
+          <button id="submitBtn" type="submit">Submit Sign-In</button>
+          <span class="status" id="statusText"></span>
+        </div>
+
+        <div class="error" id="errorBox"></div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("previewForm");
+    const button = document.getElementById("submitBtn");
+    const statusText = document.getElementById("statusText");
+    const errorBox = document.getElementById("errorBox");
+    const formCard = document.getElementById("formCard");
+
+
+    const underContract =
+      document.getElementById("underContract");
+
+    const conditionalFields = [
+      {
+        input: document.getElementById("futureAddress"),
+        note: document.getElementById("futureAddressOptional")
+      },
+      {
+        input: document.getElementById("homePlan"),
+        note: document.getElementById("homePlanOptional")
+      },
+      {
+        input: document.getElementById("elevation"),
+        note: document.getElementById("elevationOptional")
+      }
+    ];
+
+    function updateContractRequirements() {
+      const required =
+        underContract.value === "Yes";
+
+      conditionalFields.forEach(({ input, note }) => {
+        input.required = required;
+
+        if (note) {
+          note.textContent =
+            required
+              ? "(Required)"
+              : "(If Applicable)";
+        }
+      });
+    }
+
+    underContract.addEventListener(
+      "change",
+      updateContractRequirements
+    );
+
+    updateContractRequirements();
+
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      errorBox.style.display = "none";
+      errorBox.textContent = "";
+      button.disabled = true;
+      statusText.textContent = "Submitting...";
+
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      try {
+        const response = await fetch("/.netlify/functions/submit-preview-signin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || result.message || "Unable to submit your sign-in.");
+        }
+
+        formCard.innerHTML = `
+          <div class="success">
+            <h2>Thank you!</h2>
+            <p>Your information has been submitted to the Austin Design Studio.</p>
+          </div>
+        `;
+
+      } catch (error) {
+        button.disabled = false;
+        statusText.textContent = "";
+        errorBox.textContent = error.message || "Unable to submit your sign-in.";
+        errorBox.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
