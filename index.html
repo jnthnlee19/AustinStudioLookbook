@@ -2013,6 +2013,48 @@
       const tracked =
         checkbox.checked;
 
+
+      /*
+        Mark this value as locally pending BEFORE the request.
+        The Hub refreshes every 5 seconds, so this protects the
+        checkbox from a refresh that returns the previous value.
+      */
+      previewTrackedPending.set(
+        String(
+          submissionId || ""
+        ),
+        {
+          value:
+            tracked,
+
+          startedAt:
+            Date.now()
+        }
+      );
+
+
+      const localItem =
+        previewSignins.find(
+          entry =>
+            String(entry.id || "") ===
+            String(submissionId || "")
+        );
+
+
+      if (localItem) {
+        localItem.eventTracked =
+          tracked;
+      }
+
+
+      if (card) {
+        card.classList.toggle(
+          "tracked",
+          tracked
+        );
+      }
+
+
       if (label) {
         label.classList.add(
           "saving"
@@ -2051,29 +2093,39 @@
           );
         }
 
-        const item =
-          previewSignins.find(
-            entry =>
-              String(entry.id || "") ===
-              String(submissionId || "")
-          );
+        /*
+          Do not clear previewTrackedPending here.
+          The next refresh clears it once the server returns the
+          saved value. Until then, stale refreshes keep the user's
+          clicked state visible.
+        */
 
-        if (item) {
-          item.eventTracked =
-            tracked;
+      } catch (error) {
+
+        previewTrackedPending.delete(
+          String(
+            submissionId || ""
+          )
+        );
+
+
+        checkbox.checked =
+          !tracked;
+
+
+        if (localItem) {
+          localItem.eventTracked =
+            !tracked;
         }
+
 
         if (card) {
           card.classList.toggle(
             "tracked",
-            tracked
+            !tracked
           );
         }
 
-      } catch (error) {
-
-        checkbox.checked =
-          !tracked;
 
         alert(
           error.message ||
@@ -2114,6 +2166,14 @@
        ===================================================== */
 
     let previewSignins = [];
+
+    /*
+      Keeps a recently-clicked Event Tracked status from being
+      overwritten by the 5-second auto-refresh while Netlify
+      finishes saving/returning the updated Blob.
+    */
+    const previewTrackedPending =
+      new Map();
 
 
     async function loadPreviewSignins() {
@@ -2158,12 +2218,80 @@
         }
 
 
-        previewSignins =
+        const incoming =
           Array.isArray(
             result.submissions
           )
             ? result.submissions
             : [];
+
+
+        /*
+          If a checkbox was just changed, keep that local value
+          during refreshes until the server returns the same value.
+          This prevents a stale refresh from visually "unchecking"
+          something that was just saved.
+        */
+        incoming.forEach(
+          item => {
+
+            const id =
+              String(
+                item.id || ""
+              );
+
+
+            const pending =
+              previewTrackedPending.get(
+                id
+              );
+
+
+            if (!pending) {
+              return;
+            }
+
+
+            const serverValue =
+              item.eventTracked === true;
+
+
+            if (
+              serverValue ===
+              pending.value
+            ) {
+
+              previewTrackedPending.delete(
+                id
+              );
+
+              return;
+            }
+
+
+            if (
+              Date.now() -
+              pending.startedAt <
+              15000
+            ) {
+
+              item.eventTracked =
+                pending.value;
+
+            } else {
+
+              previewTrackedPending.delete(
+                id
+              );
+
+            }
+
+          }
+        );
+
+
+        previewSignins =
+          incoming;
 
 
         renderPreviewSignins();
