@@ -782,9 +782,6 @@
 
       border-bottom: 1px solid #ebecea;
 
-      /* Keep every image in its own dedicated viewing area.
-         This prevents tall/large images from ever flowing into
-         the option number or description below. */
       height: 230px;
       min-height: 230px;
       flex: 0 0 230px;
@@ -794,6 +791,7 @@
       justify-content: center;
 
       overflow: hidden;
+
       padding: 8px;
     }
 
@@ -801,6 +799,7 @@
     .option-image img {
       width: 100%;
       height: 100%;
+
       max-width: 100%;
       max-height: 100%;
 
@@ -843,11 +842,7 @@
 
       height: 100%;
 
-      /* Extra separation between the photo and option text */
-      padding: 15px 13px 13px;
-      position: relative;
-      z-index: 1;
-      background: #fff;
+      padding: 13px;
     }
 
 
@@ -1153,9 +1148,174 @@
     }
 
 
+
+    /* =========================================================
+       CUSTOMER AUTOSAVE STATUS
+       ========================================================= */
+
+    .autosave-status {
+      display: none;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 7px;
+
+      margin-top: 5px;
+
+      color: var(--muted);
+
+      font-size: 0.72rem;
+      font-weight: 700;
+
+      white-space: nowrap;
+    }
+
+
+    body.customer-mode .autosave-status {
+      display: flex;
+    }
+
+
+    .autosave-dot {
+      width: 8px;
+      height: 8px;
+
+      border-radius: 50%;
+
+      background: #aeb4bb;
+
+      flex: 0 0 auto;
+    }
+
+
+    .autosave-status.saving {
+      color: #806713;
+    }
+
+
+    .autosave-status.saving .autosave-dot {
+      background: var(--yellow);
+
+      box-shadow:
+        0 0 0 3px rgba(243,198,63,.16);
+    }
+
+
+    .autosave-status.saved {
+      color: var(--green);
+    }
+
+
+    .autosave-status.saved .autosave-dot {
+      background: var(--green);
+
+      box-shadow:
+        0 0 0 3px rgba(60,139,100,.12);
+    }
+
+
+    .autosave-status.error {
+      color: var(--red);
+    }
+
+
+    .autosave-status.error .autosave-dot {
+      background: var(--red);
+
+      box-shadow:
+        0 0 0 3px rgba(199,72,61,.12);
+    }
+
+
+    /* =========================================================
+       DISABLED LOOKBOOK MESSAGE
+       ========================================================= */
+
+    .disabled-lookbook-card {
+      max-width: 720px;
+      margin: 60px auto;
+
+      background: #fff;
+
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--yellow);
+
+      border-radius: 16px;
+
+      box-shadow: var(--shadow);
+
+      padding: 44px 34px;
+
+      text-align: center;
+    }
+
+
+    .disabled-lookbook-icon {
+      width: 58px;
+      height: 58px;
+
+      margin: 0 auto 18px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: var(--yellow-soft);
+
+      color: var(--dark);
+
+      font-size: 1.55rem;
+      font-weight: 900;
+    }
+
+
+    .disabled-lookbook-card h2 {
+      margin: 0 0 10px;
+
+      color: var(--dark);
+
+      font-size: 1.5rem;
+    }
+
+
+    .disabled-lookbook-card p {
+      margin: 0 auto;
+
+      max-width: 560px;
+
+      color: var(--muted);
+
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+
+
     /* =========================================================
        RESPONSIVE
        ========================================================= */
+
+    /* =========================================================
+       CUSTOMER LOOKBOOK MODE
+       ========================================================= */
+
+    body.customer-mode .create-row,
+    body.customer-mode .back-link {
+      display: none !important;
+    }
+
+    .customer-lookbook-name {
+      display: none;
+      margin-top: 10px;
+      color: var(--dark);
+      font-size: 0.92rem;
+      font-weight: 760;
+    }
+
+    body.customer-mode .customer-lookbook-name {
+      display: block;
+    }
+
 
     @media (max-width: 1320px) {
       .option-container {
@@ -1318,6 +1478,18 @@
             $0.00
           </div>
 
+          <div
+            class="autosave-status saved"
+            id="autosave-status"
+            aria-live="polite"
+          >
+            <span class="autosave-dot"></span>
+
+            <span id="autosave-status-text">
+              ✓ All changes saved
+            </span>
+          </div>
+
         </div>
 
       </div>
@@ -1461,13 +1633,21 @@
         </button>
 
 
+        <button
+          class="btn btn-light"
+          onclick="printAllOptions()"
+        >
+          Print All Options
+        </button>
+
+
         <div class="toolbar-divider"></div>
 
 
         <button
           class="btn btn-light"
           onclick="window.open(
-            'https://austinstudiolookbook.netlify.app/flooring.html',
+            'https://myonlinelookbook.netlify.app/customers/Flooring-Options.html',
             '_blank'
           )"
         >
@@ -1607,7 +1787,7 @@
       }
 
       if (
-        /\bincluded\b/i.test(
+        /\\bincluded\\b/i.test(
           String(value)
         )
       ) {
@@ -1630,41 +1810,639 @@
     }
 
 
-    function isIncludedOption(option) {
 
-      const amountIsZero =
-        parsePrice(
-          option?.amount
-        ) === 0;
+    /* =========================================================
+       READ EXCEL WORKBOOK
+       ========================================================= */
 
-      const includedText =
-        [
-          option?.amount,
-          option?.description,
-          option?.salesDesc
-        ]
-          .filter(
-            value =>
-              value !== null &&
-              value !== undefined &&
-              value !== ""
-          )
-          .join(" ");
+    /* =========================================================
+       CUSTOMER LOOKBOOK LOADER
+       ========================================================= */
 
-      return (
-        amountIsZero &&
-        /\bincluded\b/i.test(
-          includedText
+    let activeCustomerLookbook = null;
+
+    let autosaveTimer = null;
+    let autosaveInFlight = false;
+    let autosaveQueued = false;
+
+
+    function setAutosaveStatus(
+      state,
+      message
+    ) {
+
+      const box =
+        document.getElementById(
+          "autosave-status"
+        );
+
+      const text =
+        document.getElementById(
+          "autosave-status-text"
+        );
+
+
+      if (!box || !text) {
+        return;
+      }
+
+
+      box.classList.remove(
+        "saving",
+        "saved",
+        "error"
+      );
+
+
+      if (state) {
+        box.classList.add(state);
+      }
+
+
+      text.textContent =
+        message ||
+        "✓ All changes saved";
+
+    }
+
+
+    function scheduleAutosave() {
+
+      if (
+        !document.body.classList.contains(
+          "customer-mode"
+        ) ||
+        !activeCustomerLookbook?.id
+      ) {
+        return;
+      }
+
+
+      clearTimeout(
+        autosaveTimer
+      );
+
+
+      setAutosaveStatus(
+        "saving",
+        "Saving..."
+      );
+
+
+      autosaveTimer =
+        setTimeout(
+          saveCustomerSelections,
+          900
+        );
+
+    }
+
+
+    async function saveCustomerSelections() {
+
+      if (!activeCustomerLookbook?.id) {
+        return;
+      }
+
+
+      if (autosaveInFlight) {
+
+        autosaveQueued = true;
+
+        return;
+
+      }
+
+
+      autosaveInFlight = true;
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/save-selections",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  id:
+                    activeCustomerLookbook.id,
+
+                  selections:
+                    getCurrentSelections()
+                })
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (
+          response.status === 403 &&
+          result.code === "LOOKBOOK_DISABLED"
+        ) {
+
+          showDisabledLookbook();
+
+          return;
+
+        }
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to save selections."
+          );
+
+        }
+
+
+        activeCustomerLookbook.updatedAt =
+          result.updatedAt ||
+          new Date().toISOString();
+
+
+        const savedTime =
+          new Date(
+            activeCustomerLookbook.updatedAt
+          );
+
+
+        setAutosaveStatus(
+          "saved",
+          `✓ Saved at ${savedTime.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+          })}`
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "AUTOSAVE ERROR:",
+          error
+        );
+
+
+        setAutosaveStatus(
+          "error",
+          "⚠ Changes not saved"
+        );
+
+
+      } finally {
+
+        autosaveInFlight = false;
+
+
+        if (autosaveQueued) {
+
+          autosaveQueued = false;
+
+          scheduleAutosave();
+
+        }
+
+      }
+
+    }
+
+
+    function enableCustomerAutosave() {
+
+      document
+        .getElementById(
+          "lookbook-container"
         )
+        ?.addEventListener(
+          "change",
+          event => {
+
+            if (
+              event.target.matches(
+                ".option-checkbox, .option-qty, .option-comment"
+              )
+            ) {
+
+              scheduleAutosave();
+
+            }
+
+          }
+        );
+
+
+      document
+        .getElementById(
+          "lookbook-container"
+        )
+        ?.addEventListener(
+          "input",
+          event => {
+
+            if (
+              event.target.matches(
+                ".option-qty, .option-comment"
+              )
+            ) {
+
+              scheduleAutosave();
+
+            }
+
+          }
+        );
+
+    }
+
+
+
+
+    async function loadCustomerLookbook() {
+
+      document.body.classList.add(
+        "customer-mode"
+      );
+
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+
+      const id =
+        params.get("id");
+
+
+      if (!id) {
+
+        showCustomerLoadError(
+          "This Lookbook link is missing its customer ID."
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            `/.netlify/functions/get-lookbook?id=${encodeURIComponent(id)}`,
+            {
+              headers: {
+                "Accept": "application/json"
+              },
+              cache: "no-store"
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (
+          response.status === 403 &&
+          result.code === "LOOKBOOK_DISABLED"
+        ) {
+
+          showDisabledLookbook();
+
+          return;
+
+        }
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            result.message ||
+            "This Lookbook could not be loaded."
+          );
+
+        }
+
+
+        activeCustomerLookbook =
+          result.lookbook || result;
+
+
+        const workbookBase64 =
+          activeCustomerLookbook.workbook;
+
+
+        if (
+          !workbookBase64 ||
+          typeof workbookBase64 !== "string"
+        ) {
+
+          throw new Error(
+            "The saved Lookbook does not contain workbook data."
+          );
+
+        }
+
+
+        const customerName =
+          document.getElementById(
+            "customer-lookbook-name"
+          );
+
+
+        if (customerName) {
+
+          customerName.textContent =
+            activeCustomerLookbook.name || "";
+
+        }
+
+
+        if (activeCustomerLookbook.name) {
+
+          document.title =
+            `${activeCustomerLookbook.name} | Austin Studio Lookbook`;
+
+        }
+
+
+        const workbook =
+          XLSX.read(
+            workbookBase64,
+            {
+              type: "base64"
+            }
+          );
+
+
+        const sheetObject =
+          workbook.Sheets["Sheet2"];
+
+
+        if (!sheetObject) {
+
+          throw new Error(
+            'The workbook does not contain a sheet named "Sheet2".'
+          );
+
+        }
+
+
+        const sheet =
+          XLSX.utils.sheet_to_json(
+            sheetObject,
+            {
+              header: 1
+            }
+          );
+
+
+        loadHouseInfo(sheet);
+
+        buildLookbook(sheet);
+
+        restoreSavedSelections(
+          activeCustomerLookbook.selections || []
+        );
+
+
+        setAutosaveStatus(
+          "saved",
+          activeCustomerLookbook.updatedAt
+            ? `✓ Saved at ${new Date(activeCustomerLookbook.updatedAt).toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit"
+              })}`
+            : "✓ All changes saved"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "CUSTOMER LOOKBOOK LOAD ERROR:",
+          error
+        );
+
+
+        showCustomerLoadError(
+          error.message ||
+          "This Lookbook could not be loaded."
+        );
+
+      }
+
+    }
+
+
+    function restoreSavedSelections(
+      selections
+    ) {
+
+      if (!Array.isArray(selections)) {
+        return;
+      }
+
+
+      selections.forEach(
+        saved => {
+
+          const optionNumber =
+            String(
+              saved?.option ?? ""
+            );
+
+
+          const card =
+            Array.from(
+              document.querySelectorAll(
+                ".option"
+              )
+            )
+            .find(
+              item =>
+                item.dataset.option ===
+                optionNumber
+            );
+
+
+          if (!card) {
+            return;
+          }
+
+
+          const checkbox =
+            card.querySelector(
+              ".option-checkbox"
+            );
+
+
+          const qty =
+            card.querySelector(
+              ".option-qty"
+            );
+
+
+          const comment =
+            card.querySelector(
+              ".option-comment"
+            );
+
+
+          if (checkbox) {
+
+            checkbox.checked = true;
+
+          }
+
+
+          if (qty) {
+
+            qty.value =
+              Math.max(
+                1,
+                parseInt(
+                  saved?.qty || 1
+                )
+              );
+
+          }
+
+
+          if (comment) {
+
+            comment.value =
+              saved?.comment || "";
+
+          }
+
+
+          card.classList.add(
+            "selected"
+          );
+
+        }
+      );
+
+
+      updateTotal();
+
+      updateMasterCheckbox();
+
+    }
+
+
+    function showDisabledLookbook() {
+
+      activeCustomerLookbook = null;
+
+      const container =
+        document.getElementById(
+          "lookbook-container"
+        );
+
+
+      if (!container) {
+        return;
+      }
+
+
+      const noResults =
+        document.getElementById(
+          "no-results"
+        );
+
+
+      if (noResults) {
+        noResults.style.display = "none";
+      }
+
+
+      container.innerHTML = `
+
+        <div class="disabled-lookbook-card">
+
+          <div class="disabled-lookbook-icon">
+            ×
+          </div>
+
+          <h2>
+            This Lookbook is no longer active.
+          </h2>
+
+          <p>
+            This Lookbook link has been disabled by the Austin Design Studio.
+            Your saved selections have not been deleted.
+            Please contact your Austin Design Studio representative if you need assistance.
+          </p>
+
+        </div>
+
+      `;
+
+
+      setAutosaveStatus(
+        "",
+        ""
       );
 
     }
 
 
 
-    /* =========================================================
-       READ EXCEL WORKBOOK
-       ========================================================= */
+    function showCustomerLoadError(
+      message
+    ) {
+
+      const container =
+        document.getElementById(
+          "lookbook-container"
+        );
+
+
+      if (!container) {
+        return;
+      }
+
+
+      container.innerHTML = `
+
+        <div class="loading-card">
+
+          <strong>
+            This Lookbook could not be loaded.
+          </strong>
+
+          <div style="
+            margin-top:8px;
+            line-height:1.5;
+          ">
+            ${escapeHTML(message)}
+          </div>
+
+        </div>
+
+      `;
+
+    }
+
+
 
     function loadWorkbook() {
 
@@ -2307,10 +3085,20 @@
 
       price.className =
         "price";
+      const includedOption =
+        parsePrice(option.amount) === 0 &&
+        /included/i.test(
+          [
+            option.description,
+            option.salesDesc
+          ]
+            .filter(Boolean)
+            .join(" ")
+        );
 
 
       price.textContent =
-        isIncludedOption(option)
+        includedOption
           ? "Included"
           : formatPrice(
               option.amount
@@ -3247,6 +4035,470 @@
 
 
     /* =========================================================
+       PRINT ALL OPTIONS
+       - Does not select/change anything
+       - Shows pricing for every option
+       - Does not calculate or display a combined total
+       ========================================================= */
+
+    function printAllOptions() {
+
+      const allOptions =
+        Array.from(
+          document.querySelectorAll(
+            ".option"
+          )
+        );
+
+
+      if (
+        allOptions.length === 0
+      ) {
+
+        alert(
+          "There are no options to print."
+        );
+
+        return;
+
+      }
+
+
+      const windowRef =
+        window.open(
+          "",
+          "_blank"
+        );
+
+
+      if (!windowRef) {
+
+        alert(
+          "Please allow pop-ups to print all options."
+        );
+
+        return;
+
+      }
+
+
+      let html = `
+
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+
+          <meta charset="UTF-8">
+
+          <title>
+            KB Home All Options
+          </title>
+
+          <style>
+
+            body {
+              font-family:
+                Segoe UI,
+                Arial,
+                sans-serif;
+
+              color: #262b30;
+
+              margin: 0;
+
+              padding: 32px;
+            }
+
+            .header {
+              display:flex;
+              justify-content:space-between;
+              align-items:flex-start;
+
+              border-bottom:
+                4px solid #f3c63f;
+
+              padding-bottom:16px;
+              margin-bottom:24px;
+            }
+
+            .logo {
+              max-width:100px;
+            }
+
+            h1 {
+              margin:0;
+              font-size:22px;
+              color:#263341;
+            }
+
+            .house {
+              color:#666;
+              font-size:12px;
+              margin-top:5px;
+            }
+
+            h2 {
+              margin-top:30px;
+
+              padding:9px 12px;
+
+              background:#f3f3f2;
+
+              border-left:
+                5px solid #f3c63f;
+
+              font-size:16px;
+            }
+
+            .option {
+              display:grid;
+
+              grid-template-columns:
+                110px 1fr auto;
+
+              gap:14px;
+
+              border-bottom:
+                1px solid #ddd;
+
+              padding:13px 0;
+            }
+
+            .option img {
+              width:110px;
+              height:100px;
+
+              object-fit:contain;
+
+              background:#f8f8f8;
+            }
+
+            .number {
+              font-weight:700;
+              color:#263341;
+            }
+
+            .description {
+              margin-top:3px;
+            }
+
+            .sales {
+              color:#666;
+              font-size:12px;
+              font-style:italic;
+              margin-top:5px;
+            }
+
+            .amount {
+              text-align:right;
+              white-space:nowrap;
+              font-weight:700;
+            }
+
+            @media print {
+
+              .print-button {
+                display:none;
+              }
+
+            }
+
+          </style>
+
+        </head>
+
+        <body>
+
+
+          <div class="header">
+
+            <div>
+
+              <img
+                class="logo"
+                src="/kb logo.png"
+              >
+
+            </div>
+
+
+            <div style="
+              text-align:right;
+            ">
+
+              <h1>
+                All Options & Pricing
+              </h1>
+
+              <div class="house">
+
+                ${
+                  document
+                    .getElementById(
+                      "house-info"
+                    )
+                    .innerHTML
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+      `;
+
+
+
+      document
+        .querySelectorAll(
+          "details.category"
+        )
+        .forEach(
+          category => {
+
+
+            const options =
+              Array.from(
+                category
+                  .querySelectorAll(
+                    ".option"
+                  )
+              );
+
+
+            if (
+              options.length === 0
+            ) {
+
+              return;
+
+            }
+
+
+            html += `
+
+              <h2>
+
+                ${
+                  escapeHTML(
+                    category
+                      .querySelector(
+                        ":scope > summary"
+                      )
+                      ?.textContent
+                    || ""
+                  )
+                }
+
+              </h2>
+
+            `;
+
+
+            options.forEach(
+              card => {
+
+
+                const checkbox =
+                  card.querySelector(
+                    ".option-checkbox"
+                  );
+
+
+                const price =
+                  parseFloat(
+                    checkbox
+                      ?.dataset
+                      ?.price
+                    || 0
+                  );
+
+
+                const image =
+                  card.querySelector(
+                    ".option-image img"
+                  );
+
+
+                const optionNumber =
+                  card.querySelector(
+                    ".option-number"
+                  )
+                  ?.textContent || "";
+
+
+                const description =
+                  card.querySelector(
+                    ".option-description"
+                  )
+                  ?.textContent || "";
+
+
+                const sales =
+                  card.querySelector(
+                    ".option-sales"
+                  )
+                  ?.textContent || "";
+
+
+                const includedOption =
+                  price === 0 &&
+                  /\bincluded\b/i.test(
+                    [
+                      description,
+                      sales
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                  );
+
+
+                html += `
+
+                  <div class="option">
+
+
+                    <div>
+
+                      ${
+                        image
+                        ? `
+                          <img
+                            src="${
+                              escapeAttribute(
+                                image.src
+                              )
+                            }"
+                          >
+                        `
+                        : ""
+                      }
+
+                    </div>
+
+
+                    <div>
+
+                      <div class="number">
+
+                        ${
+                          escapeHTML(
+                            optionNumber
+                          )
+                        }
+
+                      </div>
+
+
+                      <div class="description">
+
+                        ${
+                          escapeHTML(
+                            description
+                          )
+                        }
+
+                      </div>
+
+
+                      ${
+                        sales
+                        ? `
+
+                          <div class="sales">
+
+                            ${
+                              escapeHTML(
+                                sales
+                              )
+                            }
+
+                          </div>
+
+                        `
+                        : ""
+                      }
+
+                    </div>
+
+
+                    <div class="amount">
+
+                      ${
+                        includedOption
+                          ? "Included"
+                          : price.toLocaleString(
+                              undefined,
+                              {
+                                style:"currency",
+                                currency:"USD"
+                              }
+                            )
+                      }
+
+                    </div>
+
+
+                  </div>
+
+                `;
+
+              }
+            );
+
+          }
+        );
+
+
+      html += `
+
+        <div style="
+          margin-top:25px;
+          text-align:right;
+        ">
+
+          <button
+            class="print-button"
+            onclick="window.print()"
+
+            style="
+              border:0;
+              background:#f3c63f;
+              color:#252525;
+              font-weight:700;
+              padding:10px 15px;
+              border-radius:7px;
+              cursor:pointer;
+            "
+          >
+            Print / Save PDF
+          </button>
+
+        </div>
+
+
+        </body>
+
+        </html>
+
+      `;
+
+
+      windowRef.document.write(
+        html
+      );
+
+
+      windowRef.document.close();
+
+    }
+
+
+
+    /* =========================================================
        PRINT SELECTED OPTIONS
        ========================================================= */
 
@@ -3703,25 +4955,13 @@
                       <strong>
 
                         ${
-                          (
-                            price === 0 &&
-                            /\bincluded\b/i.test(
-                              [
-                                description,
-                                sales
-                              ]
-                                .filter(Boolean)
-                                .join(" ")
-                            )
+                          lineTotal.toLocaleString(
+                            undefined,
+                            {
+                              style:"currency",
+                              currency:"USD"
+                            }
                           )
-                            ? "Included"
-                            : lineTotal.toLocaleString(
-                                undefined,
-                                {
-                                  style:"currency",
-                                  currency:"USD"
-                                }
-                              )
                         }
 
                       </strong>
@@ -3913,7 +5153,13 @@
 
     document.addEventListener(
       "DOMContentLoaded",
-      loadWorkbook
+      function() {
+
+        enableCustomerAutosave();
+
+        loadCustomerLookbook();
+
+      }
     );
 
   </script>
