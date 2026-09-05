@@ -819,8 +819,9 @@
        MULTIPLE IMAGE GALLERY
        Naming:
        1234567.jpg   = main image
-       1234567-2.jpg = second image
-       1234567-3.jpg = third image
+       1234567-1.jpg = optional additional image
+       1234567-2.jpg = additional image
+       1234567-3.jpg = additional image
        ========================================================= */
 
     .gallery-arrow {
@@ -3542,6 +3543,7 @@
 
        File naming:
        OPTION.jpg
+       OPTION-1.jpg
        OPTION-2.jpg
        OPTION-3.jpg
        OPTION-4.jpg
@@ -3597,12 +3599,32 @@
       optionNumber
     ) {
 
+      const base =
+        encodeURIComponent(
+          String(optionNumber)
+        );
+
       const images = [
         optionImageURL(
           optionNumber,
           1
         )
       ];
+
+
+      /* Also support OPTION-1.jpg as an additional image. */
+      const minusOneSrc =
+        `/images/${base}-1.jpg`;
+
+      if (
+        await imageExists(
+          minusOneSrc
+        )
+      ) {
+        images.push(
+          minusOneSrc
+        );
+      }
 
 
       for (
