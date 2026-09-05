@@ -291,20 +291,36 @@
       vertical-align: middle;
     }
 
-    .lookbooks-column th:nth-child(1) { width: 24%; }
+    .lookbooks-column th:nth-child(1) { width: 23%; }
     .lookbooks-column th:nth-child(2) { width: 13%; }
-    .lookbooks-column th:nth-child(3) { width: 16%; }
+    .lookbooks-column th:nth-child(3) { width: 15%; }
     .lookbooks-column th:nth-child(4) { width: 16%; }
-    .lookbooks-column th:nth-child(5) { width: 13%; }
-    .lookbooks-column th:nth-child(6) { width: 18%; }
+    .lookbooks-column th:nth-child(5) { width: 10%; }
+    .lookbooks-column th:nth-child(6) { width: 23%; }
+
+    .lookbooks-column td:nth-child(5) {
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    .lookbooks-column td:nth-child(6) {
+      padding-left: 8px;
+      padding-right: 4px;
+      white-space: nowrap;
+    }
 
     .lookbooks-column .action-cell {
-      white-space: normal;
+      white-space: nowrap;
     }
 
     .lookbooks-column .action-cell button,
     .lookbooks-column .action-cell a {
-      font-size: 0.72rem;
+      font-size: 0.70rem;
+    }
+
+    .lookbooks-column .action-cell button {
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
     .hub-link-list {
