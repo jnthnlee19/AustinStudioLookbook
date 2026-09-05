@@ -52,9 +52,7 @@ export default async (
 
 
     /*
-      Basic bot trap.
-      Real customers never see or fill
-      the website field.
+      BOT TRAP
     */
     if (
       clean(
@@ -152,13 +150,7 @@ export default async (
 
 
     /*
-      Required for everyone:
-      - Name
-      - Phone
-      - Email
-      - Under Contract?
-      - Home Type
-      - Community
+      REQUIRED FOR EVERYONE
     */
     if (
       !submission.name ||
@@ -187,8 +179,7 @@ export default async (
 
 
     /*
-      Only these two Home Type
-      values are allowed.
+      VALID HOME TYPES
     */
     if (
       ![
@@ -218,9 +209,9 @@ export default async (
 
 
     /*
-      If they ARE under contract,
-      Address, Plan, and Elevation
-      are also required.
+      IF UNDER CONTRACT:
+      ADDRESS, PLAN, AND ELEVATION
+      ARE REQUIRED
     */
     if (
       submission
@@ -254,7 +245,7 @@ export default async (
 
 
     /*
-      Basic email validation.
+      EMAIL VALIDATION
     */
     if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -281,14 +272,20 @@ export default async (
 
 
     /*
-      Standard email subject:
-      Preview Event Full Name Community
+      SUBJECT FORMAT:
+
+      Preview Event
+      Community
+      Customer Full Name
+
+      Example:
+      Preview Event Stoney Chase Jonathan Rice
     */
     submission.subject =
       `Preview Event ${
-        submission.name
-      } ${
         submission.community
+      } ${
+        submission.name
       }`
         .replace(
           /\s+/g,
