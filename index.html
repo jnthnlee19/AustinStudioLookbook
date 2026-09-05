@@ -194,13 +194,53 @@
     }
 
     /* =========================
-       THREE-COLUMN STUDIO HUB
+       HEADER STUDIO LINKS
        ========================= */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .header-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 12px;
+      border: 1px solid #d8dde2;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--navy);
+      text-decoration: none;
+      font-size: .78rem;
+      font-weight: 750;
+      transition: .18s ease;
+    }
+
+    .header-link:hover {
+      background: var(--yellow-soft);
+      border-color: #ead98e;
+      transform: translateY(-1px);
+    }
+
+    /* =========================
+       TWO-COLUMN STUDIO HUB
+       ========================= */
+
     .studio-grid {
       display: grid;
-      grid-template-columns: minmax(0, 2.35fr) minmax(190px, .72fr) minmax(190px, .72fr);
-      gap: 18px;
+      grid-template-columns: minmax(0, 1.62fr) minmax(340px, 1fr);
+      gap: 20px;
       align-items: start;
+    }
+
+    .right-dashboard-column {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
     }
 
     .hub-column {
@@ -321,6 +361,52 @@
     .lookbooks-column .action-cell button {
       padding-left: 10px;
       padding-right: 10px;
+    }
+
+    .plot-selector {
+      display: grid;
+      gap: 10px;
+    }
+
+    .plot-selector label {
+      color: var(--navy);
+      font-size: .78rem;
+      font-weight: 750;
+    }
+
+    .plot-selector select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #cfd4d9;
+      border-radius: 9px;
+      background: #fff;
+      color: #30353a;
+      font: inherit;
+      font-size: .85rem;
+      outline: none;
+    }
+
+    .plot-selector select:focus {
+      border-color: #b9a040;
+      box-shadow: 0 0 0 3px rgba(243,198,63,.16);
+    }
+
+    .plot-open-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 11px 13px;
+      background: var(--yellow);
+      color: #24272a;
+      font: inherit;
+      font-size: .82rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .plot-open-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
     }
 
     .hub-link-list {
@@ -730,8 +816,39 @@
 
     .preview-entry-grid {
       display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
+      grid-template-columns:repeat(2,minmax(0,1fr));
       gap:10px 14px;
+      padding-top: 12px;
+      margin-top: 10px;
+      border-top: 1px solid #edf0f2;
+    }
+
+    .preview-entry-details {
+      display: none;
+    }
+
+    .preview-entry.open .preview-entry-details {
+      display: grid;
+    }
+
+    .preview-entry-actions {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .view-details-btn {
+      border: 1px solid #d9dde2;
+      background: #fff;
+      color: var(--navy);
+      border-radius: 8px;
+      padding: 9px 11px;
+      font-size: .76rem;
+      font-weight: 750;
+      cursor: pointer;
+      white-space: nowrap;
     }
 
     .preview-data {
@@ -785,21 +902,13 @@
 
     @media (max-width: 1050px) {
       .studio-grid {
-        grid-template-columns: minmax(0, 1.4fr) minmax(220px, .8fr);
-      }
-
-      .misc-column {
-        grid-column: 1 / -1;
+        grid-template-columns: minmax(0, 1.45fr) minmax(310px, .9fr);
       }
     }
 
     @media (max-width: 820px) {
       .studio-grid {
         grid-template-columns: 1fr;
-      }
-
-      .misc-column {
-        grid-column: auto;
       }
 
       .header {
@@ -843,6 +952,10 @@
           <span class="status-dot"></span>
           Studio Hub
         </div>
+          <div class="header-actions">
+            <a class="header-link" href="https://kbplanogram.netlify.app/" target="_blank" rel="noopener">Plan-o-Gram ↗</a>
+            <a class="header-link" href="/preview-signin.html" target="_blank" rel="noopener">Preview Sign-In ↗</a>
+          </div>
       </header>
 
 
@@ -929,122 +1042,132 @@
         </section>
 
 
-        <!-- PLOT MAPS -->
-        <section class="hub-column plots-column">
+        <!-- RIGHT DASHBOARD COLUMN -->
+        <div class="right-dashboard-column">
 
-          <div class="hub-column-header">
-            <h2>Plot Maps</h2>
-            <p>Community exterior control maps.</p>
-          </div>
+          <!-- PLOT MAPS -->
+          <section class="hub-column plots-column">
 
-          <div class="hub-column-body">
-            <div class="hub-link-list">
-
-              <a class="hub-link" href="https://austinplotmaps.netlify.app/adelton/" target="_blank" rel="noopener">
-                <span>Adelton</span><span>→</span>
-              </a>
-              <div class="hub-link disabled"><span>Creekside at Estancia</span><span class="hub-link-note">Link Later</span></div>
-              <div class="hub-link disabled"><span>Hidden Trails</span><span class="hub-link-note">Link Later</span></div>
-              <div class="hub-link disabled"><span>Mustang Valley</span><span class="hub-link-note">Link Later</span></div>
-              <div class="hub-link disabled"><span>Overlook Ranch</span><span class="hub-link-note">Link Later</span></div>
-              <div class="hub-link disabled"><span>Riverbluff</span><span class="hub-link-note">Link Later</span></div>
-              <div class="hub-link disabled"><span>Salerno</span><span class="hub-link-note">Link Later</span></div>
-              <div class="hub-link disabled"><span>Sonterra</span><span class="hub-link-note">Link Later</span></div>
-              <a class="hub-link" href="https://austinplotmaps.netlify.app/stoney-chase/" target="_blank" rel="noopener">
-                <span>Stoney Chase</span><span>→</span>
-              </a>
-              <div class="hub-link disabled"><span>Sunset Oaks</span><span class="hub-link-note">Link Later</span></div>
-              <div class="hub-link disabled"><span>Watermill</span><span class="hub-link-note">Link Later</span></div>
-
-            </div>
-          </div>
-        </section>
-
-
-        <!-- MISC LINKS -->
-        <section class="hub-column misc-column">
-
-          <div class="hub-column-header">
-            <h2>Misc. Links</h2>
-            <p>Quick access to other Studio tools.</p>
-          </div>
-
-          <div class="hub-column-body">
-
-            <div class="hub-link-list">
-
-              <a
-                class="hub-link"
-                href="https://kbplanogram.netlify.app/"
-                target="_blank"
-                rel="noopener"
-              >
-                <span>Plan-o-Gram</span>
-                <span>→</span>
-              </a>
-
-              <a
-                class="hub-link"
-                href="/preview-signin.html"
-                target="_blank"
-                rel="noopener"
-              >
-                <span>Preview Event Sign-In</span>
-                <span>→</span>
-              </a>
-
+            <div class="hub-column-header">
+              <h2>Plot Maps</h2>
+              <p>Select a community to open its exterior control map.</p>
             </div>
 
-            <div class="misc-placeholder">
-              Space for additional Studio links
+            <div class="hub-column-body">
+
+              <div class="plot-selector">
+
+                <label for="plotMapCommunity">
+                  Community
+                </label>
+
+                <select
+                  id="plotMapCommunity"
+                  onchange="updatePlotMapButton()"
+                >
+                  <option value="">Select a Community</option>
+
+                  <option value="https://austinplotmaps.netlify.app/adelton/">
+                    Adelton
+                  </option>
+
+                  <option disabled>
+                    Creekside at Estancia — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Hidden Trails — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Mustang Valley — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Overlook Ranch — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Riverbluff — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Salerno — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Sonterra — Coming Soon
+                  </option>
+
+                  <option value="https://austinplotmaps.netlify.app/stoney-chase/">
+                    Stoney Chase
+                  </option>
+
+                  <option disabled>
+                    Sunset Oaks — Coming Soon
+                  </option>
+
+                  <option disabled>
+                    Watermill — Coming Soon
+                  </option>
+                </select>
+
+                <button
+                  class="plot-open-btn"
+                  id="plotMapOpenBtn"
+                  type="button"
+                  onclick="openSelectedPlotMap()"
+                  disabled
+                >
+                  Open Plot Map
+                </button>
+
+              </div>
+
+            </div>
+          </section>
+
+
+          <!-- PREVIEW EVENT SIGN-INS -->
+          <section class="preview-signins">
+
+            <div class="preview-signins-header">
+              <div>
+                <h2>Preview Event Sign-Ins</h2>
+                <p>Newest customer submissions appear first.</p>
+              </div>
+
+              <div class="preview-signins-actions">
+                <button type="button" onclick="loadPreviewSignins()">
+                  Refresh
+                </button>
+              </div>
             </div>
 
-          </div>
-        </section>
+            <div class="preview-signins-body">
+
+              <div class="preview-signin-search">
+                <input
+                  id="previewSigninSearch"
+                  type="text"
+                  placeholder="Search sign-ins..."
+                  oninput="renderPreviewSignins()"
+                />
+              </div>
+
+              <div id="previewSigninList" class="preview-signin-list">
+                <div class="preview-empty">
+                  Loading Preview Event sign-ins...
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
 
       </div>
 
-
-
-      <!-- =========================
-           PREVIEW EVENT SIGN-INS
-           ========================= -->
-      <section class="preview-signins">
-
-        <div class="preview-signins-header">
-          <div>
-            <h2>Preview Event Sign-Ins</h2>
-            <p>Customer submissions from the public Preview Event form.</p>
-          </div>
-
-          <div class="preview-signins-actions">
-            <a href="/preview-signin.html" target="_blank" rel="noopener">
-              Open Customer Form
-            </a>
-
-            <button type="button" onclick="loadPreviewSignins()">
-              Refresh
-            </button>
-          </div>
-        </div>
-
-        <div class="preview-signins-body">
-
-          <div class="preview-signin-search">
-            <input
-              id="previewSigninSearch"
-              type="text"
-              placeholder="Search name, community, email, phone, plan..."
-              oninput="renderPreviewSignins()"
-            />
-          </div>
-
-          <div id="previewSigninList" class="preview-signin-list">
-            <div class="preview-empty">Loading Preview Event sign-ins...</div>
-          </div>
-
-        </div>
-      </section>
 
 
       <div class="footer-note">
@@ -1610,6 +1733,89 @@
 
 
     /* =====================================================
+       PLOT MAP SELECTOR
+       ===================================================== */
+
+    function updatePlotMapButton() {
+
+      const select =
+        document.getElementById(
+          "plotMapCommunity"
+        );
+
+      const button =
+        document.getElementById(
+          "plotMapOpenBtn"
+        );
+
+
+      if (!select || !button) {
+        return;
+      }
+
+
+      button.disabled =
+        !select.value;
+
+    }
+
+
+    function openSelectedPlotMap() {
+
+      const select =
+        document.getElementById(
+          "plotMapCommunity"
+        );
+
+
+      if (
+        !select ||
+        !select.value
+      ) {
+        return;
+      }
+
+
+      window.open(
+        select.value,
+        "_blank",
+        "noopener"
+      );
+
+    }
+
+
+    function togglePreviewDetails(
+      button
+    ) {
+
+      const entry =
+        button.closest(
+          ".preview-entry"
+        );
+
+
+      if (!entry) {
+        return;
+      }
+
+
+      const open =
+        entry.classList.toggle(
+          "open"
+        );
+
+
+      button.textContent =
+        open
+          ? "Hide Details"
+          : "View Details";
+
+    }
+
+
+
+    /* =====================================================
        PREVIEW EVENT SIGN-INS
        Protected by the same dashboard authentication cookie.
        ===================================================== */
@@ -1804,18 +2010,30 @@
                     </div>
 
 
-                    <button
-                      class="copy-subject-btn"
-                      type="button"
-                      onclick='copyPreviewSubject(this, ${JSON.stringify(subject)})'
-                    >
-                      Copy Subject
-                    </button>
+                    <div class="preview-entry-actions">
+
+                      <button
+                        class="copy-subject-btn"
+                        type="button"
+                        onclick='copyPreviewSubject(this, ${JSON.stringify(subject)})'
+                      >
+                        Copy Subject
+                      </button>
+
+                      <button
+                        class="view-details-btn"
+                        type="button"
+                        onclick="togglePreviewDetails(this)"
+                      >
+                        View Details
+                      </button>
+
+                    </div>
 
                   </div>
 
 
-                  <div class="preview-entry-grid">
+                  <div class="preview-entry-grid preview-entry-details">
 
                     ${previewData("Phone Number", item.phone)}
                     ${previewData("Email Address", item.email)}
