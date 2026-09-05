@@ -814,6 +814,84 @@
     }
 
 
+
+    /* =========================================================
+       MULTIPLE IMAGE GALLERY
+       Naming:
+       1234567.jpg   = main image
+       1234567-2.jpg = second image
+       1234567-3.jpg = third image
+       ========================================================= */
+
+    .gallery-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 4;
+
+      width: 34px;
+      height: 34px;
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: 50%;
+
+      background: rgba(38,51,65,.78);
+      color: #fff;
+
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+
+      box-shadow: 0 4px 12px rgba(0,0,0,.18);
+      cursor: pointer;
+    }
+
+    .gallery-arrow:hover {
+      background: rgba(38,51,65,.94);
+    }
+
+    .gallery-arrow.prev {
+      left: 10px;
+    }
+
+    .gallery-arrow.next {
+      right: 10px;
+    }
+
+    .option-image.has-gallery .gallery-arrow {
+      display: flex;
+    }
+
+    .gallery-count {
+      position: absolute;
+      right: 9px;
+      bottom: 9px;
+      z-index: 4;
+
+      display: none;
+
+      padding: 4px 7px;
+      border-radius: 999px;
+
+      background: rgba(38,51,65,.78);
+      color: #fff;
+
+      font-size: .68rem;
+      font-weight: 750;
+      letter-spacing: .02em;
+
+      pointer-events: none;
+    }
+
+    .option-image.has-gallery .gallery-count {
+      display: block;
+    }
+
+
     .image-placeholder {
       height: 100%;
       width: 100%;
@@ -1102,6 +1180,83 @@
       border-radius: 8px;
 
       background: #fff;
+    }
+
+
+
+    .modal-gallery-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+
+      width: 44px;
+      height: 44px;
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      border: 1px solid rgba(255,255,255,.5);
+      border-radius: 50%;
+
+      background: rgba(255,255,255,.92);
+      color: #263341;
+
+      font-size: 1.35rem;
+      font-weight: 850;
+      line-height: 1;
+
+      box-shadow: 0 5px 18px rgba(0,0,0,.22);
+    }
+
+    .modal-gallery-arrow.prev {
+      left: -58px;
+    }
+
+    .modal-gallery-arrow.next {
+      right: -58px;
+    }
+
+    .modal-card.has-gallery .modal-gallery-arrow {
+      display: flex;
+    }
+
+    .modal-gallery-count {
+      position: absolute;
+      left: 50%;
+      bottom: -34px;
+      transform: translateX(-50%);
+
+      display: none;
+
+      padding: 5px 9px;
+      border-radius: 999px;
+
+      background: rgba(255,255,255,.92);
+      color: #263341;
+
+      font-size: .75rem;
+      font-weight: 800;
+    }
+
+    .modal-card.has-gallery .modal-gallery-count {
+      display: block;
+    }
+
+    @media (max-width: 760px) {
+      .modal-gallery-arrow.prev {
+        left: 8px;
+      }
+
+      .modal-gallery-arrow.next {
+        right: 8px;
+      }
+
+      .modal-gallery-arrow {
+        width: 40px;
+        height: 40px;
+      }
     }
 
 
@@ -1757,10 +1912,38 @@
       </button>
 
 
+      <button
+        class="modal-gallery-arrow prev"
+        id="modal-gallery-prev"
+        type="button"
+        aria-label="Previous image"
+        onclick="changeModalGalleryImage(-1)"
+      >
+        ‹
+      </button>
+
+
       <img
         id="modal-image"
         alt=""
       />
+
+
+      <button
+        class="modal-gallery-arrow next"
+        id="modal-gallery-next"
+        type="button"
+        aria-label="Next image"
+        onclick="changeModalGalleryImage(1)"
+      >
+        ›
+      </button>
+
+
+      <div
+        class="modal-gallery-count"
+        id="modal-gallery-count"
+      ></div>
 
     </div>
 
@@ -3353,6 +3536,177 @@
 
 
 
+
+    /* =========================================================
+       MULTIPLE IMAGE GALLERY
+
+       File naming:
+       OPTION.jpg
+       OPTION-2.jpg
+       OPTION-3.jpg
+       OPTION-4.jpg
+
+       The plain OPTION.jpg is always the main image.
+       Extra images must be numbered continuously.
+       ========================================================= */
+
+    const MAX_OPTION_IMAGES = 30;
+
+
+    function optionImageURL(
+      optionNumber,
+      imageNumber = 1
+    ) {
+
+      const base =
+        encodeURIComponent(
+          String(optionNumber)
+        );
+
+      return imageNumber === 1
+        ? `/images/${base}.jpg`
+        : `/images/${base}-${imageNumber}.jpg`;
+
+    }
+
+
+    function imageExists(src) {
+
+      return new Promise(
+        resolve => {
+
+          const probe =
+            new Image();
+
+          probe.onload =
+            () => resolve(true);
+
+          probe.onerror =
+            () => resolve(false);
+
+          probe.src =
+            src;
+
+        }
+      );
+
+    }
+
+
+    async function findOptionGalleryImages(
+      optionNumber
+    ) {
+
+      const images = [
+        optionImageURL(
+          optionNumber,
+          1
+        )
+      ];
+
+
+      for (
+        let imageNumber = 2;
+        imageNumber <= MAX_OPTION_IMAGES;
+        imageNumber++
+      ) {
+
+        const src =
+          optionImageURL(
+            optionNumber,
+            imageNumber
+          );
+
+
+        const exists =
+          await imageExists(
+            src
+          );
+
+
+        if (!exists) {
+          break;
+        }
+
+
+        images.push(
+          src
+        );
+
+      }
+
+
+      return images;
+
+    }
+
+
+    function renderCardGalleryImage(
+      image,
+      imageArea,
+      galleryState
+    ) {
+
+      image.src =
+        galleryState.images[
+          galleryState.index
+        ];
+
+
+      const count =
+        imageArea.querySelector(
+          ".gallery-count"
+        );
+
+
+      if (count) {
+
+        count.textContent =
+          `${galleryState.index + 1} / ${galleryState.images.length}`;
+
+      }
+
+
+      imageArea.classList.toggle(
+        "has-gallery",
+        galleryState.images.length > 1
+      );
+
+    }
+
+
+    function changeCardGalleryImage(
+      image,
+      imageArea,
+      galleryState,
+      direction
+    ) {
+
+      if (
+        galleryState.images.length <= 1
+      ) {
+        return;
+      }
+
+
+      galleryState.index =
+        (
+          galleryState.index +
+          direction +
+          galleryState.images.length
+        ) %
+        galleryState.images.length;
+
+
+      renderCardGalleryImage(
+        image,
+        imageArea,
+        galleryState
+      );
+
+    }
+
+
     /* =========================================================
        CREATE ONE OPTION CARD
        ========================================================= */
@@ -3385,7 +3739,7 @@
 
 
       /* =======================================================
-         IMAGE
+         IMAGE / MULTIPLE IMAGE GALLERY
          ======================================================= */
 
       const imageArea =
@@ -3402,51 +3756,160 @@
         new Image();
 
 
-      image.src =
-        `/images/${encodeURIComponent(
-          option.optionNumber
-        )}.jpg`;
-
-
       image.alt =
         option.optionNumber;
 
 
-      image.onload = function() {
+      const galleryState = {
+        images: [
+          optionImageURL(
+            option.optionNumber,
+            1
+          )
+        ],
+        index: 0
+      };
 
-        imageArea.innerHTML = "";
 
-        imageArea.appendChild(
-          image
+      const previousButton =
+        document.createElement(
+          "button"
         );
 
-      };
+      previousButton.type =
+        "button";
+
+      previousButton.className =
+        "gallery-arrow prev";
+
+      previousButton.innerHTML =
+        "‹";
+
+      previousButton.setAttribute(
+        "aria-label",
+        "Previous image"
+      );
 
 
-      image.onerror = function() {
+      const nextButton =
+        document.createElement(
+          "button"
+        );
 
-        imageArea.innerHTML = `
+      nextButton.type =
+        "button";
 
-          <div class="image-placeholder">
+      nextButton.className =
+        "gallery-arrow next";
 
-            No image available<br>
+      nextButton.innerHTML =
+        "›";
 
-            ${escapeHTML(
-              option.optionNumber
-            )}
+      nextButton.setAttribute(
+        "aria-label",
+        "Next image"
+      );
 
-          </div>
 
-        `;
+      const galleryCount =
+        document.createElement(
+          "div"
+        );
 
-      };
+      galleryCount.className =
+        "gallery-count";
+
+
+      previousButton.addEventListener(
+        "click",
+        function(event) {
+
+          event.stopPropagation();
+
+          changeCardGalleryImage(
+            image,
+            imageArea,
+            galleryState,
+            -1
+          );
+
+        }
+      );
+
+
+      nextButton.addEventListener(
+        "click",
+        function(event) {
+
+          event.stopPropagation();
+
+          changeCardGalleryImage(
+            image,
+            imageArea,
+            galleryState,
+            1
+          );
+
+        }
+      );
+
+
+      image.onload =
+        function() {
+
+          if (
+            !imageArea.contains(image)
+          ) {
+
+            imageArea.innerHTML = "";
+
+            imageArea.appendChild(
+              image
+            );
+
+            imageArea.appendChild(
+              previousButton
+            );
+
+            imageArea.appendChild(
+              nextButton
+            );
+
+            imageArea.appendChild(
+              galleryCount
+            );
+
+          }
+
+        };
+
+
+      image.onerror =
+        function() {
+
+          imageArea.innerHTML = `
+
+            <div class="image-placeholder">
+
+              No image available<br>
+
+              ${escapeHTML(
+                option.optionNumber
+              )}
+
+            </div>
+
+          `;
+
+        };
 
 
       image.onclick =
         function() {
 
-          openImageModal(
-            image.src,
+          openImageModalGallery(
+            galleryState.images,
+            galleryState.index,
             option.optionNumber
           );
 
@@ -3455,6 +3918,54 @@
 
       imageArea.appendChild(
         image
+      );
+
+      imageArea.appendChild(
+        previousButton
+      );
+
+      imageArea.appendChild(
+        nextButton
+      );
+
+      imageArea.appendChild(
+        galleryCount
+      );
+
+
+      renderCardGalleryImage(
+        image,
+        imageArea,
+        galleryState
+      );
+
+
+      findOptionGalleryImages(
+        option.optionNumber
+      )
+      .then(
+        images => {
+
+          galleryState.images =
+            images;
+
+          if (
+            galleryState.index >=
+            images.length
+          ) {
+
+            galleryState.index = 0;
+
+          }
+
+
+          renderCardGalleryImage(
+            image,
+            imageArea,
+            galleryState
+          );
+
+        }
       );
 
 
@@ -4208,40 +4719,152 @@
 
 
     /* =========================================================
-       IMAGE MODAL
+       IMAGE MODAL / GALLERY
        ========================================================= */
 
-    function openImageModal(
-      src,
-      alt
-    ) {
+    let modalGalleryImages = [];
+    let modalGalleryIndex = 0;
+    let modalGalleryAlt = "";
 
-      const modal =
-        document.getElementById(
-          "image-modal"
-        );
 
+    function updateModalGallery() {
 
       const image =
         document.getElementById(
           "modal-image"
         );
 
+      const modalCard =
+        document.querySelector(
+          "#image-modal .modal-card"
+        );
+
+      const count =
+        document.getElementById(
+          "modal-gallery-count"
+        );
+
+
+      if (
+        !image ||
+        !modalCard ||
+        !modalGalleryImages.length
+      ) {
+        return;
+      }
+
 
       image.src =
-        src;
-
+        modalGalleryImages[
+          modalGalleryIndex
+        ];
 
       image.alt =
+        modalGalleryAlt || "";
+
+
+      const hasGallery =
+        modalGalleryImages.length > 1;
+
+
+      modalCard.classList.toggle(
+        "has-gallery",
+        hasGallery
+      );
+
+
+      if (count) {
+
+        count.textContent =
+          `${modalGalleryIndex + 1} / ${modalGalleryImages.length}`;
+
+      }
+
+    }
+
+
+    function openImageModalGallery(
+      images,
+      startIndex = 0,
+      alt = ""
+    ) {
+
+      modalGalleryImages =
+        Array.isArray(images)
+          ? images.filter(Boolean)
+          : [];
+
+
+      if (!modalGalleryImages.length) {
+        return;
+      }
+
+
+      modalGalleryIndex =
+        Math.max(
+          0,
+          Math.min(
+            startIndex,
+            modalGalleryImages.length - 1
+          )
+        );
+
+
+      modalGalleryAlt =
         alt || "";
 
 
-      modal.classList.add(
-        "open"
+      updateModalGallery();
+
+
+      document
+        .getElementById(
+          "image-modal"
+        )
+        .classList.add(
+          "open"
+        );
+
+    }
+
+
+    function openImageModal(
+      src,
+      alt
+    ) {
+
+      openImageModalGallery(
+        [src],
+        0,
+        alt
       );
 
     }
 
+
+    function changeModalGalleryImage(
+      direction
+    ) {
+
+      if (
+        modalGalleryImages.length <= 1
+      ) {
+        return;
+      }
+
+
+      modalGalleryIndex =
+        (
+          modalGalleryIndex +
+          direction +
+          modalGalleryImages.length
+        ) %
+        modalGalleryImages.length;
+
+
+      updateModalGallery();
+
+    }
 
 
     function closeImageModal() {
@@ -4255,7 +4878,6 @@
         );
 
     }
-
 
 
     function modalBackgroundClose(
@@ -4285,6 +4907,43 @@
         ) {
 
           closeImageModal();
+
+        }
+
+
+        const modalOpen =
+          document
+            .getElementById(
+              "image-modal"
+            )
+            ?.classList
+            .contains(
+              "open"
+            );
+
+
+        if (
+          modalOpen &&
+          event.key ===
+          "ArrowLeft"
+        ) {
+
+          changeModalGalleryImage(
+            -1
+          );
+
+        }
+
+
+        if (
+          modalOpen &&
+          event.key ===
+          "ArrowRight"
+        ) {
+
+          changeModalGalleryImage(
+            1
+          );
 
         }
 
