@@ -614,6 +614,168 @@
       font-size: 1rem;
     }
 
+
+    /* =========================
+       PREVIEW EVENT SIGN-INS
+       ========================= */
+    .preview-signins {
+      margin-top: 20px;
+      background: var(--card);
+      border: 1px solid rgba(229,231,235,.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .preview-signins-header {
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:18px;
+      padding:20px 22px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .preview-signins-header h2 {
+      margin:0;
+      color:var(--navy);
+      font-size:1.15rem;
+    }
+
+    .preview-signins-header p {
+      margin:5px 0 0;
+      color:var(--muted);
+      font-size:.84rem;
+    }
+
+    .preview-signins-actions {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .preview-signins-actions a,
+    .preview-signins-actions button {
+      border:1px solid #d9dde2;
+      background:#fff;
+      color:var(--navy);
+      border-radius:8px;
+      padding:9px 11px;
+      text-decoration:none;
+      font-size:.78rem;
+      font-weight:750;
+      cursor:pointer;
+    }
+
+    .preview-signins-body {
+      padding:18px;
+    }
+
+    .preview-signin-search {
+      margin-bottom:14px;
+    }
+
+    .preview-signin-search input {
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:9px;
+      outline:none;
+      font-size:.86rem;
+    }
+
+    .preview-signin-list {
+      display:grid;
+      gap:12px;
+    }
+
+    .preview-entry {
+      border:1px solid #e6e9ec;
+      border-radius:11px;
+      background:#fff;
+      padding:15px;
+    }
+
+    .preview-entry-top {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:12px;
+    }
+
+    .preview-entry-name {
+      color:var(--navy);
+      font-weight:800;
+      font-size:.96rem;
+    }
+
+    .preview-entry-meta {
+      margin-top:3px;
+      color:var(--muted);
+      font-size:.75rem;
+    }
+
+    .copy-subject-btn {
+      border:0;
+      background:var(--yellow);
+      color:#22272d;
+      border-radius:8px;
+      padding:9px 11px;
+      font-size:.76rem;
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .preview-entry-grid {
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px 14px;
+    }
+
+    .preview-data {
+      min-width:0;
+    }
+
+    .preview-data-label {
+      color:#8d9298;
+      font-size:.65rem;
+      font-weight:800;
+      letter-spacing:.045em;
+      text-transform:uppercase;
+      margin-bottom:3px;
+    }
+
+    .preview-data-value {
+      color:#30353a;
+      font-size:.8rem;
+      line-height:1.4;
+      overflow-wrap:anywhere;
+    }
+
+    .preview-empty {
+      padding:26px 10px;
+      text-align:center;
+      color:var(--muted);
+      font-size:.85rem;
+    }
+
+    @media (max-width: 1000px) {
+      .preview-entry-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+
+    @media (max-width: 620px) {
+      .preview-signins-header,
+      .preview-entry-top {
+        align-items:stretch;
+        flex-direction:column;
+      }
+
+      .preview-entry-grid { grid-template-columns:1fr; }
+      .copy-subject-btn { width:100%; }
+    }
+
     .footer-note {
       text-align: center;
       margin-top: 22px;
@@ -821,6 +983,16 @@
                 <span>→</span>
               </a>
 
+              <a
+                class="hub-link"
+                href="/preview-signin.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <span>Preview Event Sign-In</span>
+                <span>→</span>
+              </a>
+
             </div>
 
             <div class="misc-placeholder">
@@ -831,6 +1003,48 @@
         </section>
 
       </div>
+
+
+
+      <!-- =========================
+           PREVIEW EVENT SIGN-INS
+           ========================= -->
+      <section class="preview-signins">
+
+        <div class="preview-signins-header">
+          <div>
+            <h2>Preview Event Sign-Ins</h2>
+            <p>Customer submissions from the public Preview Event form.</p>
+          </div>
+
+          <div class="preview-signins-actions">
+            <a href="/preview-signin.html" target="_blank" rel="noopener">
+              Open Customer Form
+            </a>
+
+            <button type="button" onclick="loadPreviewSignins()">
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="preview-signins-body">
+
+          <div class="preview-signin-search">
+            <input
+              id="previewSigninSearch"
+              type="text"
+              placeholder="Search name, community, email, phone, plan..."
+              oninput="renderPreviewSignins()"
+            />
+          </div>
+
+          <div id="previewSigninList" class="preview-signin-list">
+            <div class="preview-empty">Loading Preview Event sign-ins...</div>
+          </div>
+
+        </div>
+      </section>
 
 
       <div class="footer-note">
@@ -1392,6 +1606,361 @@
 
       }
     );
+
+
+
+    /* =====================================================
+       PREVIEW EVENT SIGN-INS
+       Protected by the same dashboard authentication cookie.
+       ===================================================== */
+
+    let previewSignins = [];
+
+
+    async function loadPreviewSignins() {
+
+      const list =
+        document.getElementById(
+          "previewSigninList"
+        );
+
+      if (!list) {
+        return;
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/list-preview-signins",
+            {
+              headers: {
+                "Accept": "application/json"
+              },
+              cache: "no-store",
+              credentials: "same-origin"
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to load Preview Event sign-ins."
+          );
+
+        }
+
+
+        previewSignins =
+          Array.isArray(
+            result.submissions
+          )
+            ? result.submissions
+            : [];
+
+
+        renderPreviewSignins();
+
+
+      } catch (error) {
+
+        console.error(
+          "PREVIEW SIGN-INS LOAD ERROR:",
+          error
+        );
+
+
+        list.innerHTML = `
+          <div class="preview-empty">
+            ${escapeHTML(
+              error.message ||
+              "Unable to load Preview Event sign-ins."
+            )}
+          </div>
+        `;
+
+      }
+
+    }
+
+
+    function renderPreviewSignins() {
+
+      const list =
+        document.getElementById(
+          "previewSigninList"
+        );
+
+
+      if (!list) {
+        return;
+      }
+
+
+      const query =
+        (
+          document
+            .getElementById(
+              "previewSigninSearch"
+            )
+            ?.value || ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const filtered =
+        previewSignins.filter(
+          item => {
+
+            const haystack =
+              [
+                item.name,
+                item.phone,
+                item.email,
+                item.underContract,
+                item.homeType,
+                item.futureAddress,
+                item.community,
+                item.salesCounselor,
+                item.homePlan,
+                item.elevation
+              ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+
+            return (
+              !query ||
+              haystack.includes(query)
+            );
+
+          }
+        );
+
+
+      if (
+        filtered.length === 0
+      ) {
+
+        list.innerHTML = `
+          <div class="preview-empty">
+            ${
+              previewSignins.length === 0
+                ? "No Preview Event sign-ins yet."
+                : "No sign-ins match your search."
+            }
+          </div>
+        `;
+
+        return;
+
+      }
+
+
+      list.innerHTML =
+        filtered
+          .map(
+            item => {
+
+              const subject =
+                `Preview Event ${
+                  item.name || ""
+                } ${
+                  item.community || ""
+                }`
+                  .replace(
+                    /\s+/g,
+                    " "
+                  )
+                  .trim();
+
+
+              return `
+
+                <article class="preview-entry">
+
+                  <div class="preview-entry-top">
+
+                    <div>
+
+                      <div class="preview-entry-name">
+                        ${escapeHTML(item.name || "Unnamed Visitor")}
+                      </div>
+
+                      <div class="preview-entry-meta">
+                        ${escapeHTML(formatPreviewDate(item.createdAt))}
+                      </div>
+
+                    </div>
+
+
+                    <button
+                      class="copy-subject-btn"
+                      type="button"
+                      onclick='copyPreviewSubject(this, ${JSON.stringify(subject)})'
+                    >
+                      Copy Subject
+                    </button>
+
+                  </div>
+
+
+                  <div class="preview-entry-grid">
+
+                    ${previewData("Phone Number", item.phone)}
+                    ${previewData("Email Address", item.email)}
+                    ${previewData("Under Contract?", item.underContract)}
+                    ${previewData("Home Type", item.homeType)}
+                    ${previewData("KB Future Address", item.futureAddress)}
+                    ${previewData("Community", item.community)}
+                    ${previewData("Sales Counselor", item.salesCounselor)}
+                    ${previewData("Home Plan", item.homePlan)}
+                    ${previewData("Elevation", item.elevation)}
+
+                  </div>
+
+                </article>
+
+              `;
+
+            }
+          )
+          .join("");
+
+    }
+
+
+    function previewData(
+      label,
+      value
+    ) {
+
+      return `
+
+        <div class="preview-data">
+
+          <div class="preview-data-label">
+            ${escapeHTML(label)}
+          </div>
+
+          <div class="preview-data-value">
+            ${escapeHTML(value || "—")}
+          </div>
+
+        </div>
+
+      `;
+
+    }
+
+
+    async function copyPreviewSubject(
+      button,
+      subject
+    ) {
+
+      try {
+
+        await navigator
+          .clipboard
+          .writeText(
+            subject
+          );
+
+
+        if (button) {
+
+          const original =
+            button.textContent;
+
+
+          button.textContent =
+            "Copied!";
+
+
+          setTimeout(
+            () => {
+              button.textContent =
+                original;
+            },
+            1200
+          );
+
+        }
+
+
+      } catch (error) {
+
+        window.prompt(
+          "Copy this subject:",
+          subject
+        );
+
+      }
+
+    }
+
+
+    function formatPreviewDate(
+      value
+    ) {
+
+      if (!value) {
+        return "";
+      }
+
+
+      const date =
+        new Date(value);
+
+
+      if (
+        Number.isNaN(
+          date.getTime()
+        )
+      ) {
+        return value;
+      }
+
+
+      return date.toLocaleString(
+        [],
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }
+      );
+
+    }
+
+
+    loadPreviewSignins();
+
+
+    const previewSigninRefreshInterval =
+      setInterval(
+        () => {
+
+          if (!document.hidden) {
+            loadPreviewSignins();
+          }
+
+        },
+        5000
+      );
 
   </script>
 
