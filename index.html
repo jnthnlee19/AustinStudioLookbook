@@ -198,7 +198,7 @@
        ========================= */
     .studio-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.75fr) minmax(220px, .8fr) minmax(220px, .8fr);
+      grid-template-columns: minmax(0, 2.35fr) minmax(190px, .72fr) minmax(190px, .72fr);
       gap: 18px;
       align-items: start;
     }
@@ -270,6 +270,41 @@
     .hub-search input:focus {
       border-color: #b9bec7;
       box-shadow: 0 0 0 3px rgba(31, 47, 70, 0.06);
+    }
+
+    /* Keep the Lookbook table fully visible inside its column */
+    .lookbooks-column .lookbook-table-wrap {
+      overflow-x: visible;
+    }
+
+    .lookbooks-column table {
+      width: 100%;
+      table-layout: fixed;
+      font-size: 0.76rem;
+    }
+
+    .lookbooks-column th,
+    .lookbooks-column td {
+      padding: 10px 6px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      vertical-align: middle;
+    }
+
+    .lookbooks-column th:nth-child(1) { width: 24%; }
+    .lookbooks-column th:nth-child(2) { width: 13%; }
+    .lookbooks-column th:nth-child(3) { width: 16%; }
+    .lookbooks-column th:nth-child(4) { width: 16%; }
+    .lookbooks-column th:nth-child(5) { width: 13%; }
+    .lookbooks-column th:nth-child(6) { width: 18%; }
+
+    .lookbooks-column .action-cell {
+      white-space: normal;
+    }
+
+    .lookbooks-column .action-cell button,
+    .lookbooks-column .action-cell a {
+      font-size: 0.72rem;
     }
 
     .hub-link-list {
