@@ -796,6 +796,119 @@
       font-size:.96rem;
     }
 
+    .preview-name-row {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .preview-entry.tracked .preview-entry-name {
+      text-decoration:line-through;
+      opacity:.55;
+    }
+
+    .event-tracked-label {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:.72rem;
+      font-weight:750;
+      color:#5d636a;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .event-tracked-label input {
+      width:15px;
+      height:15px;
+      cursor:pointer;
+      accent-color:#26384a;
+    }
+
+    .event-tracked-label.saving {
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    .preview-modal-backdrop {
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background:rgba(19,28,38,.58);
+    }
+
+    .preview-modal-backdrop.open {
+      display:flex;
+    }
+
+    .preview-modal {
+      width:min(680px,100%);
+      max-height:82vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 24px 70px rgba(0,0,0,.28);
+    }
+
+    .preview-modal-header {
+      position:sticky;
+      top:0;
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      padding:20px 22px 17px;
+      background:#fff;
+      border-bottom:1px solid #e6e9ec;
+    }
+
+    .preview-modal-title {
+      margin:0;
+      color:var(--navy);
+      font-size:1.1rem;
+      font-weight:850;
+    }
+
+    .preview-modal-subtitle {
+      margin-top:4px;
+      color:var(--muted);
+      font-size:.78rem;
+    }
+
+    .preview-modal-close {
+      width:34px;
+      height:34px;
+      border:1px solid #d9dde2;
+      border-radius:9px;
+      background:#fff;
+      cursor:pointer;
+      font-size:1.2rem;
+    }
+
+    .preview-modal-body {
+      padding:20px 22px 24px;
+    }
+
+    .preview-modal-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px 20px;
+    }
+
+    @media (max-width:620px) {
+      .preview-modal-backdrop {
+        padding:12px;
+      }
+
+      .preview-modal-grid {
+        grid-template-columns:1fr;
+      }
+    }
+
     .preview-entry-meta {
       margin-top:3px;
       color:var(--muted);
@@ -1785,33 +1898,213 @@
     }
 
 
-    function togglePreviewDetails(
-      button
+    function openPreviewDetails(
+      submissionId
     ) {
 
-      const entry =
-        button.closest(
-          ".preview-entry"
+      const item =
+        previewSignins.find(
+          entry =>
+            String(entry.id || "") ===
+            String(submissionId || "")
         );
 
-
-      if (!entry) {
+      if (!item) {
         return;
       }
 
+      document.getElementById(
+        "previewDetailsTitle"
+      ).textContent =
+        item.name ||
+        "Preview Event Sign-In";
 
-      const open =
-        entry.classList.toggle(
-          "open"
-        );
+      document.getElementById(
+        "previewDetailsSubtitle"
+      ).textContent =
+        [
+          item.community || "",
+          formatPreviewDate(
+            item.createdAt
+          )
+        ]
+          .filter(Boolean)
+          .join(" · ");
 
+      document.getElementById(
+        "previewDetailsBody"
+      ).innerHTML = `
+        <div class="preview-modal-grid">
+          ${previewData("Phone Number", item.phone)}
+          ${previewData("Email Address", item.email)}
+          ${previewData("Under Contract?", item.underContract)}
+          ${previewData("Home Type", item.homeType)}
+          ${previewData("KB Future Address", item.futureAddress)}
+          ${previewData("Community", item.community)}
+          ${previewData("Sales Counselor", item.salesCounselor)}
+          ${previewData("Home Plan", item.homePlan)}
+          ${previewData("Elevation", item.elevation)}
+        </div>
+      `;
 
-      button.textContent =
-        open
-          ? "Hide Details"
-          : "View Details";
+      document.getElementById(
+        "previewDetailsModal"
+      ).classList.add(
+        "open"
+      );
+
+      document.body.style.overflow =
+        "hidden";
 
     }
+
+
+    function closePreviewDetails() {
+
+      const modal =
+        document.getElementById(
+          "previewDetailsModal"
+        );
+
+      if (!modal) {
+        return;
+      }
+
+      modal.classList.remove(
+        "open"
+      );
+
+      document.body.style.overflow =
+        "";
+
+    }
+
+
+    function handlePreviewModalBackdrop(
+      event
+    ) {
+
+      if (
+        event.target ===
+        event.currentTarget
+      ) {
+        closePreviewDetails();
+      }
+
+    }
+
+
+    async function setPreviewEventTracked(
+      checkbox,
+      submissionId,
+      createdAt
+    ) {
+
+      const label =
+        checkbox.closest(
+          ".event-tracked-label"
+        );
+
+      const card =
+        checkbox.closest(
+          ".preview-entry"
+        );
+
+      const tracked =
+        checkbox.checked;
+
+      if (label) {
+        label.classList.add(
+          "saving"
+        );
+      }
+
+      try {
+
+        const response =
+          await fetch(
+            "/.netlify/functions/set-preview-signin-tracked",
+            {
+              method:"POST",
+              credentials:"same-origin",
+              headers:{
+                "Content-Type":
+                  "application/json"
+              },
+              body:JSON.stringify({
+                id:submissionId,
+                createdAt,
+                eventTracked:tracked
+              })
+            }
+          );
+
+        const result =
+          await response
+            .json()
+            .catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(
+            result.error ||
+            "Unable to update Event Tracked status."
+          );
+        }
+
+        const item =
+          previewSignins.find(
+            entry =>
+              String(entry.id || "") ===
+              String(submissionId || "")
+          );
+
+        if (item) {
+          item.eventTracked =
+            tracked;
+        }
+
+        if (card) {
+          card.classList.toggle(
+            "tracked",
+            tracked
+          );
+        }
+
+      } catch (error) {
+
+        checkbox.checked =
+          !tracked;
+
+        alert(
+          error.message ||
+          "Unable to update Event Tracked status."
+        );
+
+      } finally {
+
+        if (label) {
+          label.classList.remove(
+            "saving"
+          );
+        }
+
+      }
+
+    }
+
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Escape"
+        ) {
+          closePreviewDetails();
+        }
+
+      }
+    );
 
 
 
@@ -1980,9 +2273,9 @@
 
               const subject =
                 `Preview Event ${
-                  item.name || ""
-                } ${
                   item.community || ""
+                } ${
+                  item.name || ""
                 }`
                   .replace(
                     /\s+/g,
@@ -1993,17 +2286,32 @@
 
               return `
 
-                <article class="preview-entry">
+                <article class="preview-entry ${item.eventTracked ? "tracked" : ""}">
 
                   <div class="preview-entry-top">
 
                     <div>
 
-                      <div class="preview-entry-name">
-                        ${escapeHTML(item.name || "Unnamed Visitor")}
+                      <div class="preview-name-row">
+
+                        <div class="preview-entry-name">
+                          ${escapeHTML(item.name || "Unnamed Visitor")}
+                        </div>
+
+                        <label class="event-tracked-label">
+                          <input
+                            type="checkbox"
+                            ${item.eventTracked ? "checked" : ""}
+                            onchange='setPreviewEventTracked(this, ${JSON.stringify(item.id || "")}, ${JSON.stringify(item.createdAt || "")})'
+                          >
+                          Event Tracked?
+                        </label>
+
                       </div>
 
                       <div class="preview-entry-meta">
+                        ${escapeHTML(item.community || "No Community")}
+                        ·
                         ${escapeHTML(formatPreviewDate(item.createdAt))}
                       </div>
 
@@ -2023,7 +2331,7 @@
                       <button
                         class="view-details-btn"
                         type="button"
-                        onclick="togglePreviewDetails(this)"
+                        onclick='openPreviewDetails(${JSON.stringify(item.id || "")})'
                       >
                         View Details
                       </button>
@@ -2033,19 +2341,6 @@
                   </div>
 
 
-                  <div class="preview-entry-grid preview-entry-details">
-
-                    ${previewData("Phone Number", item.phone)}
-                    ${previewData("Email Address", item.email)}
-                    ${previewData("Under Contract?", item.underContract)}
-                    ${previewData("Home Type", item.homeType)}
-                    ${previewData("KB Future Address", item.futureAddress)}
-                    ${previewData("Community", item.community)}
-                    ${previewData("Sales Counselor", item.salesCounselor)}
-                    ${previewData("Home Plan", item.homePlan)}
-                    ${previewData("Elevation", item.elevation)}
-
-                  </div>
 
                 </article>
 
@@ -2181,6 +2476,52 @@
       );
 
   </script>
+
+
+  <div
+    id="previewDetailsModal"
+    class="preview-modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="previewDetailsTitle"
+    onclick="handlePreviewModalBackdrop(event)"
+  >
+    <div class="preview-modal">
+
+      <div class="preview-modal-header">
+
+        <div>
+          <h2
+            id="previewDetailsTitle"
+            class="preview-modal-title"
+          >
+            Preview Event Sign-In
+          </h2>
+
+          <div
+            id="previewDetailsSubtitle"
+            class="preview-modal-subtitle"
+          ></div>
+        </div>
+
+        <button
+          class="preview-modal-close"
+          type="button"
+          aria-label="Close"
+          onclick="closePreviewDetails()"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <div
+        id="previewDetailsBody"
+        class="preview-modal-body"
+      ></div>
+
+    </div>
+  </div>
 
 </body>
 </html>
