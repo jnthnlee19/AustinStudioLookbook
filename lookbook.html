@@ -1778,24 +1778,9 @@
 
     function formatPrice(value) {
 
-      if (
-        value === null ||
-        value === undefined ||
-        value === ""
-      ) {
-        return "TBD";
-      }
-
-      if (
-        /\\bincluded\\b/i.test(
-          String(value)
-        )
-      ) {
-        return "Included";
-      }
-
       const number =
         parsePrice(value);
+
 
       return number.toLocaleString(
         undefined,
@@ -1809,6 +1794,64 @@
 
     }
 
+
+    function displayPriceLabel(
+      amount,
+      description = "",
+      salesDesc = ""
+    ) {
+
+      const numericPrice =
+        parsePrice(amount);
+
+
+      const priceContext =
+        [
+          amount,
+          description,
+          salesDesc
+        ]
+          .filter(
+            value =>
+              value !== null &&
+              value !== undefined &&
+              value !== ""
+          )
+          .join(" ");
+
+
+      if (
+        numericPrice === 0 &&
+        /\bincluded\b/i.test(
+          priceContext
+        )
+      ) {
+        return "Included";
+      }
+
+
+      if (
+        numericPrice === 0 &&
+        /\bno\s*charge\b/i.test(
+          priceContext
+        )
+      ) {
+        return "No Charge";
+      }
+
+
+      if (
+        numericPrice === 0
+      ) {
+        return "See Studio Consultant for Details";
+      }
+
+
+      return formatPrice(
+        amount
+      );
+
+    }
 
 
     /* =========================================================
@@ -3085,25 +3128,14 @@
 
       price.className =
         "price";
-      const includedOption =
-        parsePrice(option.amount) === 0 &&
-        /included/i.test(
-          [
-            option.description,
-            option.salesDesc
-          ]
-            .filter(Boolean)
-            .join(" ")
-        );
 
 
       price.textContent =
-        includedOption
-          ? "Included"
-          : formatPrice(
-              option.amount
-            );
-
+        displayPriceLabel(
+          option.amount,
+          option.description,
+          option.salesDesc
+        );
 
 
       /* =======================================================
@@ -4344,16 +4376,14 @@
                   ?.textContent || "";
 
 
-                const includedOption =
-                  price === 0 &&
-                  /\bincluded\b/i.test(
-                    [
-                      description,
-                      sales
-                    ]
-                      .filter(Boolean)
-                      .join(" ")
-                  );
+                const displayAmount =
+                  card.querySelector(
+                    ".price"
+                  )
+                  ?.textContent || "";
+
+
+
 
 
                 html += `
@@ -4428,15 +4458,9 @@
                     <div class="amount">
 
                       ${
-                        includedOption
-                          ? "Included"
-                          : price.toLocaleString(
-                              undefined,
-                              {
-                                style:"currency",
-                                currency:"USD"
-                              }
-                            )
+                        escapeHTML(
+                          displayAmount
+                        )
                       }
 
                     </div>
@@ -4845,6 +4869,13 @@
                   ?.textContent || "";
 
 
+                const displayAmount =
+                  card.querySelector(
+                    ".price"
+                  )
+                  ?.textContent || "";
+
+
                 const comment =
                   card.querySelector(
                     ".option-comment"
@@ -4955,13 +4986,17 @@
                       <strong>
 
                         ${
-                          lineTotal.toLocaleString(
-                            undefined,
-                            {
-                              style:"currency",
-                              currency:"USD"
-                            }
-                          )
+                          price === 0
+                            ? escapeHTML(
+                                displayAmount
+                              )
+                            : lineTotal.toLocaleString(
+                                undefined,
+                                {
+                                  style:"currency",
+                                  currency:"USD"
+                                }
+                              )
                         }
 
                       </strong>
