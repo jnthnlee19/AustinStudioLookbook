@@ -2002,24 +2002,36 @@
 
     function formatPrice(value) {
 
-      if (
-        value === null ||
-        value === undefined ||
-        value === ""
-      ) {
-        return "TBD";
-      }
+      const raw =
+        String(value ?? "")
+          .trim();
+
 
       if (
-        /\bincluded\b/i.test(
-          String(value)
-        )
+        /\bincluded\b/i.test(raw)
       ) {
         return "Included";
       }
 
+
+      if (
+        /\bno\s*charge\b/i.test(raw)
+      ) {
+        return "No Charge";
+      }
+
+
+      if (
+        raw === "" ||
+        parsePrice(raw) === 0
+      ) {
+        return "See Studio Consultant for Details";
+      }
+
+
       const number =
-        parsePrice(value);
+        parsePrice(raw);
+
 
       return number.toLocaleString(
         undefined,
@@ -2032,7 +2044,6 @@
       );
 
     }
-
 
 
     /* =========================================================
