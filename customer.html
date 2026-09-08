@@ -4087,30 +4087,66 @@
 
       price.className =
         "price";
+
+
+      const priceContext =
+        [
+          option.amount,
+          option.description,
+          option.salesDesc
+        ]
+          .filter(
+            value =>
+              value !== null &&
+              value !== undefined &&
+              value !== ""
+          )
+          .join(" ");
+
+
+      const zeroPrice =
+        parsePrice(
+          option.amount
+        ) === 0;
+
+
       const includedOption =
-        parsePrice(option.amount) === 0 &&
+        zeroPrice &&
         /\bincluded\b/i.test(
-          [
-            option.amount,
-            option.description,
-            option.salesDesc
-          ]
-            .filter(
-              value =>
-                value !== null &&
-                value !== undefined &&
-                value !== ""
-            )
-            .join(" ")
+          priceContext
         );
 
 
-      price.textContent =
-        includedOption
-          ? "Included"
-          : formatPrice(
-              option.amount
-            );
+      const noChargeOption =
+        zeroPrice &&
+        /\bno\s*charge\b/i.test(
+          priceContext
+        );
+
+
+      if (includedOption) {
+
+        price.textContent =
+          "Included";
+
+      } else if (noChargeOption) {
+
+        price.textContent =
+          "No Charge";
+
+      } else if (zeroPrice) {
+
+        price.textContent =
+          "See Studio Consultant for Details";
+
+      } else {
+
+        price.textContent =
+          formatPrice(
+            option.amount
+          );
+
+      }
 
 
 
