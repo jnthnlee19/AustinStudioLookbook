@@ -2022,13 +2022,6 @@
 
 
       if (
-        /\btbd\b/i.test(raw)
-      ) {
-        return "Pricing to be determined";
-      }
-
-
-      if (
         raw === "" ||
         parsePrice(raw) === 0
       ) {
@@ -4096,6 +4089,20 @@
         "price";
 
 
+      const savedPriceOverride =
+        activeCustomerLookbook
+          ?.priceOverrides
+          ?.[String(
+            option.optionNumber
+          )];
+
+
+      const hasSavedPriceOverride =
+        typeof savedPriceOverride ===
+          "string" &&
+        savedPriceOverride.trim() !== "";
+
+
       const priceContext =
         [
           option.amount,
@@ -4131,16 +4138,10 @@
         );
 
 
-      const tbdOption =
-        /\btbd\b/i.test(
-          priceContext
-        );
-
-
-      if (tbdOption) {
+      if (hasSavedPriceOverride) {
 
         price.textContent =
-          "Pricing to be determined";
+          savedPriceOverride.trim();
 
       } else if (includedOption) {
 
@@ -4219,9 +4220,13 @@
 
 
       checkbox.dataset.price =
-        parsePrice(
-          option.amount
-        );
+        hasSavedPriceOverride
+          ? parsePrice(
+              savedPriceOverride
+            )
+          : parsePrice(
+              option.amount
+            );
 
 
       checkbox.dataset.option =
