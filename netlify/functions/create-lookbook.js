@@ -41,6 +41,69 @@ function cleanName(value) {
 }
 
 
+/* ---------------------------------------------------------
+   CLEAN PRICE OVERRIDES
+
+   Stored as:
+   {
+     "2004315": "$1,250",
+     "2021067": "Pricing to be determined"
+   }
+
+   Only simple Option # -> text pairs are accepted.
+   --------------------------------------------------------- */
+
+function cleanPriceOverrides(value) {
+
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    return {};
+  }
+
+
+  const cleaned = {};
+
+
+  Object
+    .entries(value)
+    .slice(0, 5000)
+    .forEach(
+      ([optionNumber, priceText]) => {
+
+        const option =
+          String(optionNumber || "")
+            .trim()
+            .slice(0, 100);
+
+
+        const text =
+          String(priceText ?? "")
+            .trim()
+            .slice(0, 300);
+
+
+        if (
+          option &&
+          text
+        ) {
+
+          cleaned[option] =
+            text;
+
+        }
+
+      }
+    );
+
+
+  return cleaned;
+
+}
+
+
 /* =========================================================
    NETLIFY FUNCTION
    ========================================================= */
@@ -110,6 +173,12 @@ export default async function handler(request) {
         : [];
 
 
+    const priceOverrides =
+      cleanPriceOverrides(
+        payload?.priceOverrides
+      );
+
+
     /* -----------------------------------------------------
        VALIDATION
        ----------------------------------------------------- */
@@ -146,10 +215,7 @@ export default async function handler(request) {
     /* -----------------------------------------------------
        CREATE PRIVATE RANDOM ID
 
-       Example:
-       f3c75f94-4e9d-4bc4-b1d7-7f34bb835be1
-
-       The customer's address/name is NOT placed in the URL.
+       The customer's name/address is NOT placed in the URL.
        ----------------------------------------------------- */
 
     const id =
@@ -180,16 +246,15 @@ export default async function handler(request) {
 
       workbook,
 
-      selections
+      selections,
+
+      priceOverrides
 
     };
 
 
     /* -----------------------------------------------------
        OPEN NETLIFY BLOB STORE
-
-       Strong consistency means that immediately after we
-       save a Lookbook, the newest version is available.
        ----------------------------------------------------- */
 
     const store =
@@ -253,8 +318,6 @@ export default async function handler(request) {
 
     /* -----------------------------------------------------
        BUILD CUSTOMER URL
-
-       customer.html is the NEXT page we will create.
        ----------------------------------------------------- */
 
     const requestURL =
