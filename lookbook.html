@@ -900,6 +900,38 @@
 
 
     /* =========================================================
+       EDITABLE STUDIO PRICING
+       Click any price to type a manual override before
+       printing or creating the customer Lookbook.
+       ========================================================= */
+
+    .price[contenteditable="true"] {
+      min-height: 34px;
+      padding: 8px 9px;
+      border: 1px dashed #b8bec5;
+      border-radius: 7px;
+      background: #fffdf5;
+      outline: none;
+      cursor: text;
+      line-height: 1.35;
+    }
+
+
+    .price[contenteditable="true"]:hover {
+      border-color: #8f98a2;
+      background: #fffaf0;
+    }
+
+
+    .price[contenteditable="true"]:focus {
+      border-style: solid;
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 3px rgba(243,198,63,.18);
+      background: #fff;
+    }
+
+
+    /* =========================================================
        SELECT / QUANTITY
        ========================================================= */
 
@@ -1837,15 +1869,6 @@
         )
       ) {
         return "No Charge";
-      }
-
-
-      if (
-        /\btbd\b/i.test(
-          priceContext
-        )
-      ) {
-        return "Pricing to be determined";
       }
 
 
@@ -3147,6 +3170,71 @@
         );
 
 
+      /*
+        Studio-only manual price override.
+        The text typed here is what will print and what will
+        be saved into the generated customer Lookbook.
+      */
+      price.contentEditable =
+        "true";
+
+      price.spellcheck =
+        false;
+
+      price.setAttribute(
+        "role",
+        "textbox"
+      );
+
+      price.setAttribute(
+        "aria-label",
+        `Editable price for option ${option.optionNumber}`
+      );
+
+      price.title =
+        "Click to edit this price before printing or creating the customer Lookbook.";
+
+
+      price.addEventListener(
+        "keydown",
+        event => {
+
+          if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            price.blur();
+
+          }
+
+        }
+      );
+
+
+      price.addEventListener(
+        "input",
+        () => {
+
+          const checkbox =
+            card.querySelector(
+              ".option-checkbox"
+            );
+
+          if (checkbox) {
+
+            checkbox.dataset.price =
+              parsePrice(
+                price.textContent
+              );
+
+          }
+
+          updateTotal();
+
+        }
+      );
+
+
       /* =======================================================
          SELECT + QUANTITY
          ======================================================= */
@@ -3842,6 +3930,63 @@
 
 
     /* =========================================================
+       GET MANUAL PRICE OVERRIDES
+
+       Every displayed Studio price is captured by Option #.
+       This lets the customer Lookbook use exactly what the
+       Studio Consultant reviewed before generating it.
+       ========================================================= */
+
+    function getPriceOverrides() {
+
+      const overrides = {};
+
+
+      document
+        .querySelectorAll(
+          ".option"
+        )
+        .forEach(
+          card => {
+
+            const optionNumber =
+              String(
+                card.dataset.option || ""
+              )
+                .trim();
+
+
+            const priceText =
+              card
+                .querySelector(
+                  ".price"
+                )
+                ?.textContent
+                ?.trim()
+                || "";
+
+
+            if (
+              optionNumber &&
+              priceText
+            ) {
+
+              overrides[optionNumber] =
+                priceText;
+
+            }
+
+          }
+        );
+
+
+      return overrides;
+
+    }
+
+
+
+    /* =========================================================
        GET CURRENT SELECTIONS
 
        This becomes the payload saved to Netlify Blobs.
@@ -3976,6 +4121,10 @@
         getCurrentSelections();
 
 
+      const priceOverrides =
+        getPriceOverrides();
+
+
       /*
         The create-lookbook backend is our next file.
 
@@ -4005,7 +4154,9 @@
 
                   workbook,
 
-                  selections
+                  selections,
+
+                  priceOverrides
 
                 })
 
