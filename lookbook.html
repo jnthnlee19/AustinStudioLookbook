@@ -1841,6 +1841,15 @@
 
 
       if (
+        /\btbd\b/i.test(
+          priceContext
+        )
+      ) {
+        return "Pricing to be determined";
+      }
+
+
+      if (
         numericPrice === 0
       ) {
         return "See Studio Consultant for Details";
