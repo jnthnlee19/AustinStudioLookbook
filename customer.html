@@ -2022,6 +2022,13 @@
 
 
       if (
+        /\btbd\b/i.test(raw)
+      ) {
+        return "Pricing to be determined";
+      }
+
+
+      if (
         raw === "" ||
         parsePrice(raw) === 0
       ) {
@@ -4124,7 +4131,18 @@
         );
 
 
-      if (includedOption) {
+      const tbdOption =
+        /\btbd\b/i.test(
+          priceContext
+        );
+
+
+      if (tbdOption) {
+
+        price.textContent =
+          "Pricing to be determined";
+
+      } else if (includedOption) {
 
         price.textContent =
           "Included";
