@@ -1828,96 +1828,38 @@
 
 
 function displayPriceLabel(
-  amount,
-  description = "",
-  salesDesc = ""
-) {
-
-  const rawAmount =
-    String(amount ?? "")
-      .trim();
-
-
-  /*
-    IMPORTANT:
-    If the actual PRICE CELL says TBD,
-    that always wins over any wording in the
-    description or sales description.
-  */
-
-  if (
-    /\bTBD\b/i.test(
-      rawAmount
-    )
-  ) {
-
-    return "Pricing to be determined";
-
-  }
-
-
-  const numericPrice =
-    parsePrice(
-      amount
-    );
-
-
-  const priceContext =
-    [
       amount,
-      description,
-      salesDesc
-    ]
-      .filter(
-        value =>
-          value !== null &&
-          value !== undefined &&
-          value !== ""
-      )
-      .join(" ");
+      description = "",
+      salesDesc = ""
+    ) {
+
+      const rawAmount =
+        String(amount ?? "")
+          .trim();
 
 
-  if (
-    numericPrice === 0 &&
-    /\bincluded\b/i.test(
-      priceContext
-    )
-  ) {
+      /*
+        IMPORTANT:
+        If the actual PRICE CELL says TBD,
+        that always wins over any wording in the
+        description or sales description.
+      */
 
-    return "Included";
+      if (
+        /\bTBD\b/i.test(
+          rawAmount
+        )
+      ) {
 
-  }
+        return "Pricing to be determined";
 
+      }
 
-  if (
-    numericPrice === 0 &&
-    /\bno\s*charge\b/i.test(
-      priceContext
-    )
-  ) {
-
-    return "No Charge";
-
-  }
-
-
-  if (
-    numericPrice === 0
-  ) {
-
-    return "See Studio Consultant for Details";
-
-  }
-
-
-  return formatPrice(
-    amount
-  );
-
-}
 
       const numericPrice =
-        parsePrice(amount);
+        parsePrice(
+          amount
+        );
 
 
       const priceContext =
@@ -1941,7 +1883,9 @@ function displayPriceLabel(
           priceContext
         )
       ) {
+
         return "Included";
+
       }
 
 
@@ -1951,14 +1895,18 @@ function displayPriceLabel(
           priceContext
         )
       ) {
+
         return "No Charge";
+
       }
 
 
       if (
         numericPrice === 0
       ) {
+
         return "See Studio Consultant for Details";
+
       }
 
 
