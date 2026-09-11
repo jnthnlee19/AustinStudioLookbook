@@ -2008,6 +2008,13 @@
 
 
       if (
+        /\bTBD\b/i.test(raw)
+      ) {
+        return "Pricing to be determined";
+      }
+
+
+      if (
         /\bincluded\b/i.test(raw)
       ) {
         return "Included";
@@ -4103,6 +4110,25 @@
         savedPriceOverride.trim() !== "";
 
 
+      const rawAmount =
+        String(
+          option.amount ?? ""
+        )
+          .trim();
+
+
+      /*
+        If the actual workbook PRICE CELL says TBD,
+        that always wins unless the Studio Consultant
+        deliberately saved a manual price override.
+      */
+
+      const tbdOption =
+        /\bTBD\b/i.test(
+          rawAmount
+        );
+
+
       const priceContext =
         [
           option.amount,
@@ -4142,6 +4168,11 @@
 
         price.textContent =
           savedPriceOverride.trim();
+
+      } else if (tbdOption) {
+
+        price.textContent =
+          "Pricing to be determined";
 
       } else if (includedOption) {
 
