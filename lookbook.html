@@ -1827,11 +1827,94 @@
     }
 
 
-    function displayPriceLabel(
+function displayPriceLabel(
+  amount,
+  description = "",
+  salesDesc = ""
+) {
+
+  const rawAmount =
+    String(amount ?? "")
+      .trim();
+
+
+  /*
+    IMPORTANT:
+    If the actual PRICE CELL says TBD,
+    that always wins over any wording in the
+    description or sales description.
+  */
+
+  if (
+    /\bTBD\b/i.test(
+      rawAmount
+    )
+  ) {
+
+    return "Pricing to be determined";
+
+  }
+
+
+  const numericPrice =
+    parsePrice(
+      amount
+    );
+
+
+  const priceContext =
+    [
       amount,
-      description = "",
-      salesDesc = ""
-    ) {
+      description,
+      salesDesc
+    ]
+      .filter(
+        value =>
+          value !== null &&
+          value !== undefined &&
+          value !== ""
+      )
+      .join(" ");
+
+
+  if (
+    numericPrice === 0 &&
+    /\bincluded\b/i.test(
+      priceContext
+    )
+  ) {
+
+    return "Included";
+
+  }
+
+
+  if (
+    numericPrice === 0 &&
+    /\bno\s*charge\b/i.test(
+      priceContext
+    )
+  ) {
+
+    return "No Charge";
+
+  }
+
+
+  if (
+    numericPrice === 0
+  ) {
+
+    return "See Studio Consultant for Details";
+
+  }
+
+
+  return formatPrice(
+    amount
+  );
+
+}
 
       const numericPrice =
         parsePrice(amount);
