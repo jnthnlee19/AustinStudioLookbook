@@ -505,29 +505,6 @@
     }
 
 
-    .select-all-wrap {
-      display: flex;
-      align-items: center;
-
-      gap: 7px;
-
-      padding: 7px 10px;
-
-      border: 1px solid #d7dade;
-      border-radius: 8px;
-
-      background: #fff;
-
-      font-size: 0.82rem;
-      color: #4c535a;
-    }
-
-
-    .select-all-wrap input {
-      accent-color: var(--dark);
-    }
-
-
     /* =========================================================
        CATEGORY SECTIONS
        ========================================================= */
@@ -1800,24 +1777,6 @@
 
         </div>
 
-
-
-        <div class="select-all-wrap">
-
-          <input
-            id="toggle-all"
-            type="checkbox"
-            onchange="toggleAllSelections(this)"
-          />
-
-          <label for="toggle-all">
-            Select All
-          </label>
-
-        </div>
-
-
-
         <div class="toolbar-divider"></div>
 
 
@@ -1834,6 +1793,14 @@
           onclick="printSelected()"
         >
           Print Selections
+        </button>
+
+
+        <button
+          class="btn btn-light"
+          onclick="printAllOptions()"
+        >
+          Print All Options
         </button>
 
 
@@ -2606,10 +2573,7 @@
 
 
       updateTotal();
-
-      updateMasterCheckbox();
-
-    }
+}
 
 
     function showDisabledLookbook() {
@@ -4403,10 +4367,7 @@
 
 
           updateTotal();
-
-          updateMasterCheckbox();
-
-        }
+}
       );
 
 
@@ -4568,98 +4529,6 @@
           );
 
     }
-
-
-
-    /* =========================================================
-       SELECT ALL
-       ========================================================= */
-
-    function toggleAllSelections(master) {
-
-      document
-        .querySelectorAll(
-          ".option"
-        )
-        .forEach(
-          card => {
-
-
-            if (
-              card.style.display ===
-              "none"
-            ) {
-
-              return;
-
-            }
-
-
-            const checkbox =
-              card.querySelector(
-                ".option-checkbox"
-              );
-
-
-            if (!checkbox) {
-              return;
-            }
-
-
-            checkbox.checked =
-              master.checked;
-
-
-            card.classList.toggle(
-              "selected",
-              master.checked
-            );
-
-          }
-        );
-
-
-      updateTotal();
-
-    }
-
-
-
-    function updateMasterCheckbox() {
-
-      const all =
-        Array.from(
-          document.querySelectorAll(
-            ".option-checkbox"
-          )
-        );
-
-
-      const selected =
-        all.filter(
-          checkbox =>
-            checkbox.checked
-        );
-
-
-      const master =
-        document.getElementById(
-          "toggle-all"
-        );
-
-
-      master.checked =
-        all.length > 0 &&
-        selected.length === all.length;
-
-
-      master.indeterminate =
-        selected.length > 0 &&
-        selected.length < all.length;
-
-    }
-
-
 
     /* =========================================================
        EXPAND / COLLAPSE
@@ -5322,6 +5191,268 @@
 
       }
 
+    }
+
+
+
+    /* =========================================================
+       PRINT ALL OPTIONS
+       - Does not select/change anything
+       - Shows pricing for every option
+       - Does not calculate or display a combined total
+       ========================================================= */
+
+    function printAllOptions() {
+
+      const allOptions =
+        Array.from(
+          document.querySelectorAll(
+            ".option"
+          )
+        );
+
+      if (allOptions.length === 0) {
+        alert("There are no options to print.");
+        return;
+      }
+
+      const windowRef =
+        window.open(
+          "",
+          "_blank"
+        );
+
+      if (!windowRef) {
+        alert("Please allow pop-ups to print all options.");
+        return;
+      }
+
+      let html = `
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>KB Home All Options</title>
+
+          <style>
+            body {
+              font-family: Segoe UI, Arial, sans-serif;
+              color:#262b30;
+              margin:0;
+              padding:32px;
+            }
+
+            .header {
+              display:flex;
+              justify-content:space-between;
+              align-items:flex-start;
+              border-bottom:4px solid #f3c63f;
+              padding-bottom:16px;
+              margin-bottom:24px;
+            }
+
+            .logo { max-width:100px; }
+
+            h1 {
+              margin:0;
+              font-size:22px;
+              color:#263341;
+            }
+
+            .house {
+              color:#666;
+              font-size:12px;
+              margin-top:5px;
+            }
+
+            h2 {
+              margin-top:30px;
+              padding:9px 12px;
+              background:#f3f3f2;
+              border-left:5px solid #f3c63f;
+              font-size:16px;
+            }
+
+            .option {
+              display:grid;
+              grid-template-columns:110px 1fr auto;
+              gap:14px;
+              border-bottom:1px solid #ddd;
+              padding:13px 0;
+            }
+
+            .option img {
+              width:110px;
+              height:100px;
+              object-fit:contain;
+              background:#f8f8f8;
+            }
+
+            .number {
+              font-weight:700;
+              color:#263341;
+            }
+
+            .description { margin-top:3px; }
+
+            .sales {
+              color:#666;
+              font-size:12px;
+              font-style:italic;
+              margin-top:5px;
+            }
+
+            .amount {
+              text-align:right;
+              white-space:nowrap;
+              font-weight:700;
+            }
+
+            @media print {
+              .print-button { display:none; }
+            }
+          </style>
+        </head>
+
+        <body>
+
+          <div class="header">
+            <div>
+              <img class="logo" src="/kb logo.png">
+            </div>
+
+            <div style="text-align:right;">
+              <h1>All Options & Pricing</h1>
+
+              <div class="house">
+                ${
+                  document
+                    .getElementById("house-info")
+                    .innerHTML
+                }
+              </div>
+            </div>
+          </div>
+      `;
+
+      document
+        .querySelectorAll("details.category")
+        .forEach(category => {
+
+          const options =
+            Array.from(
+              category.querySelectorAll(".option")
+            );
+
+          if (options.length === 0) {
+            return;
+          }
+
+          html += `
+            <h2>
+              ${
+                escapeHTML(
+                  category
+                    .querySelector(":scope > summary")
+                    ?.textContent || ""
+                )
+              }
+            </h2>
+          `;
+
+          options.forEach(card => {
+
+            const image =
+              card.querySelector(".option-image img");
+
+            const optionNumber =
+              card.querySelector(".option-number")
+                ?.textContent || "";
+
+            const description =
+              card.querySelector(".option-description")
+                ?.textContent || "";
+
+            const sales =
+              card.querySelector(".option-sales")
+                ?.textContent || "";
+
+            const displayAmount =
+              card.querySelector(".price")
+                ?.textContent || "";
+
+            html += `
+              <div class="option">
+
+                <div>
+                  ${
+                    image
+                    ? `
+                      <img
+                        src="${
+                          escapeAttribute(image.src)
+                        }"
+                      >
+                    `
+                    : ""
+                  }
+                </div>
+
+                <div>
+                  <div class="number">
+                    ${escapeHTML(optionNumber)}
+                  </div>
+
+                  <div class="description">
+                    ${escapeHTML(description)}
+                  </div>
+
+                  ${
+                    sales
+                    ? `
+                      <div class="sales">
+                        ${escapeHTML(sales)}
+                      </div>
+                    `
+                    : ""
+                  }
+                </div>
+
+                <div class="amount">
+                  ${escapeHTML(displayAmount)}
+                </div>
+
+              </div>
+            `;
+          });
+        });
+
+      html += `
+        <div style="margin-top:25px;text-align:right;">
+          <button
+            class="print-button"
+            onclick="window.print()"
+            style="
+              border:0;
+              background:#f3c63f;
+              color:#252525;
+              font-weight:700;
+              padding:10px 15px;
+              border-radius:7px;
+              cursor:pointer;
+            "
+          >
+            Print / Save PDF
+          </button>
+        </div>
+
+        </body>
+        </html>
+      `;
+
+      windowRef.document.write(html);
+      windowRef.document.close();
     }
 
 
