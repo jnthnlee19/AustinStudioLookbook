@@ -759,10 +759,14 @@
 
     .preview-signin-filters {
       display:grid;
-      grid-template-columns:minmax(0,1fr) minmax(145px,.55fr) minmax(145px,.55fr) auto;
+      grid-template-columns:minmax(145px,1fr) minmax(145px,1fr) auto;
       gap:10px;
       align-items:end;
       margin-bottom:14px;
+    }
+
+    .preview-signin-filter-field.search-field {
+      grid-column:1 / -1;
     }
 
     .preview-signin-filter-field {
@@ -1055,10 +1059,6 @@
         grid-template-columns:1fr 1fr;
       }
 
-      .preview-signin-filter-field:first-child {
-        grid-column:1 / -1;
-      }
-
       .preview-date-clear {
         grid-column:1 / -1;
       }
@@ -1330,7 +1330,7 @@
 
               <div class="preview-signin-filters">
 
-                <div class="preview-signin-filter-field">
+                <div class="preview-signin-filter-field search-field">
                   <label for="previewSigninSearch">
                     Search
                   </label>
