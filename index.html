@@ -657,6 +657,33 @@
     }
 
 
+    .disabled-lookbooks-toggle-wrap {
+      display: none;
+      padding: 14px 8px 4px;
+      text-align: center;
+    }
+
+    .disabled-lookbooks-toggle-wrap.visible {
+      display: block;
+    }
+
+    .disabled-lookbooks-toggle-btn {
+      border: 1px solid #d7dbe0;
+      border-radius: 9px;
+      padding: 9px 13px;
+      background: #fff;
+      color: var(--navy);
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .disabled-lookbooks-toggle-btn:hover {
+      background: #f7f8f9;
+    }
+
+
     .money-cell {
       font-weight: 800;
       color: var(--navy);
@@ -1212,6 +1239,20 @@
             </div>
 
             <div
+              class="disabled-lookbooks-toggle-wrap"
+              id="disabledLookbooksToggleWrap"
+            >
+              <button
+                class="disabled-lookbooks-toggle-btn"
+                id="disabledLookbooksToggleBtn"
+                type="button"
+                onclick="toggleDisabledLookbooks()"
+              >
+                Show Disabled Lookbooks
+              </button>
+            </div>
+
+            <div
               class="empty-state"
               id="emptyState"
             >
@@ -1477,6 +1518,9 @@
 
     let lookbooks = [];
 
+    let showDisabledLookbooks =
+      false;
+
 
     async function loadLookbooks() {
 
@@ -1497,6 +1541,12 @@
       if (lookbooks.length === 0) {
 
         tableWrap.style.display = "none";
+
+        if (disabledToggleWrap) {
+          disabledToggleWrap.classList.remove(
+            "visible"
+          );
+        }
 
         emptyState.style.display = "block";
 
@@ -1575,6 +1625,16 @@
     }
 
 
+    function toggleDisabledLookbooks() {
+
+      showDisabledLookbooks =
+        !showDisabledLookbooks;
+
+      renderLookbooks();
+
+    }
+
+
     function renderLookbooks() {
 
       const tbody =
@@ -1585,6 +1645,16 @@
 
       const emptyState =
         document.getElementById("emptyState");
+
+      const disabledToggleWrap =
+        document.getElementById(
+          "disabledLookbooksToggleWrap"
+        );
+
+      const disabledToggleBtn =
+        document.getElementById(
+          "disabledLookbooksToggleBtn"
+        );
 
 
       tbody.innerHTML = "";
@@ -1610,6 +1680,33 @@
       emptyState.style.display = "none";
 
       tableWrap.style.display = "block";
+
+
+      const disabledCount =
+        lookbooks.filter(
+          lookbook =>
+            lookbook.active === false
+        ).length;
+
+
+      if (disabledToggleWrap) {
+
+        disabledToggleWrap.classList.toggle(
+          "visible",
+          disabledCount > 0
+        );
+
+      }
+
+
+      if (disabledToggleBtn) {
+
+        disabledToggleBtn.textContent =
+          showDisabledLookbooks
+            ? `Hide Disabled Lookbooks (${disabledCount})`
+            : `Show Disabled Lookbooks (${disabledCount})`;
+
+      }
 
 
       const sortedLookbooks =
@@ -1731,6 +1828,16 @@
         `;
 
 
+        if (
+          !isActive &&
+          !showDisabledLookbooks
+        ) {
+
+          return;
+
+        }
+
+
         tbody.appendChild(row);
 
       });
@@ -1757,8 +1864,14 @@
         )
         .forEach(row => {
 
+          const matchesSearch =
+            row.dataset.search.includes(
+              query
+            );
+
+
           row.style.display =
-            row.dataset.search.includes(query)
+            matchesSearch
               ? ""
               : "none";
 
