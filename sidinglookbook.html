@@ -37,6 +37,30 @@
 @media(max-width:1100px){.page-shell{grid-template-columns:245px minmax(0,1fr)}.door-grid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:850px){.topbar{position:relative}.header-tagline{display:none}.page-shell{width:min(100% - 20px,1000px);grid-template-columns:1fr}.sidebar{position:static;height:auto}#schemeList{grid-template-columns:repeat(2,1fr)}.rendering-container img{min-height:0;height:auto;max-height:none}.rendering-container{min-height:0}}
 @media(max-width:560px){.topbar{padding:10px 14px}.kb-logo{width:48px;height:48px}.brand-text strong{font-size:16px}#schemeList{grid-template-columns:1fr}.scheme-panel{padding:12px}.scheme-title{font-size:25px}.scheme-overlay{position:static;width:100%;margin-top:10px;background:rgba(255,255,255,.96)}.rendering-container{display:block}.door-grid{grid-template-columns:repeat(2,1fr)}.door-color{height:68px}}
+
+/* PRINT CONTROLS */
+.print-actions{margin-left:18px;display:flex;gap:8px;align-items:center}.print-btn{border:1px solid #cfd7df;background:#fff;color:var(--navy);font-weight:800;font-size:12px;padding:10px 14px;border-radius:9px;cursor:pointer}.print-btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}.print-btn:hover{transform:translateY(-1px)}#printAllContainer{display:none}
+@media(max-width:850px){.print-actions{margin-left:auto}.print-btn{padding:9px 10px;font-size:11px}}
+@media print{
+ @page{size:landscape;margin:.35in}
+ body{background:#fff!important;color:#102a43;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .topbar,.sidebar,.print-actions{display:none!important}
+ .page-shell{display:block!important;width:100%!important;margin:0!important;padding:0!important}
+ .scheme-panel{box-shadow:none!important;border:0!important;padding:0!important}
+ .disclaimer{text-align:left!important;margin-top:8px!important}
+ body.print-current .rendering-container{min-height:0!important;height:auto!important}
+ body.print-current .rendering-container img{height:5.2in!important;min-height:0!important;object-fit:contain!important}
+ body.print-current .door-section{margin-top:8px!important;padding:8px 10px!important}
+ body.print-current .door-color{height:42px!important}
+ body.print-current .scheme-title{font-size:24px!important}
+ body.print-current .scheme-overlay{width:290px!important}
+ body.print-all .page-shell{display:none!important}
+ body.print-all #printAllContainer{display:block!important}
+ .print-scheme-page{page-break-after:always;break-after:page;position:relative;width:100%;min-height:7.4in;padding:0}
+ .print-scheme-page:last-child{page-break-after:auto;break-after:auto}
+ .print-scheme-header{display:flex;justify-content:space-between;align-items:end;border-bottom:2px solid #102a43;padding-bottom:8px;margin-bottom:10px}.print-scheme-header h1{margin:0;font-size:24px}.print-scheme-header div{font-size:12px;font-weight:700;color:#65758b}
+ .print-main{display:grid;grid-template-columns:minmax(0,1fr) 2.8in;gap:14px;align-items:start}.print-main img{width:100%;height:4.75in;object-fit:contain;background:#ecebea;border:1px solid #dfe5eb;border-radius:10px}.print-details{border:1px solid #dfe5eb;border-radius:10px;overflow:hidden}.print-detail{display:flex;justify-content:space-between;gap:10px;padding:10px;border-bottom:1px solid #dfe5eb;font-size:12px}.print-detail:last-child{border-bottom:0}.print-detail span:first-child{color:#65758b}.print-door-title{font-size:13px;font-weight:900;margin:10px 0 6px}.print-doors{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.print-door{font-size:9px;text-align:center;font-weight:700}.print-door-swatch{height:34px;border:1px solid rgba(0,0,0,.15);border-radius:5px;margin-bottom:3px}.print-note{font-size:8px;color:#65758b;margin-top:7px}
+}
 </style>
 
 </head>
@@ -76,6 +100,12 @@
         All-Siding Exterior Schemes
       </strong>
 
+    </div>
+
+
+    <div class="print-actions">
+      <button class="print-btn" type="button" onclick="printCurrentScheme()">Print This Scheme</button>
+      <button class="print-btn primary" type="button" onclick="printAllSchemes()">Print All Schemes</button>
     </div>
 
     <div class="header-tagline">
@@ -205,6 +235,8 @@
   </div>
 
 
+
+  <div id="printAllContainer"></div>
 
   <script>
 
@@ -997,6 +1029,62 @@
     }
 
 
+
+
+    /* =========================================================
+       PRINTING
+       ========================================================= */
+    function resetPrintMode(){
+      document.body.classList.remove("print-current","print-all");
+    }
+
+    function printCurrentScheme(){
+      resetPrintMode();
+      document.body.classList.add("print-current");
+      setTimeout(() => window.print(), 60);
+    }
+
+    function buildAllSchemePrintout(){
+      const container = document.getElementById("printAllContainer");
+      container.innerHTML = "";
+      schemes.forEach((scheme, index) => {
+        const page = document.createElement("section");
+        page.className = "print-scheme-page";
+        const doors = doorOptions.map(doorName => `
+          <div class="print-door">
+            <div class="print-door-swatch" style="background:${getColor(doorName)}"></div>
+            ${doorName}
+          </div>`).join("");
+        page.innerHTML = `
+          <div class="print-scheme-header">
+            <h1>${scheme.name}</h1>
+            <div>Scheme ${index + 1} of ${schemes.length} · ${scheme.siding} Siding</div>
+          </div>
+          <div class="print-main">
+            <img src="${scheme.image}" alt="${scheme.name} exterior rendering">
+            <div class="print-details">
+              <div class="print-detail"><span>Siding</span><strong>${scheme.siding}</strong></div>
+              <div class="print-detail"><span>Trim</span><strong>${scheme.trim}</strong></div>
+              <div class="print-detail"><span>Shutters</span><strong>${scheme.shutters}</strong></div>
+              <div class="print-detail"><span>Garage</span><strong>${scheme.garage}</strong></div>
+            </div>
+          </div>
+          <div class="print-door-title">Entry Door Options</div>
+          <div class="print-doors">${doors}</div>
+          <div class="print-note">Images and colors shown are for reference only and may vary from actual materials, paint samples, lighting, photography, and monitor settings.</div>
+        `;
+        container.appendChild(page);
+      });
+    }
+
+    function printAllSchemes(){
+      buildAllSchemePrintout();
+      resetPrintMode();
+      document.body.classList.add("print-all");
+      setTimeout(() => window.print(), 120);
+    }
+
+    window.addEventListener("afterprint", resetPrintMode);
 
     /* =========================================================
        INITIAL SCHEME
