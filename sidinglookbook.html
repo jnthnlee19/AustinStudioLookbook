@@ -1077,11 +1077,54 @@
       });
     }
 
-    function printAllSchemes(){
+    function preloadSchemeImages(){
+      return Promise.all(
+        schemes.map(scheme => new Promise(resolve => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = scheme.image;
+          if (img.complete) resolve();
+        }))
+      );
+    }
+
+    function waitForPrintImages(){
+      const images = Array.from(
+        document.querySelectorAll('#printAllContainer img')
+      );
+
+      return Promise.all(
+        images.map(img => {
+          if (img.complete && img.naturalWidth > 0) {
+            return Promise.resolve();
+          }
+
+          return new Promise(resolve => {
+            img.addEventListener('load', resolve, { once:true });
+            img.addEventListener('error', resolve, { once:true });
+          });
+        })
+      );
+    }
+
+    async function printAllSchemes(){
+      /*
+        Load every rendering before opening the browser's print preview.
+        This prevents schemes that have not yet been clicked from appearing
+        blank in Print All.
+      */
+      await preloadSchemeImages();
       buildAllSchemePrintout();
+      await waitForPrintImages();
+
       resetPrintMode();
       document.body.classList.add("print-all");
-      setTimeout(() => window.print(), 120);
+
+      /* Give the browser one final paint cycle before print preview. */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => window.print());
+      });
     }
 
     window.addEventListener("afterprint", resetPrintMode);
@@ -1091,6 +1134,9 @@
        ========================================================= */
 
     selectScheme(0);
+
+    /* Quietly warm the browser cache for all scheme renderings. */
+    preloadSchemeImages();
 
   </script>
 
