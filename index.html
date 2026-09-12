@@ -757,6 +757,61 @@
       padding:18px;
     }
 
+    .preview-signin-filters {
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(145px,.55fr) minmax(145px,.55fr) auto;
+      gap:10px;
+      align-items:end;
+      margin-bottom:14px;
+    }
+
+    .preview-signin-filter-field {
+      display:grid;
+      gap:5px;
+    }
+
+    .preview-signin-filter-field label {
+      color:var(--muted);
+      font-size:.68rem;
+      font-weight:800;
+      letter-spacing:.045em;
+      text-transform:uppercase;
+    }
+
+    .preview-signin-filter-field input {
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:9px;
+      outline:none;
+      font:inherit;
+      font-size:.84rem;
+      background:#fff;
+      color:#30353a;
+    }
+
+    .preview-signin-filter-field input:focus {
+      border-color:#b9bec7;
+      box-shadow:0 0 0 3px rgba(31,47,70,.06);
+    }
+
+    .preview-date-clear {
+      border:1px solid #d9dde2;
+      background:#fff;
+      color:var(--navy);
+      border-radius:9px;
+      padding:10px 12px;
+      font:inherit;
+      font-size:.78rem;
+      font-weight:750;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .preview-date-clear:hover {
+      background:#f7f8f9;
+    }
+
     .preview-signin-search {
       margin-bottom:14px;
     }
@@ -993,6 +1048,20 @@
 
     @media (max-width: 1000px) {
       .preview-entry-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .preview-signin-filters {
+        grid-template-columns:1fr 1fr;
+      }
+
+      .preview-signin-filter-field:first-child {
+        grid-column:1 / -1;
+      }
+
+      .preview-date-clear {
+        grid-column:1 / -1;
+      }
     }
 
     @media (max-width: 620px) {
@@ -1259,13 +1328,56 @@
 
             <div class="preview-signins-body">
 
-              <div class="preview-signin-search">
-                <input
-                  id="previewSigninSearch"
-                  type="text"
-                  placeholder="Search sign-ins..."
-                  oninput="renderPreviewSignins()"
-                />
+              <div class="preview-signin-filters">
+
+                <div class="preview-signin-filter-field">
+                  <label for="previewSigninSearch">
+                    Search
+                  </label>
+
+                  <input
+                    id="previewSigninSearch"
+                    type="text"
+                    placeholder="Search sign-ins..."
+                    oninput="renderPreviewSignins()"
+                  />
+                </div>
+
+
+                <div class="preview-signin-filter-field">
+                  <label for="previewSigninStartDate">
+                    Start Date
+                  </label>
+
+                  <input
+                    id="previewSigninStartDate"
+                    type="date"
+                    onchange="renderPreviewSignins()"
+                  />
+                </div>
+
+
+                <div class="preview-signin-filter-field">
+                  <label for="previewSigninEndDate">
+                    End Date
+                  </label>
+
+                  <input
+                    id="previewSigninEndDate"
+                    type="date"
+                    onchange="renderPreviewSignins()"
+                  />
+                </div>
+
+
+                <button
+                  class="preview-date-clear"
+                  type="button"
+                  onclick="clearPreviewSigninDates()"
+                >
+                  Clear Dates
+                </button>
+
               </div>
 
               <div id="previewSigninList" class="preview-signin-list">
@@ -2319,6 +2431,84 @@
     }
 
 
+    function getPreviewDateBoundary(
+      value,
+      endOfDay = false
+    ) {
+
+      if (!value) {
+        return null;
+      }
+
+
+      const parts =
+        String(value)
+          .split("-")
+          .map(Number);
+
+
+      if (
+        parts.length !== 3 ||
+        parts.some(
+          part => !Number.isFinite(part)
+        )
+      ) {
+        return null;
+      }
+
+
+      const [
+        year,
+        month,
+        day
+      ] = parts;
+
+
+      const date =
+        new Date(
+          year,
+          month - 1,
+          day,
+          endOfDay ? 23 : 0,
+          endOfDay ? 59 : 0,
+          endOfDay ? 59 : 0,
+          endOfDay ? 999 : 0
+        );
+
+
+      return date.getTime();
+
+    }
+
+
+    function clearPreviewSigninDates() {
+
+      const startInput =
+        document.getElementById(
+          "previewSigninStartDate"
+        );
+
+      const endInput =
+        document.getElementById(
+          "previewSigninEndDate"
+        );
+
+
+      if (startInput) {
+        startInput.value = "";
+      }
+
+
+      if (endInput) {
+        endInput.value = "";
+      }
+
+
+      renderPreviewSignins();
+
+    }
+
+
     function renderPreviewSignins() {
 
       const list =
@@ -2344,6 +2534,55 @@
           .toLowerCase();
 
 
+      const startDateValue =
+        document
+          .getElementById(
+            "previewSigninStartDate"
+          )
+          ?.value || "";
+
+
+      const endDateValue =
+        document
+          .getElementById(
+            "previewSigninEndDate"
+          )
+          ?.value || "";
+
+
+      const startTime =
+        getPreviewDateBoundary(
+          startDateValue,
+          false
+        );
+
+
+      const endTime =
+        getPreviewDateBoundary(
+          endDateValue,
+          true
+        );
+
+
+      const invalidDateRange =
+        startTime !== null &&
+        endTime !== null &&
+        startTime > endTime;
+
+
+      if (invalidDateRange) {
+
+        list.innerHTML = `
+          <div class="preview-empty">
+            Start Date must be on or before End Date.
+          </div>
+        `;
+
+        return;
+
+      }
+
+
       const filtered =
         previewSignins.filter(
           item => {
@@ -2366,9 +2605,43 @@
                 .toLowerCase();
 
 
-            return (
+            const matchesSearch =
               !query ||
-              haystack.includes(query)
+              haystack.includes(query);
+
+
+            const createdTime =
+              item.createdAt
+                ? new Date(
+                    item.createdAt
+                  ).getTime()
+                : NaN;
+
+
+            const matchesStart =
+              startTime === null ||
+              (
+                Number.isFinite(
+                  createdTime
+                ) &&
+                createdTime >= startTime
+              );
+
+
+            const matchesEnd =
+              endTime === null ||
+              (
+                Number.isFinite(
+                  createdTime
+                ) &&
+                createdTime <= endTime
+              );
+
+
+            return (
+              matchesSearch &&
+              matchesStart &&
+              matchesEnd
             );
 
           }
@@ -2384,7 +2657,12 @@
             ${
               previewSignins.length === 0
                 ? "No Preview Event sign-ins yet."
-                : "No sign-ins match your search."
+                : (
+                    startDateValue ||
+                    endDateValue
+                  )
+                  ? "No sign-ins match the selected date range."
+                  : "No sign-ins match your search."
             }
           </div>
         `;
