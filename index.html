@@ -1542,12 +1542,6 @@
 
         tableWrap.style.display = "none";
 
-        if (disabledToggleWrap) {
-          disabledToggleWrap.classList.remove(
-            "visible"
-          );
-        }
-
         emptyState.style.display = "block";
 
         emptyState.innerHTML = `
@@ -1663,6 +1657,12 @@
       if (lookbooks.length === 0) {
 
         tableWrap.style.display = "none";
+
+        if (disabledToggleWrap) {
+          disabledToggleWrap.classList.remove(
+            "visible"
+          );
+        }
 
         emptyState.style.display = "block";
 
