@@ -1464,9 +1464,22 @@ export default async function handler(
 
 
 
-    /* =====================================================
-       UPDATE REQUEST STATUS
+    if (
+      action ===
+      "requests"
+    ) {
 
-       Studio clicks:
+      const requests =
+        await getRequests();
+
+
+      return jsonResponse({
+        success:
+          true,
+
+        requests
+      });
+
+    }
 
       
