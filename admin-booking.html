@@ -1454,3 +1454,3268 @@
           </div>
 
           <h1>
+                        Studio Scheduling Admin
+          </h1>
+
+          <p>
+            Manage appointment requests, Studio availability,
+            recurring staffing rules, meetings, and blocks.
+            C3 remains the official appointment booking system.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="booking-links">
+
+        <a
+          href="/booking.html?type=discovery"
+          target="_blank"
+          rel="noopener"
+        >
+          Discovery Request Link ↗
+        </a>
+
+        <a
+          href="/booking.html?type=virtual"
+          target="_blank"
+          rel="noopener"
+        >
+          Virtual Selection Link ↗
+        </a>
+
+        <a
+          href="/booking.html?type=final"
+          target="_blank"
+          rel="noopener"
+        >
+          Final Appointment Link ↗
+        </a>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         WEEKLY CALENDAR
+         ===================================================== -->
+
+    <section class="card calendar-card">
+
+      <div class="card-header">
+
+        <div>
+
+          <h2>
+            Studio Calendar
+          </h2>
+
+          <p>
+            Availability, requests, confirmed appointments,
+            staffing rules, and Studio blocks.
+          </p>
+
+        </div>
+
+
+        <div class="calendar-controls">
+
+          <button
+            class="btn"
+            type="button"
+            onclick="previousWeek()"
+          >
+            ← Previous
+          </button>
+
+          <button
+            class="btn"
+            type="button"
+            onclick="goToToday()"
+          >
+            Today
+          </button>
+
+          <button
+            class="btn"
+            type="button"
+            onclick="nextWeek()"
+          >
+            Next →
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="calendar-body">
+
+        <div
+          class="week-label"
+          id="weekLabel"
+        >
+          Loading week...
+        </div>
+
+
+        <div
+          class="calendar-grid"
+          id="calendarGrid"
+          style="margin-top:12px;"
+        >
+
+          <div class="calendar-empty">
+            Loading Studio calendar...
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="legend">
+
+        <div class="legend-item">
+          <span class="legend-dot available"></span>
+          Available
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-dot requested"></span>
+          Requested
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-dot confirmed"></span>
+          C3 Confirmed
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-dot virtual"></span>
+          Virtual Only
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-dot off"></span>
+          Off
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-dot meeting"></span>
+          Meeting / Block
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         LOWER SECTION
+         ===================================================== -->
+
+    <div class="lower-grid">
+
+
+      <!-- ===================================================
+           APPOINTMENT REQUESTS
+           =================================================== -->
+
+      <section class="card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h2>
+              Appointment Requests
+            </h2>
+
+            <p>
+              Requested appointments temporarily hold
+              availability until confirmed or declined.
+            </p>
+
+          </div>
+
+
+          <button
+            class="btn"
+            type="button"
+            onclick="loadAdminData()"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+
+        <div class="card-body">
+
+          <div
+            class="request-list"
+            id="requestList"
+          >
+
+            <div class="empty">
+              Loading appointment requests...
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- ===================================================
+           RIGHT COLUMN
+           =================================================== -->
+
+      <div class="right-column">
+
+
+        <!-- ===============================================
+             AVAILABILITY CHECKER
+             =============================================== -->
+
+        <section class="card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Check Availability
+              </h2>
+
+              <p>
+                See exactly what appointment times
+                are currently available to customers.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="card-body">
+
+            <label for="availabilityDate">
+              Date
+            </label>
+
+            <input
+              class="availability-date"
+              id="availabilityDate"
+              type="date"
+              onchange="loadAvailabilityPanel()"
+            >
+
+
+            <div id="availabilityPanel">
+
+              <div class="empty">
+                Choose a date to view availability.
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===============================================
+             ADD RULE / BLOCK
+             =============================================== -->
+
+        <section class="card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Add Rule / Block
+              </h2>
+
+              <p>
+                Create recurring or one-time
+                Studio availability rules.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="card-body">
+
+            <form id="ruleForm">
+
+              <div class="form-grid">
+
+
+                <div class="field">
+
+                  <label for="ruleKind">
+                    Rule Type
+                  </label>
+
+                  <select
+                    id="ruleKind"
+                    name="kind"
+                    required
+                  >
+
+                    <option value="off">
+                      Team Member Off
+                    </option>
+
+                    <option value="virtual">
+                      Virtual Only
+                    </option>
+
+                    <option value="meeting">
+                      Meeting / Block
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="rulePerson">
+                    Team Member
+                  </label>
+
+                  <select
+                    id="rulePerson"
+                    name="person"
+                  >
+
+                    <option value="">
+                      Entire Studio
+                    </option>
+
+                    <option value="Jonathan">
+                      Jonathan
+                    </option>
+
+                    <option value="Juan">
+                      Juan
+                    </option>
+
+                    <option value="Missy">
+                      Missy
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleWeekday">
+                    Day
+                  </label>
+
+                  <select
+                    id="ruleWeekday"
+                    name="weekday"
+                    required
+                  >
+
+                    <option value="2">
+                      Tuesday
+                    </option>
+
+                    <option value="3">
+                      Wednesday
+                    </option>
+
+                    <option value="4">
+                      Thursday
+                    </option>
+
+                    <option value="5">
+                      Friday
+                    </option>
+
+                    <option value="6">
+                      Saturday
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleRecurrence">
+                    Repeat
+                  </label>
+
+                  <select
+                    id="ruleRecurrence"
+                    name="recurrence"
+                    required
+                  >
+
+                    <option value="weekly">
+                      Every Week
+                    </option>
+
+                    <option value="once">
+                      One Date Only
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleStartTime">
+                    Start Time
+                  </label>
+
+                  <input
+                    id="ruleStartTime"
+                    name="startTime"
+                    type="time"
+                  >
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleEndTime">
+                    End Time
+                  </label>
+
+                  <input
+                    id="ruleEndTime"
+                    name="endTime"
+                    type="time"
+                  >
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleStartDate">
+                    Start Date
+                  </label>
+
+                  <input
+                    id="ruleStartDate"
+                    name="startDate"
+                    type="date"
+                  >
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleEndDate">
+                    End Date
+                  </label>
+
+                  <input
+                    id="ruleEndDate"
+                    name="endDate"
+                    type="date"
+                  >
+
+                </div>
+
+
+                <div class="field full">
+
+                  <label for="ruleLabel">
+                    Rule Name
+                  </label>
+
+                  <input
+                    id="ruleLabel"
+                    name="label"
+                    type="text"
+                    placeholder="Example: Missy Virtual Recurring"
+                    required
+                  >
+
+                </div>
+
+              </div>
+
+
+              <div class="form-note">
+
+                <strong>Off / Virtual Only:</strong>
+                Leave Start Time and End Time blank
+                to make the rule apply all day.
+
+                <br><br>
+
+                <strong>Meeting / Block:</strong>
+                Enter a Start Time and End Time
+                when the block only applies to part of the day.
+
+                <br><br>
+
+                Use <strong>Every Week</strong> for things like
+                “Missy Virtual every Tuesday” or a recurring
+                Tuesday meeting.
+
+              </div>
+
+
+              <button
+                class="btn btn-yellow"
+                type="submit"
+                style="margin-top:14px;"
+              >
+                Save Rule
+              </button>
+
+            </form>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===============================================
+             CURRENT RULES
+             =============================================== -->
+
+        <section class="card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Rules & Blocks
+              </h2>
+
+              <p>
+                Current recurring and one-time
+                Studio scheduling rules.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="card-body">
+
+            <div
+              class="rule-list"
+              id="ruleList"
+            >
+
+              <div class="empty">
+                Loading rules...
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+      </div>
+
+    </div>
+
+  </main>
+    <script>
+
+    /* =====================================================
+       GLOBALS
+       ===================================================== */
+
+    let currentWeekStart =
+      getTuesday(
+        new Date()
+      );
+
+
+    /* =====================================================
+       API HELPER
+       ===================================================== */
+
+    async function bookingAPI(
+      action,
+      options = {}
+    ) {
+
+      const response =
+        await fetch(
+          `/.netlify/functions/booking-api?action=${encodeURIComponent(action)}`,
+          {
+            cache: "no-store",
+            ...options
+          }
+        );
+
+
+      const result =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          result.error ||
+          "Something went wrong."
+        );
+
+      }
+
+
+      return result;
+
+    }
+
+
+
+    /* =====================================================
+       ESCAPE HTML
+       ===================================================== */
+
+    function escapeHTML(
+      value
+    ) {
+
+      return String(
+        value ?? ""
+      )
+        .replace(
+          /[&<>"']/g,
+          character => {
+
+            const replacements = {
+
+              "&": "&amp;",
+
+              "<": "&lt;",
+
+              ">": "&gt;",
+
+              '"': "&quot;",
+
+              "'": "&#39;"
+
+            };
+
+
+            return replacements[
+              character
+            ];
+
+          }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       DATE HELPERS
+       ===================================================== */
+
+    function dateToValue(
+      date
+    ) {
+
+      const year =
+        date.getFullYear();
+
+
+      const month =
+        String(
+          date.getMonth() + 1
+        )
+          .padStart(
+            2,
+            "0"
+          );
+
+
+      const day =
+        String(
+          date.getDate()
+        )
+          .padStart(
+            2,
+            "0"
+          );
+
+
+      return (
+        `${year}-${month}-${day}`
+      );
+
+    }
+
+
+    function getTuesday(
+      date
+    ) {
+
+      const result =
+        new Date(date);
+
+
+      result.setHours(
+        12,
+        0,
+        0,
+        0
+      );
+
+
+      const day =
+        result.getDay();
+
+
+      let difference;
+
+
+      if (day === 0) {
+
+        difference = -5;
+
+      } else if (day === 1) {
+
+        difference = 1;
+
+      } else {
+
+        difference =
+          2 - day;
+
+      }
+
+
+      result.setDate(
+        result.getDate() +
+        difference
+      );
+
+
+      return result;
+
+    }
+
+
+    function addDays(
+      date,
+      amount
+    ) {
+
+      const result =
+        new Date(date);
+
+
+      result.setDate(
+        result.getDate() +
+        amount
+      );
+
+
+      return result;
+
+    }
+
+
+    function formatShortDate(
+      date
+    ) {
+
+      return date
+        .toLocaleDateString(
+          "en-US",
+          {
+            month: "short",
+            day: "numeric"
+          }
+        );
+
+    }
+
+
+    function formatDayName(
+      date
+    ) {
+
+      return date
+        .toLocaleDateString(
+          "en-US",
+          {
+            weekday: "short"
+          }
+        );
+
+    }
+
+
+    function formatTime(
+      value
+    ) {
+
+      if (!value) {
+        return "";
+      }
+
+
+      const [
+        hourText,
+        minuteText
+      ] =
+        String(value)
+          .split(":");
+
+
+      const hour =
+        Number(
+          hourText
+        );
+
+
+      const minute =
+        Number(
+          minuteText
+        );
+
+
+      if (
+        !Number.isFinite(hour) ||
+        !Number.isFinite(minute)
+      ) {
+
+        return value;
+
+      }
+
+
+      return (
+        `${hour % 12 || 12}:` +
+        `${String(minute).padStart(2, "0")} ` +
+        `${hour >= 12 ? "PM" : "AM"}`
+      );
+
+    }
+
+
+
+    /* =====================================================
+       WEEK NAVIGATION
+       ===================================================== */
+
+    function previousWeek() {
+
+      currentWeekStart =
+        addDays(
+          currentWeekStart,
+          -7
+        );
+
+
+      loadCalendar();
+
+    }
+
+
+    function nextWeek() {
+
+      currentWeekStart =
+        addDays(
+          currentWeekStart,
+          7
+        );
+
+
+      loadCalendar();
+
+    }
+
+
+    function goToToday() {
+
+      currentWeekStart =
+        getTuesday(
+          new Date()
+        );
+
+
+      loadCalendar();
+
+    }
+
+
+
+    /* =====================================================
+       LOAD ADMIN DATA
+       ===================================================== */
+
+    async function loadAdminData() {
+
+      try {
+
+        const [
+          requestData,
+          ruleData
+        ] =
+          await Promise.all([
+
+            bookingAPI(
+              "requests"
+            ),
+
+            bookingAPI(
+              "rules"
+            )
+
+          ]);
+
+
+        renderRequests(
+          requestData.requests ||
+          []
+        );
+
+
+        renderRules(
+          ruleData.rules ||
+          []
+        );
+
+
+        await loadCalendar();
+
+
+        await loadAvailabilityPanel();
+
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+        alert(
+          error.message
+        );
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       WEEKLY CALENDAR
+       ===================================================== */
+
+    async function loadCalendar() {
+
+      const grid =
+        document.getElementById(
+          "calendarGrid"
+        );
+
+
+      const weekLabel =
+        document.getElementById(
+          "weekLabel"
+        );
+
+
+      grid.innerHTML = `
+
+        <div class="calendar-empty">
+          Loading Studio calendar...
+        </div>
+
+      `;
+
+
+      const dates = [];
+
+
+      /*
+        Tuesday through Saturday
+      */
+
+      for (
+        let index = 0;
+        index < 5;
+        index++
+      ) {
+
+        dates.push(
+          addDays(
+            currentWeekStart,
+            index
+          )
+        );
+
+      }
+
+
+      const firstDate =
+        dates[0];
+
+
+      const lastDate =
+        dates[
+          dates.length - 1
+        ];
+
+
+      weekLabel.textContent =
+        `${formatShortDate(firstDate)} – ${formatShortDate(lastDate)}`;
+
+
+      try {
+
+        const days =
+          await Promise.all(
+
+            dates.map(
+              date =>
+                bookingAPI(
+                  "calendar-day" +
+                  `&date=${encodeURIComponent(dateToValue(date))}`
+                )
+            )
+
+          );
+
+
+        grid.innerHTML = "";
+
+
+        days.forEach(
+          (
+            dayData,
+            index
+          ) => {
+
+            const date =
+              dates[index];
+
+
+            const column =
+              createCalendarDay(
+                date,
+                dayData
+              );
+
+
+            grid.appendChild(
+              column
+            );
+
+          }
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+
+        grid.innerHTML = `
+
+          <div class="calendar-empty">
+            ${escapeHTML(error.message)}
+          </div>
+
+        `;
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       CREATE CALENDAR DAY
+       ===================================================== */
+
+    function createCalendarDay(
+      date,
+      data
+    ) {
+
+      const day =
+        document.createElement(
+          "div"
+        );
+
+
+      day.className =
+        "calendar-day";
+
+
+      const today =
+        dateToValue(
+          new Date()
+        );
+
+
+      const dateValue =
+        dateToValue(
+          date
+        );
+
+
+      if (
+        dateValue ===
+        today
+      ) {
+
+        day.classList.add(
+          "today"
+        );
+
+      }
+
+
+      const header =
+        document.createElement(
+          "div"
+        );
+
+
+      header.className =
+        "day-header";
+
+
+      header.innerHTML = `
+
+        <div class="day-name">
+          ${escapeHTML(formatDayName(date))}
+        </div>
+
+        <div class="day-date">
+          ${escapeHTML(formatShortDate(date))}
+        </div>
+
+      `;
+
+
+      header.style.cursor =
+        "pointer";
+
+
+      header.title =
+        "View detailed availability";
+
+
+      header.addEventListener(
+        "click",
+        () => {
+
+          const availabilityDate =
+            document.getElementById(
+              "availabilityDate"
+            );
+
+
+          availabilityDate.value =
+            dateValue;
+
+
+          loadAvailabilityPanel();
+
+
+          availabilityDate
+            .scrollIntoView({
+              behavior: "smooth",
+              block: "center"
+            });
+
+        }
+      );
+
+
+      day.appendChild(
+        header
+      );
+
+
+      const content =
+        document.createElement(
+          "div"
+        );
+
+
+      content.className =
+        "day-content";
+
+
+      const items = [];
+
+
+      /*
+        RULES FIRST
+      */
+
+      (
+        data.rules ||
+        []
+      )
+        .forEach(
+          rule => {
+
+            let itemClass =
+              "meeting";
+
+
+            if (
+              rule.kind ===
+              "off"
+            ) {
+
+              itemClass =
+                "off";
+
+            }
+
+
+            if (
+              rule.kind ===
+              "virtual"
+            ) {
+
+              itemClass =
+                "virtual";
+
+            }
+
+
+            let title =
+              rule.label ||
+              "Studio Rule";
+
+
+            let time =
+              "All Day";
+
+
+            if (
+              rule.startTime &&
+              rule.endTime
+            ) {
+
+              time =
+                `${formatTime(rule.startTime)} – ${formatTime(rule.endTime)}`;
+
+            }
+
+
+            items.push({
+
+              sort:
+                rule.startTime ||
+                "00:00",
+
+              className:
+                itemClass,
+
+              time,
+
+              title,
+
+              note:
+                rule.person ||
+                "Entire Studio"
+
+            });
+
+          }
+        );
+
+
+
+      /*
+        APPOINTMENT REQUESTS
+      */
+
+      (
+        data.requests ||
+        []
+      )
+        .forEach(
+          request => {
+
+            items.push({
+
+              sort:
+                request.time ||
+                "00:00",
+
+              className:
+                request.status ===
+                  "confirmed"
+                  ? "confirmed"
+                  : "requested",
+
+              time:
+                request.timeLabel ||
+                formatTime(
+                  request.time
+                ),
+
+              title:
+                request.typeLabel ||
+                request.type ||
+                "Appointment",
+
+              note:
+                request.name ||
+                ""
+
+            });
+
+          }
+        );
+
+
+
+      /*
+        AVAILABLE APPOINTMENT SLOTS
+      */
+
+      const availability =
+        data.availability ||
+        {};
+
+
+      addAvailabilityToCalendar(
+        items,
+        "Discovery",
+        availability.discovery ||
+        []
+      );
+
+
+      addAvailabilityToCalendar(
+        items,
+        "Virtual",
+        availability.virtual ||
+        []
+      );
+
+
+      addAvailabilityToCalendar(
+        items,
+        "Final",
+        availability.final ||
+        []
+      );
+
+
+      items.sort(
+        (
+          a,
+          b
+        ) =>
+          String(
+            a.sort
+          )
+            .localeCompare(
+              String(
+                b.sort
+              )
+            )
+      );
+
+
+      if (
+        items.length === 0
+      ) {
+
+        content.innerHTML = `
+
+          <div class="calendar-empty">
+            No availability or appointments.
+          </div>
+
+        `;
+
+      } else {
+
+        items.forEach(
+          item => {
+
+            const element =
+              document.createElement(
+                "div"
+              );
+
+
+            element.className =
+              `calendar-item ${item.className}`;
+
+
+            element.innerHTML = `
+
+              <div class="calendar-item-time">
+                ${escapeHTML(item.time)}
+              </div>
+
+              <div class="calendar-item-title">
+                ${escapeHTML(item.title)}
+              </div>
+
+              ${
+                item.note
+                  ? `
+
+                    <div class="calendar-item-note">
+                      ${escapeHTML(item.note)}
+                    </div>
+
+                  `
+                  : ""
+              }
+
+            `;
+
+
+            content.appendChild(
+              element
+            );
+
+          }
+        );
+
+      }
+
+
+      day.appendChild(
+        content
+      );
+
+
+      return day;
+
+    }
+
+
+
+    /* =====================================================
+       ADD AVAILABILITY TO CALENDAR
+       ===================================================== */
+
+    function addAvailabilityToCalendar(
+      items,
+      typeLabel,
+      slots
+    ) {
+
+      slots.forEach(
+        slot => {
+
+          items.push({
+
+            sort:
+              slot.time,
+
+            className:
+              "available",
+
+            time:
+              slot.label ||
+              formatTime(
+                slot.time
+              ),
+
+            title:
+              `${typeLabel} Available`,
+
+            note:
+              `${slot.remaining} spot${
+                slot.remaining === 1
+                  ? ""
+                  : "s"
+              }`
+
+          });
+
+        }
+      );
+
+    }
+
+
+
+    /* =====================================================
+       DETAILED AVAILABILITY PANEL
+       ===================================================== */
+
+    async function loadAvailabilityPanel() {
+
+      const dateInput =
+        document.getElementById(
+          "availabilityDate"
+        );
+
+
+      const panel =
+        document.getElementById(
+          "availabilityPanel"
+        );
+
+
+      if (!dateInput.value) {
+
+        panel.innerHTML = `
+
+          <div class="empty">
+            Choose a date to view availability.
+          </div>
+
+        `;
+
+        return;
+
+      }
+
+
+      panel.innerHTML = `
+
+        <div class="empty">
+          Checking availability...
+        </div>
+
+      `;
+
+
+      try {
+
+        const [
+          discovery,
+          virtual,
+          final
+        ] =
+          await Promise.all([
+
+            bookingAPI(
+              "availability" +
+              `&type=discovery` +
+              `&date=${encodeURIComponent(dateInput.value)}`
+            ),
+
+            bookingAPI(
+              "availability" +
+              `&type=virtual` +
+              `&date=${encodeURIComponent(dateInput.value)}`
+            ),
+
+            bookingAPI(
+              "availability" +
+              `&type=final` +
+              `&date=${encodeURIComponent(dateInput.value)}`
+            )
+
+          ]);
+
+
+        panel.innerHTML = "";
+
+
+        renderAvailabilityGroup(
+          panel,
+          "Discovery",
+          discovery.slots ||
+          []
+        );
+
+
+        renderAvailabilityGroup(
+          panel,
+          "Virtual Selection",
+          virtual.slots ||
+          []
+        );
+
+
+        renderAvailabilityGroup(
+          panel,
+          "Final",
+          final.slots ||
+          []
+        );
+
+
+      } catch (error) {
+
+        panel.innerHTML = `
+
+          <div class="empty">
+            ${escapeHTML(error.message)}
+          </div>
+
+        `;
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       AVAILABILITY GROUP
+       ===================================================== */
+
+    function renderAvailabilityGroup(
+      container,
+      title,
+      slots
+    ) {
+
+      const group =
+        document.createElement(
+          "div"
+        );
+
+
+      group.className =
+        "availability-group";
+
+
+      const heading =
+        document.createElement(
+          "div"
+        );
+
+
+      heading.className =
+        "availability-title";
+
+
+      heading.textContent =
+        title;
+
+
+      group.appendChild(
+        heading
+      );
+
+
+      if (
+        slots.length === 0
+      ) {
+
+        const none =
+          document.createElement(
+            "div"
+          );
+
+
+        none.className =
+          "availability-none";
+
+
+        none.textContent =
+          "No availability";
+
+
+        group.appendChild(
+          none
+        );
+
+      } else {
+
+        slots.forEach(
+          slot => {
+
+            const row =
+              document.createElement(
+                "div"
+              );
+
+
+            row.className =
+              "availability-slot";
+
+
+            row.innerHTML = `
+
+              <strong>
+                ${escapeHTML(
+                  slot.label ||
+                  formatTime(slot.time)
+                )}
+              </strong>
+
+              <span>
+                ${slot.remaining}
+                spot${
+                  slot.remaining === 1
+                    ? ""
+                    : "s"
+                }
+                available
+              </span>
+
+            `;
+
+
+            group.appendChild(
+              row
+            );
+
+          }
+        );
+
+      }
+
+
+      container.appendChild(
+        group
+      );
+
+    }
+
+
+
+    /* =====================================================
+       RENDER REQUESTS
+       ===================================================== */
+
+    function renderRequests(
+      requests
+    ) {
+
+      const list =
+        document.getElementById(
+          "requestList"
+        );
+
+
+      if (
+        !requests.length
+      ) {
+
+        list.innerHTML = `
+
+          <div class="empty">
+            No appointment requests yet.
+          </div>
+
+        `;
+
+        return;
+
+      }
+
+
+      list.innerHTML =
+        requests
+          .map(
+            request => `
+
+              <div class="request-card">
+
+                <div class="request-top">
+
+                  <div>
+
+                    <div class="request-name">
+                      ${escapeHTML(request.name)}
+                    </div>
+
+                    <div class="request-meta">
+
+                      ${escapeHTML(
+                        request.typeLabel ||
+                        request.type ||
+                        ""
+                      )}
+
+                      •
+
+                      ${escapeHTML(
+                        request.dateLabel ||
+                        request.date ||
+                        ""
+                      )}
+
+                      at
+
+                      ${escapeHTML(
+                        request.timeLabel ||
+                        request.time ||
+                        ""
+                      )}
+
+                    </div>
+
+                  </div>
+
+
+                  <span
+                    class="status-badge ${escapeHTML(request.status)}"
+                  >
+                    ${escapeHTML(request.status)}
+                  </span>
+
+                </div>
+
+
+                <div class="request-details">
+
+                  ${
+                    request.community
+                      ? `
+                        <strong>Community:</strong>
+                        ${escapeHTML(request.community)}
+                        <br>
+                      `
+                      : ""
+                  }
+
+                  ${
+                    request.address
+                      ? `
+                        <strong>Address / Lot:</strong>
+                        ${escapeHTML(request.address)}
+                        <br>
+                      `
+                      : ""
+                  }
+
+                  <strong>Email:</strong>
+                  ${escapeHTML(request.email || "")}
+
+                  <br>
+
+                  <strong>Phone:</strong>
+                  ${escapeHTML(request.phone || "")}
+
+                  ${
+                    request.notes
+                      ? `
+                        <br><br>
+                        <strong>Notes:</strong>
+                        ${escapeHTML(request.notes)}
+                      `
+                      : ""
+                  }
+
+                </div>
+
+
+                ${
+                  request.status ===
+                    "requested"
+                    ? `
+
+                      <div class="request-actions">
+
+                        <button
+                          class="btn btn-confirm"
+                          type="button"
+                          onclick="
+                            updateRequestStatus(
+                              '${escapeHTML(request.id)}',
+                              'confirmed'
+                            )
+                          "
+                        >
+                          Confirm After C3 Booking
+                        </button>
+
+
+                        <button
+                          class="btn btn-decline"
+                          type="button"
+                          onclick="
+                            updateRequestStatus(
+                              '${escapeHTML(request.id)}',
+                              'declined'
+                            )
+                          "
+                        >
+                          Decline / Release Slot
+                        </button>
+
+                      </div>
+
+                    `
+                    : ""
+                }
+
+              </div>
+
+            `
+          )
+          .join("");
+
+    }
+
+
+
+    /* =====================================================
+       UPDATE REQUEST STATUS
+       ===================================================== */
+
+    async function updateRequestStatus(
+      id,
+      status
+    ) {
+
+      let message;
+
+
+      if (
+        status ===
+        "confirmed"
+      ) {
+
+        message =
+          "Confirm that this appointment has been booked in C3?";
+
+      } else {
+
+        message = 
+                    "Decline this appointment request and release the time?";
+
+      }
+
+
+      if (
+        !confirm(
+          message
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      try {
+
+        await api(
+          "status",
+          {
+            method:
+              "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                id,
+                status
+              })
+          }
+        );
+
+
+        await loadAdminData();
+
+
+      } catch (error) {
+
+        alert(
+          error.message
+        );
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       LOAD RULES
+       ===================================================== */
+
+    function renderRules(
+      rules
+    ) {
+
+      const container =
+        document.getElementById(
+          "ruleList"
+        );
+
+
+      if (
+        !Array.isArray(rules) ||
+        rules.length === 0
+      ) {
+
+        container.innerHTML = `
+
+          <div class="empty">
+            No scheduling rules or blocks yet.
+          </div>
+
+        `;
+
+        return;
+
+      }
+
+
+      container.innerHTML =
+        rules.map(
+          rule => {
+
+            let scheduleText =
+              "";
+
+
+            if (
+              rule.recurrence ===
+              "once"
+            ) {
+
+              scheduleText =
+                rule.startDate
+                  ? formatDisplayDate(
+                      rule.startDate
+                    )
+                  : "One date";
+
+            } else {
+
+              scheduleText =
+                rule.weekdayLabel
+                  ? `Every ${rule.weekdayLabel}`
+                  : "Recurring";
+
+            }
+
+
+            let timeText =
+              "All Day";
+
+
+            if (
+              rule.startTime &&
+              rule.endTime
+            ) {
+
+              timeText =
+                `${formatTime(rule.startTime)} – ` +
+                `${formatTime(rule.endTime)}`;
+
+            }
+
+
+            let dateRange =
+              "";
+
+
+            if (
+              rule.recurrence ===
+                "weekly" &&
+              (
+                rule.startDate ||
+                rule.endDate
+              )
+            ) {
+
+              dateRange = `
+
+                <div class="rule-meta">
+
+                  ${
+                    rule.startDate
+                      ? `Starts ${
+                          formatDisplayDate(
+                            rule.startDate
+                          )
+                        }`
+                      : ""
+                  }
+
+                  ${
+                    rule.startDate &&
+                    rule.endDate
+                      ? " • "
+                      : ""
+                  }
+
+                  ${
+                    rule.endDate
+                      ? `Ends ${
+                          formatDisplayDate(
+                            rule.endDate
+                          )
+                        }`
+                      : ""
+                  }
+
+                </div>
+
+              `;
+
+            }
+
+
+            return `
+
+              <div class="rule-card">
+
+                <div class="rule-name">
+                  ${
+                    escapeHTML(
+                      rule.label ||
+                      "Scheduling Rule"
+                    )
+                  }
+                </div>
+
+
+                <div class="rule-meta">
+
+                  ${
+                    escapeHTML(
+                      rule.person ||
+                      "Entire Studio"
+                    )
+                  }
+
+                  •
+
+                  ${
+                    escapeHTML(
+                      scheduleText
+                    )
+                  }
+
+                  •
+
+                  ${
+                    escapeHTML(
+                      timeText
+                    )
+                  }
+
+                </div>
+
+
+                ${dateRange}
+
+
+                <div class="rule-actions">
+
+                  <button
+                    class="btn btn-decline"
+                    type="button"
+                    onclick="
+                      deleteRule(
+                        '${
+                          escapeAttribute(
+                            rule.id
+                          )
+                        }'
+                      )
+                    "
+                  >
+                    Delete Rule
+                  </button>
+
+                </div>
+
+              </div>
+
+            `;
+
+          }
+        )
+        .join("");
+
+    }
+
+
+
+    /* =====================================================
+       SAVE RULE
+       ===================================================== */
+
+    document
+      .getElementById(
+        "ruleForm"
+      )
+      .addEventListener(
+        "submit",
+        async event => {
+
+          event.preventDefault();
+
+
+          const form =
+            event.currentTarget;
+
+
+          const data =
+            Object.fromEntries(
+              new FormData(
+                form
+              )
+              .entries()
+            );
+
+
+          try {
+
+            await api(
+              "rule",
+              {
+                method:
+                  "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify(
+                    data
+                  )
+              }
+            );
+
+
+            form.reset();
+
+
+            await loadAdminData();
+
+
+          } catch (error) {
+
+            alert(
+              error.message
+            );
+
+          }
+
+        }
+      );
+
+
+
+    /* =====================================================
+       DELETE RULE
+       ===================================================== */
+
+    async function deleteRule(
+      id
+    ) {
+
+      if (
+        !confirm(
+          "Delete this scheduling rule?"
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      try {
+
+        await api(
+          "delete-rule",
+          {
+            method:
+              "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                id
+              })
+          }
+        );
+
+
+        await loadAdminData();
+
+
+      } catch (error) {
+
+        alert(
+          error.message
+        );
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       AVAILABILITY PANEL
+       ===================================================== */
+
+    async function loadAvailabilityPanel() {
+
+      const input =
+        document.getElementById(
+          "availabilityDate"
+        );
+
+
+      const container =
+        document.getElementById(
+          "availabilityPanel"
+        );
+
+
+      const date =
+        input.value;
+
+
+      if (!date) {
+
+        container.innerHTML = `
+
+          <div class="empty">
+            Choose a date to view availability.
+          </div>
+
+        `;
+
+        return;
+
+      }
+
+
+      container.innerHTML = `
+
+        <div class="empty">
+          Checking availability...
+        </div>
+
+      `;
+
+
+      try {
+
+        const [
+          discovery,
+          virtual,
+          final
+        ] =
+          await Promise.all([
+
+            api(
+              "availability",
+              {
+                query: {
+                  type:
+                    "discovery",
+
+                  date
+                }
+              }
+            ),
+
+            api(
+              "availability",
+              {
+                query: {
+                  type:
+                    "virtual",
+
+                  date
+                }
+              }
+            ),
+
+            api(
+              "availability",
+              {
+                query: {
+                  type:
+                    "final",
+
+                  date
+                }
+              }
+            )
+
+          ]);
+
+
+        container.innerHTML =
+          renderAvailabilityGroup(
+            "Discovery",
+            discovery.slots
+          ) +
+
+          renderAvailabilityGroup(
+            "Virtual Selection",
+            virtual.slots
+          ) +
+
+          renderAvailabilityGroup(
+            "Final",
+            final.slots
+          );
+
+
+      } catch (error) {
+
+        container.innerHTML = `
+
+          <div class="empty">
+            ${
+              escapeHTML(
+                error.message
+              )
+            }
+          </div>
+
+        `;
+
+      }
+
+    }
+
+
+
+    function renderAvailabilityGroup(
+      title,
+      slots
+    ) {
+
+      let body;
+
+
+      if (
+        !Array.isArray(slots) ||
+        slots.length === 0
+      ) {
+
+        body = `
+
+          <div class="availability-none">
+            No availability
+          </div>
+
+        `;
+
+      } else {
+
+        body =
+          slots.map(
+            slot => `
+
+              <div class="availability-slot">
+
+                <strong>
+                  ${
+                    escapeHTML(
+                      slot.label
+                    )
+                  }
+                </strong>
+
+                <span>
+
+                  ${
+                    Number(
+                      slot.remaining
+                    ) || 0
+                  }
+
+                  ${
+                    Number(
+                      slot.remaining
+                    ) === 1
+                      ? "spot"
+                      : "spots"
+                  }
+
+                  available
+
+                </span>
+
+              </div>
+
+            `
+          )
+          .join("");
+
+      }
+
+
+      return `
+
+        <div class="availability-group">
+
+          <div class="availability-title">
+            ${escapeHTML(title)}
+          </div>
+
+          ${body}
+
+        </div>
+
+      `;
+
+    }
+
+
+
+    /* =====================================================
+       WEEK NAVIGATION
+       ===================================================== */
+
+    function previousWeek() {
+
+      currentWeekStart =
+        addDays(
+          currentWeekStart,
+          -7
+        );
+
+
+      loadCalendar();
+
+    }
+
+
+    function nextWeek() {
+
+      currentWeekStart =
+        addDays(
+          currentWeekStart,
+          7
+        );
+
+
+      loadCalendar();
+
+    }
+
+
+    function goToToday() {
+
+      currentWeekStart =
+        getTuesdayForDate(
+          new Date()
+        );
+
+
+      loadCalendar();
+
+    }
+
+
+
+    /* =====================================================
+       LOAD WEEKLY CALENDAR
+       ===================================================== */
+
+    async function loadCalendar() {
+
+      const grid =
+        document.getElementById(
+          "calendarGrid"
+        );
+
+
+      const weekLabel =
+        document.getElementById(
+          "weekLabel"
+        );
+
+
+      grid.innerHTML = `
+
+        <div class="calendar-empty">
+          Loading Studio calendar...
+        </div>
+
+      `;
+
+
+      const days = [];
+
+
+      for (
+        let index = 0;
+        index < 5;
+        index++
+      ) {
+
+        days.push(
+          addDays(
+            currentWeekStart,
+            index
+          )
+        );
+
+      }
+
+
+      weekLabel.textContent =
+        `${formatShortDate(days[0])} – ` +
+        `${formatShortDate(days[4])}`;
+
+
+      try {
+
+        const results =
+          await Promise.all(
+            days.map(
+              date =>
+                api(
+                  "calendar-day",
+                  {
+                    query: {
+                      date:
+                        toDateInputValue(
+                          date
+                        )
+                    }
+                  }
+                )
+            )
+          );
+
+
+        grid.innerHTML = "";
+
+
+        results.forEach(
+          (
+            dayData,
+            index
+          ) => {
+
+            const date =
+              days[index];
+
+
+            grid.appendChild(
+              buildCalendarDay(
+                date,
+                dayData
+              )
+            );
+
+          }
+        );
+
+
+      } catch (error) {
+
+        grid.innerHTML = `
+
+          <div class="calendar-empty">
+            ${
+              escapeHTML(
+                error.message
+              )
+            }
+          </div>
+
+        `;
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       BUILD ONE CALENDAR DAY
+       ===================================================== */
+
+    function buildCalendarDay(
+      date,
+      data
+    ) {
+
+      const day =
+        document.createElement(
+          "div"
+        );
+
+
+      day.className =
+        "calendar-day";
+
+
+      if (
+        isSameDate(
+          date,
+          new Date()
+        )
+      ) {
+
+        day.classList.add(
+          "today"
+        );
+
+      }
+
+
+      const header =
+        document.createElement(
+          "div"
+        );
+
+
+      header.className =
+        "day-header";
+
+
+      header.innerHTML = `
+
+        <div class="day-name">
+
+          ${
+            date.toLocaleDateString(
+              "en-US",
+              {
+                weekday:
+                  "long"
+              }
+            )
+          }
+
+        </div>
+
+        <div class="day-date">
+
+          ${
+            date.toLocaleDateString(
+              "en-US",
+              {
+                month:
+                  "short",
+
+                day:
+                  "numeric"
+              }
+            )
+          }
+
+        </div>
+
+      `;
+
+
+      const content =
+        document.createElement(
+          "div"
+        );
+
+
+      content.className =
+        "day-content";
+
+
+      const items = [];
+
+
+      /*
+        RULES
+      */
+
+      (
+        data.rules || []
+      )
+        .forEach(
+          rule => {
+
+            let cssClass =
+              "meeting";
+
+
+            if (
+              rule.kind ===
+              "off"
+            ) {
+
+              cssClass =
+                "off";
+
+            }
+
+
+            if (
+              rule.kind ===
+              "virtual"
+            ) {
+
+              cssClass =
+                "virtual";
+
+            }
+
+
+            let ruleTime =
+              "All Day";
+
+
+            if (
+              rule.startTime &&
+              rule.endTime
+            ) {
+
+              ruleTime =
+                `${formatTime(rule.startTime)} – ` +
+                `${formatTime(rule.endTime)}`;
+
+            }
+
+
+            items.push({
+
+              sortTime:
+                rule.startTime ||
+                "00:00",
+
+              html: `
+
+                <div
+                  class="
+                    calendar-item
+                    ${cssClass}
+                  "
+                >
+
+                  <div class="calendar-item-time">
+                    ${
+                      escapeHTML(
+                        ruleTime
+                      )
+                    }
+                  </div>
+
+                  <div class="calendar-item-title">
+                    ${
+                      escapeHTML(
+                        rule.label ||
+                        rule.kind
+                      )
+                    }
+                  </div>
+
+                  <div class="calendar-item-note">
+                    ${
+                      escapeHTML(
+                        rule.person ||
+                        "Entire Studio"
+                      )
+                    }
+                  </div>
+
+                </div>
+
+              `
+
+            });
+
+          }
+        );
+
+
+      /*
+        REQUESTED / CONFIRMED APPOINTMENTS
+      */
+
+      (
+        data.requests || []
+      )
+        .forEach(
+          request => {
+
+            const cssClass =
+              request.status ===
+                "confirmed"
+                ? "confirmed"
+                : "requested";
+
+
+            items.push({
+
+              sortTime:
+                request.time ||
+                "23:59",
+
+              html: `
+
+                <div
+                  class="
+                    calendar-item
+                    ${cssClass}
+                  "
+                >
+
+                  <div class="calendar-item-time">
+                    ${
+                      escapeHTML(
+                        request.timeLabel ||
+                        formatTime(
+                          request.time
+                        )
+                      )
+                    }
+                  </div>
+
+                  <div class="calendar-item-title">
+
+                    ${
+                      escapeHTML(
+                        request.typeLabel ||
+                        request.type
+                      )
+                    }
+
+                    —
+
+                    ${
+                      escapeHTML(
+                        request.name
+                      )
+                    }
+
+                  </div>
+
+                  <div class="calendar-item-note">
+
+                    ${
+                      request.status ===
+                        "confirmed"
+                        ? "C3 Confirmed"
+                        : "Requested"
+                    }
+
+                  </div>
+
+                </div>
+
+              `
+
+            });
+
+          }
+        );
+
+
+      /*
+        AVAILABLE APPOINTMENTS
+      */
+
+      const availability =
+        data.availability || {};
+
+
+      const appointmentGroups = [
+
+        [
+          "discovery",
+          "Discovery"
+        ],
+
+        [
+          "virtual",
+          "Virtual"
+        ],
+
+        [
+          "final",
+          "Final"
+        ]
+
+      ];
+
+
+      appointmentGroups.forEach(
+        (
+          [
+            key,
+            label
+          ]
+        ) => {
+
+          (
+            availability[key] || []
+          )
+            .forEach(
+              slot => {
+
+                items.push({
+
+                  sortTime:
+                    slot.time ||
+                    "23:59",
+
+                  html: `
+
+                    <div
+                      class="
+                        calendar-item
+                        available
+                      "
+                    >
+
+                      <div class="calendar-item-time">
+                        ${
+                          escapeHTML(
+                            slot.label ||
+                            formatTime(
+                              slot.time
+                            )
+                          )
+                        }
+                      </div>
+
+                      <div class="calendar-item-title">
+                        ${escapeHTML(label)}
+                        Available
+                      </div>
+
+                      <div class="calendar-item-note">
+
+                        ${
+                          Number(
+                            slot.remaining
+                          ) || 0
+                        }
+
+                        ${
+                          Number(
+                            slot.remaining
+                          ) === 1
+                            ? "spot"
+                            : "spots"
+                        }
+
+                        open
+
+                      </div>
+
+                    </div>
+
+                  `
+
+                });
+
+              }
+            );
+
+        }
+      );
+
+
+      items.sort(
+        (
+          a,
+          b
+        ) =>
+          String(
+            a.sortTime
+          )
+            .localeCompare(
+              String(
+                b.sortTime
+              )
+            )
+      );
+
+
+      if (
+        items.length === 0
+      ) {
+
+        content.innerHTML = `
+
+          <div class="calendar-empty">
+            No appointments or availability.
+          </div>
+
+        `;
+
+      } else {
+
+        content.innerHTML =
+          items
+            .map(
+              item =>
+                item.html
+            )
+            .join("");
+
+      }
+
+
+      day.appendChild(
+        header
+      );
+
+
+      day.appendChild(
+        content
+      );
+
+
+      return day;
+
+    }
+
+
+
+    /* =====================================================
+       LOAD ALL ADMIN DATA
+       ===================================================== */
+
+    async function loadAdminData() {
+
+      try {
+
+        const [
+          requestResult,
+          ruleResult
+        ] =
+          await Promise.all([
+
+            api(
+              "requests"
+            ),
+
+            api(
+              "rules"
+            )
+
+          ]);
+
+
+        renderRequests(
+          requestResult.requests ||
+          []
+        );
+
+
+        renderRules(
+          ruleResult.rules ||
+          []
+        );
+
+
+        await loadCalendar();
+
+
+        if (
+          document
+            .getElementById(
+              "availabilityDate"
+            )
+            .value
+        ) {
+
+          await loadAvailabilityPanel();
+
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "ADMIN LOAD ERROR:",
+          error
+        );
+
+
+        document
+          .getElementById(
+            "requestList"
+          )
+          .innerHTML = `
+
+            <div class="empty">
+              ${
+                escapeHTML(
+                  error.message
+                )
+              }
+            </div>
+
+          `;
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       INITIAL LOAD
+       ===================================================== */
+
+    const availabilityDateInput =
+      document.getElementById(
+        "availabilityDate"
+      );
+
+
+    availabilityDateInput.value =
+      toDateInputValue(
+        new Date()
+      );
+
+
+    loadAdminData();
+
+  </script>
+
+</body>
+
+</html>
+
+<!-- END OF admin-booking.html -->
+          
