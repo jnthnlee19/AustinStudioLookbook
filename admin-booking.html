@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Studio Scheduling Admin | KB Home Austin
+  </title>
+
+
+  <style>
+
+    :root {
+
+      --navy: #1f2f46;
+      --navy-hover: #162337;
+
+      --yellow: #f3c63f;
+      --yellow-soft: #fff8dd;
+
+      --cream: #f7f3eb;
+
+      --card: #ffffff;
+
+      --line: #dfe3e7;
+
+      --muted: #707780;
+
+      --green: #2d7a54;
+      --green-soft: #edf8f2;
+
+      --red: #a33b34;
+      --red-soft: #fff1f0;
+
+      --blue: #356b9a;
+      --blue-soft: #edf5fb;
+
+      --shadow:
+        0 12px 34px
+        rgba(31, 47, 70, 0.07);
+
+    }
+
+
+    * {
+      box-sizing: border-box;
+    }
+
+
+    body {
+
+      margin: 0;
+
+      background:
+        var(--cream);
+
+      color: #292e33;
+
+      font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    }
+
+
+    button,
+    input,
+    select {
+
+      font: inherit;
+
+    }
+
+
+    button {
+
+      cursor: pointer;
+
+    }
+
+
+    .shell {
+
+      width:
+        min(
+          1250px,
+          calc(100% - 28px)
+        );
+
+      margin:
+        0 auto;
+
+      padding:
+        28px 0 50px;
+
+    }
+
+
+    /* =====================================================
+       HEADER
+       ===================================================== */
+
+    .header {
+
+      background:
+        var(--card);
+
+      border:
+        1px solid
+        var(--line);
+
+      border-top:
+        5px solid
+        var(--yellow);
+
+      border-radius:
+        16px;
+
+      box-shadow:
+        var(--shadow);
+
+      padding:
+        24px 26px;
+
+      margin-bottom:
+        18px;
+
+    }
+
+
+    .eyebrow {
+
+      color:
+        #8b9096;
+
+      font-size:
+        0.72rem;
+
+      font-weight:
+        800;
+
+      letter-spacing:
+        0.12em;
+
+      text-transform:
+        uppercase;
+
+    }
+
+
+    .header h1 {
+
+      margin:
+        5px 0 7px;
+
+      color:
+        var(--navy);
+
+      font-size:
+        1.8rem;
+
+    }
+
+
+    .header p {
+
+      margin: 0;
+
+      color:
+        var(--muted);
+
+      line-height:
+        1.5;
+
+    }
+
+
+    .booking-links {
+
+      display:
+        flex;
+
+      flex-wrap:
+        wrap;
+
+      gap:
+        8px;
+
+      margin-top:
+        17px;
+
+    }
+
+
+    .booking-links a {
+
+      display:
+        inline-flex;
+
+      align-items:
+        center;
+
+      padding:
+        9px 12px;
+
+      border:
+        1px solid
+        #d8dde2;
+
+      border-radius:
+        9px;
+
+      background:
+        #fff;
+
+      color:
+        var(--navy);
+
+      text-decoration:
+        none;
+
+      font-size:
+        0.78rem;
+
+      font-weight:
+        750;
+
+    }
+
+
+    .booking-links a:hover {
+
+      background:
+        var(--yellow-soft);
+
+      border-color:
+        #ead98e;
+
+    }
+
+
+    /* =====================================================
+       MAIN LAYOUT
+       ===================================================== */
+
+    .layout {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        minmax(0, 1.35fr)
+        minmax(340px, 0.75fr);
+
+      gap:
+        18px;
+
+      align-items:
+        start;
+
+    }
+
+
+    .right-column {
+
+      display:
+        grid;
+
+      gap:
+        18px;
+
+    }
+
+
+    .card {
+
+      background:
+        var(--card);
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        16px;
+
+      box-shadow:
+        var(--shadow);
+
+      overflow:
+        hidden;
+
+    }
+
+
+    .card-header {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        space-between;
+
+      gap:
+        12px;
+
+      padding:
+        19px 20px 16px;
+
+      border-bottom:
+        1px solid
+        var(--line);
+
+    }
+
+
+    .card-header h2 {
+
+      margin: 0;
+
+      color:
+        var(--navy);
+
+      font-size:
+        1.1rem;
+
+    }
+
+
+    .card-header p {
+
+      margin:
+        4px 0 0;
+
+      color:
+        var(--muted);
+
+      font-size:
+        0.78rem;
+
+    }
+
+
+    .card-body {
+
+      padding:
+        18px;
+
+    }
+
+
+    /* =====================================================
+       BUTTONS
+       ===================================================== */
+
+    .btn {
+
+      border:
+        1px solid
+        #d7dbe0;
+
+      border-radius:
+        8px;
+
+      padding:
+        9px 11px;
+
+      background:
+        #fff;
+
+      color:
+        var(--navy);
+
+      font-size:
+        0.78rem;
+
+      font-weight:
+        750;
+
+    }
+
+
+    .btn:hover {
+
+      background:
+        #f7f8f9;
+
+    }
+
+
+    .btn-yellow {
+
+      background:
+        var(--yellow);
+
+      border-color:
+        var(--yellow);
+
+      color:
+        #262626;
+
+    }
+
+
+    .btn-yellow:hover {
+
+      background:
+        #eabd31;
+
+    }
+
+
+    .btn-confirm {
+
+      color:
+        var(--green);
+
+      border-color:
+        #cfe4d8;
+
+      background:
+        #f7fcf9;
+
+    }
+
+
+    .btn-decline {
+
+      color:
+        var(--red);
+
+      border-color:
+        #e3c7c4;
+
+      background:
+        #fffafa;
+
+    }
+
+
+    /* =====================================================
+       APPOINTMENT REQUESTS
+       ===================================================== */
+
+    .request-list {
+
+      display:
+        grid;
+
+      gap:
+        11px;
+
+    }
+
+
+    .request-card {
+
+      border:
+        1px solid
+        #e3e6e9;
+
+      border-radius:
+        11px;
+
+      padding:
+        14px;
+
+      background:
+        #fff;
+
+    }
+
+
+    .request-top {
+
+      display:
+        flex;
+
+      align-items:
+        flex-start;
+
+      justify-content:
+        space-between;
+
+      gap:
+        12px;
+
+    }
+
+
+    .request-name {
+
+      color:
+        var(--navy);
+
+      font-weight:
+        800;
+
+      font-size:
+        0.95rem;
+
+    }
+
+
+    .request-meta {
+
+      margin-top:
+        4px;
+
+      color:
+        var(--muted);
+
+      font-size:
+        0.77rem;
+
+      line-height:
+        1.45;
+
+    }
+
+
+    .request-details {
+
+      margin-top:
+        11px;
+
+      padding-top:
+        10px;
+
+      border-top:
+        1px solid
+        #edf0f2;
+
+      color:
+        #454b51;
+
+      font-size:
+        0.78rem;
+
+      line-height:
+        1.55;
+
+    }
+
+
+    .request-actions {
+
+      display:
+        flex;
+
+      gap:
+        7px;
+
+      flex-wrap:
+        wrap;
+
+      margin-top:
+        12px;
+
+    }
+
+
+    /* =====================================================
+       STATUS BADGES
+       ===================================================== */
+
+    .status-badge {
+
+      display:
+        inline-flex;
+
+      align-items:
+        center;
+
+      padding:
+        5px 8px;
+
+      border-radius:
+        999px;
+
+      font-size:
+        0.66rem;
+
+      font-weight:
+        850;
+
+      letter-spacing:
+        0.035em;
+
+      text-transform:
+        uppercase;
+
+      white-space:
+        nowrap;
+
+    }
+
+
+    .status-badge.requested {
+
+      background:
+        #fff4c7;
+
+      color:
+        #79600a;
+
+    }
+
+
+    .status-badge.confirmed {
+
+      background:
+        var(--green-soft);
+
+      color:
+        var(--green);
+
+    }
+
+
+    .status-badge.declined {
+
+      background:
+        #f9e9e7;
+
+      color:
+        var(--red);
+
+    }
+
+
+    /* =====================================================
+       RULE FORM
+       ===================================================== */
+
+    .form-grid {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap:
+        11px;
+
+    }
+
+
+    .field.full {
+
+      grid-column:
+        1 / -1;
+
+    }
+
+
+    label {
+
+      display:
+        block;
+
+      margin-bottom:
+        5px;
+
+      color:
+        var(--navy);
+
+      font-size:
+        0.7rem;
+
+      font-weight:
+        750;
+
+    }
+
+
+    input,
+    select {
+
+      width:
+        100%;
+
+      padding:
+        9px 10px;
+
+      border:
+        1px solid
+        #cfd4d9;
+
+      border-radius:
+        8px;
+
+      background:
+        #fff;
+
+      color:
+        #30353a;
+
+      outline:
+        none;
+
+    }
+
+
+    input:focus,
+    select:focus {
+
+      border-color:
+        #b9a040;
+
+      box-shadow:
+        0 0 0 3px
+        rgba(243,198,63,.16);
+
+    }
+
+
+    .form-note {
+
+      margin-top:
+        10px;
+
+      color:
+        var(--muted);
+
+      font-size:
+        0.73rem;
+
+      line-height:
+        1.5;
+
+    }
+
+
+    /* =====================================================
+       RULE LIST
+       ===================================================== */
+
+    .rule-list {
+
+      display:
+        grid;
+
+      gap:
+        9px;
+
+    }
+
+
+    .rule-card {
+
+      border:
+        1px solid
+        #e3e6e9;
+
+      border-radius:
+        10px;
+
+      padding:
+        12px;
+
+    }
+
+
+    .rule-name {
+
+      color:
+        var(--navy);
+
+      font-size:
+        0.85rem;
+
+      font-weight:
+        800;
+
+    }
+
+
+    .rule-meta {
+
+      margin-top:
+        4px;
+
+      color:
+        var(--muted);
+
+      font-size:
+        0.74rem;
+
+      line-height:
+        1.45;
+
+    }
+
+
+    .rule-actions {
+
+      margin-top:
+        9px;
+
+    }
+
+
+    /* =====================================================
+       EMPTY / LOADING
+       ===================================================== */
+
+    .empty {
+
+      padding:
+        26px 15px;
+
+      text-align:
+        center;
+
+      color:
+        var(--muted);
+
+      font-size:
+        0.82rem;
+
+    }
+
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+
+    @media (
+      max-width: 850px
+    ) {
+
+      .layout {
+
+        grid-template-columns:
+          1fr;
+
+      }
+
+    }
+
+
+    @media (
+      max-width: 560px
+    ) {
+
+      .form-grid {
+
+        grid-template-columns:
+          1fr;
+
+      }
+
+
+      .field.full {
+
+        grid-column:
+          auto;
+
+      }
+
+
+      .request-top {
+
+        flex-direction:
+          column;
+
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+  <main class="shell">
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <section class="header">
+
+      <div class="eyebrow">
+        KB Home • Austin Design Studio
+      </div>
+
+      <h1>
+        Studio Scheduling Admin
+      </h1>
+
+      <p>
+        Manage appointment requests,
+        recurring staffing rules,
+        and Studio availability.
+        C3 remains the official appointment
+        booking system.
+      </p>
+
+
+      <div class="booking-links">
+
+        <a
+          href="/booking.html?type=discovery"
+          target="_blank"
+          rel="noopener"
+        >
+          Discovery Request Link ↗
+        </a>
+
+
+        <a
+          href="/booking.html?type=virtual"
+          target="_blank"
+          rel="noopener"
+        >
+          Virtual Selection Link ↗
+        </a>
+
+
+        <a
+          href="/booking.html?type=final"
+          target="_blank"
+          rel="noopener"
+        >
+          Final Appointment Link ↗
+        </a>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <div class="layout">
+
+
+      <!-- ===================================================
+           APPOINTMENT REQUESTS
+           =================================================== -->
+
+      <section class="card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h2>
+              Appointment Requests
+            </h2>
+
+            <p>
+              Requested appointments hold
+              availability until confirmed
+              or declined.
+            </p>
+
+          </div>
+
+
+          <button
+            class="btn"
+            type="button"
+            onclick="loadAdminData()"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+
+        <div class="card-body">
+
+          <div
+            class="request-list"
+            id="requestList"
+          >
+
+            <div class="empty">
+              Loading appointment requests...
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- ===================================================
+           RIGHT COLUMN
+           =================================================== -->
+
+      <div class="right-column">
+
+
+        <!-- ===============================================
+             ADD RULE
+             =============================================== -->
+
+        <section class="card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Add Rule / Block
+              </h2>
+
+              <p>
+                Create one-time or recurring
+                Studio availability rules.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="card-body">
+
+            <form id="ruleForm">
+
+              <div class="form-grid">
+
+
+                <div class="field">
+
+                  <label for="ruleKind">
+                    Rule Type
+                  </label>
+
+                  <select
+                    id="ruleKind"
+                    name="kind"
+                    required
+                  >
+
+                    <option value="off">
+                      Team Member Off
+                    </option>
+
+                    <option value="virtual">
+                      Virtual Only
+                    </option>
+
+                    <option value="meeting">
+                      Meeting / Block
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="rulePerson">
+                    Team Member
+                  </label>
+
+                  <select
+                    id="rulePerson"
+                    name="person"
+                  >
+
+                    <option value="">
+                      Entire Studio
+                    </option>
+
+                    <option value="Jonathan">
+                      Jonathan
+                    </option>
+
+                    <option value="Juan">
+                      Juan
+                    </option>
+
+                    <option value="Missy">
+                      Missy
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleWeekday">
+                    Day
+                  </label>
+
+                  <select
+                    id="ruleWeekday"
+                    name="weekday"
+                    required
+                  >
+
+                    <option value="2">
+                      Tuesday
+                    </option>
+
+                    <option value="3">
+                      Wednesday
+                    </option>
+
+                    <option value="4">
+                      Thursday
+                    </option>
+
+                    <option value="5">
+                      Friday
+                    </option>
+
+                    <option value="6">
+                      Saturday
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleRecurrence">
+                    Repeat
+                  </label>
+
+                  <select
+                    id="ruleRecurrence"
+                    name="recurrence"
+                    required
+                  >
+
+                    <option value="weekly">
+                      Every Week
+                    </option>
+
+                    <option value="once">
+                      One Date Only
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleStartTime">
+                    Start Time
+                  </label>
+
+                  <input
+                    id="ruleStartTime"
+                    name="startTime"
+                    type="time"
+                  >
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleEndTime">
+                    End Time
+                  </label>
+
+                  <input
+                    id="ruleEndTime"
+                    name="endTime"
+                    type="time"
+                  >
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleStartDate">
+                    Start Date
+                  </label>
+
+                  <input
+                    id="ruleStartDate"
+                    name="startDate"
+                    type="date"
+                  >
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="ruleEndDate">
+                    End Date
+                  </label>
+
+                  <input
+                    id="ruleEndDate"
+                    name="endDate"
+                    type="date"
+                  >
+
+                </div>
+
+
+                <div class="field full">
+
+                  <label for="ruleLabel">
+                    Rule Name
+                  </label>
+
+                  <input
+                    id="ruleLabel"
+                    name="label"
+                    type="text"
+                    placeholder="Example: Missy Virtual Recurring"
+                    required
+                  >
+
+                </div>
+
+              </div>
+
+
+              <div class="form-note">
+
+                For an all-day
+                <strong>Off</strong>
+                or
+                <strong>Virtual Only</strong>
+                rule, leave Start Time and
+                End Time blank.
+
+                <br><br>
+
+                For a meeting or partial-day block,
+                enter the Start Time and End Time.
+
+              </div>
+
+
+              <button
+                class="btn btn-yellow"
+                type="submit"
+                style="margin-top:14px;"
+              >
+                Save Rule
+              </button>
+
+            </form>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===============================================
+             EXISTING RULES
+             =============================================== -->
+
+        <section class="card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Rules & Blocks
+              </h2>
+
+              <p>
+                Current recurring and
+                one-time availability rules.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="card-body">
+
+            <div
+              class="rule-list"
+              id="ruleList"
+            >
+
+              <div class="empty">
+                Loading rules...
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+
+  <script>
+
+    /* =====================================================
+       SMALL HELPERS
+       ===================================================== */
+
+    function escapeHTML(
+      value
+    ) {
+
+      return String(
+        value ?? ""
+      )
+      .replaceAll(
+        "&",
+        "&
