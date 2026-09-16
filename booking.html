@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>Studio Appointment Request</title>
+
+  <style>
+    :root {
+      --navy: #1f2f46;
+      --yellow: #f3c63f;
+      --cream: #f7f3eb;
+      --card: #ffffff;
+      --line: #dfe3e7;
+      --muted: #707780;
+      --green: #2d7a54;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--cream);
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: #292e33;
+    }
+
+    .shell {
+      width: min(920px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 50px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow:
+        0 12px 34px rgba(31, 47, 70, 0.07);
+    }
+
+    .header {
+      border-top: 5px solid var(--yellow);
+      margin-bottom: 16px;
+    }
+
+    .eyebrow {
+      color: #8b9096;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      color: var(--navy);
+      margin: 5px 0 7px;
+    }
+
+    .intro {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .notice {
+      background: #fff8dd;
+      border: 1px solid #ead98e;
+      padding: 12px 14px;
+      border-radius: 9px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      font-size: 0.86rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--navy);
+      font-size: 0.78rem;
+      font-weight: 750;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #cfd4d9;
+      border-radius: 9px;
+      background: #fff;
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #b9a040;
+      box-shadow:
+        0 0 0 3px rgba(243, 198, 63, 0.16);
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .slots {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .slot {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fff;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .slot:hover {
+      border-color: #c5a92d;
+    }
+
+    .slot.selected {
+      border: 2px solid var(--yellow);
+      background: #fffaf0;
+    }
+
+    .slot strong {
+      display: block;
+      color: var(--navy);
+    }
+
+    .slot small {
+      color: var(--muted);
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 15px;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 9px;
+    }
+
+    .submit {
+      margin-top: 20px;
+      border: 0;
+      background: var(--yellow);
+      padding: 12px 17px;
+      border-radius: 9px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .submit:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .success {
+      text-align: center;
+      padding: 30px 20px;
+    }
+
+    .success h2 {
+      color: var(--green);
+      margin-top: 0;
+    }
+
+    @media (max-width: 650px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+
+      .slots {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="shell">
+
+    <section class="card header">
+
+      <div class="eyebrow">
+        KB Home • Austin Design Studio
+      </div>
+
+      <h1 id="pageTitle">
+        Appointment Request
+      </h1>
+
+      <div
+        class="intro"
+        id="pageIntro"
+      ></div>
+
+    </section>
+
+
+    <section
+      class="card"
+      id="mainCard"
+    >
+
+      <div class="notice">
+
+        <strong>
+          This is an appointment request.
+        </strong>
+
+        Your appointment is not confirmed until
+        the Austin Design Studio completes the
+        official booking in C3 and sends confirmation.
+
+      </div>
+
+
+      <form id="requestForm">
+
+        <div class="grid">
+
+          <div>
+            <label for="name">
+              Full Name
+            </label>
+
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+            >
+          </div>
+
+
+          <div>
+            <label for="email">
+              Email Address
+            </label>
+
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+            >
+          </div>
+
+
+          <div>
+            <label for="phone">
+              Phone Number
+            </label>
+
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              required
+            >
+          </div>
+
+
+          <div>
+            <label for="community">
+              Community
+            </label>
+
+            <input
+              id="community"
+              name="community"
+              type="text"
+            >
+          </div>
+
+
+          <div class="full">
+
+            <label for="address">
+              KB Home Future Address / Lot
+            </label>
+
+            <input
+              id="address"
+              name="address"
+              type="text"
+            >
+
+          </div>
+
+
+          <div class="full">
+
+            <label for="dateInput">
+              Preferred Date
+            </label>
+
+            <input
+              id="dateInput"
+              name="date"
+              type="date"
+              required
+            >
+
+          </div>
+
+
+          <div class="full">
+
+            <label>
+              Available Request Times
+            </label>
+
+            <div
+              class="slots"
+              id="slots"
+            >
+
+              <div class="empty">
+                Choose a date to see available times.
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="full">
+
+            <label for="notes">
+              Notes
+              <span
+                style="
+                  color:#92979d;
+                  font-weight:500;
+                "
+              >
+                (Optional)
+              </span>
+            </label>
+
+            <textarea
+              id="notes"
+              name="notes"
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <input
+          id="timeInput"
+          name="time"
+          type="hidden"
+        >
+
+        <input
+          id="typeInput"
+          name="type"
+          type="hidden"
+        >
+
+
+        <button
+          class="submit"
+          id="submitButton"
+          type="submit"
+        >
+          Request Appointment
+        </button>
+
+      </form>
+
+    </section>
+
+  </main>
+
+
+  <script>
+
+    /* =====================================================
+       APPOINTMENT TYPE
+       ===================================================== */
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    const appointmentType =
+      params.get("type") ||
+      "discovery";
+
+
+    const APPOINTMENT_TYPES = {
+
+      discovery: {
+
+        title:
+          "Discovery Appointment Request",
+
+        intro:
+          "Request a 30-minute virtual Discovery appointment."
+
+      },
+
+      virtual: {
+
+        title:
+          "Virtual Selection Request",
+
+        intro:
+          "Request your virtual Selection appointment."
+
+      },
+
+      final: {
+
+        title:
+          "Final Appointment Request",
+
+        intro:
+          "Request your Final appointment at the Austin Design Studio."
+
+      }
+
+    };
+
+
+    const appointmentConfig =
+      APPOINTMENT_TYPES[
+        appointmentType
+      ] ||
+      APPOINTMENT_TYPES.discovery;
+
+
+    document
+      .getElementById(
+        "pageTitle"
+      )
+      .textContent =
+        appointmentConfig.title;
+
+
+    document
+      .getElementById(
+        "pageIntro"
+      )
+      .textContent =
+        appointmentConfig.intro;
+
+
+    document
+      .getElementById(
+        "typeInput"
+      )
+      .value =
+        appointmentType;
+
+
+
+    /* =====================================================
+       DATE
+       ===================================================== */
+
+    const dateInput =
+      document.getElementById(
+        "dateInput"
+      );
+
+
+    const slots =
+      document.getElementById(
+        "slots"
+      );
+
+
+    const timeInput =
+      document.getElementById(
+        "timeInput"
+      );
+
+
+    dateInput.min =
+      new Date()
+        .toLocaleDateString(
+          "en-CA"
+        );
+
+
+    dateInput.addEventListener(
+      "change",
+      loadAvailability
+    );
+
+
+
+    /* =====================================================
+       LOAD AVAILABILITY
+       ===================================================== */
+
+    async function loadAvailability() {
+
+      timeInput.value = "";
+
+
+      slots.innerHTML = `
+
+        <div class="empty">
+          Checking availability...
+        </div>
+
+      `;
+
+
+      if (!dateInput.value) {
+        return;
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+
+            `/.netlify/functions/booking-api` +
+
+            `?action=availability` +
+
+            `&type=${
+              encodeURIComponent(
+                appointmentType
+              )
+            }` +
+
+            `&date=${
+              encodeURIComponent(
+                dateInput.value
+              )
+            }`,
+
+            {
+              cache: "no-store"
+            }
+
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error ||
+            "Unable to load availability."
+          );
+
+        }
+
+
+        if (
+          !Array.isArray(
+            result.slots
+          ) ||
+          result.slots.length === 0
+        ) {
+
+          slots.innerHTML = `
+
+            <div class="empty">
+              No request times are currently
+              available for this date.
+            </div>
+
+          `;
+
+          return;
+
+        }
+
+
+        slots.innerHTML = "";
+
+
+        result.slots.forEach(
+          slot => {
+
+            const button =
+              document.createElement(
+                "button"
+              );
+
+
+            button.type =
+              "button";
+
+
+            button.className =
+              "slot";
+
+
+            button.innerHTML = `
+
+              <strong>
+                ${slot.label}
+              </strong>
+
+              <small>
+                ${slot.remaining}
+                request
+                ${
+                  slot.remaining === 1
+                    ? "spot"
+                    : "spots"
+                }
+                available
+              </small>
+
+            `;
+
+
+            button.addEventListener(
+              "click",
+              () => {
+
+                document
+                  .querySelectorAll(
+                    ".slot"
+                  )
+                  .forEach(
+                    item => {
+
+                      item.classList.remove(
+                        "selected"
+                      );
+
+                    }
+                  );
+
+
+                button.classList.add(
+                  "selected"
+                );
+
+
+                timeInput.value =
+                  slot.time;
+
+              }
+            );
+
+
+            slots.appendChild(
+              button
+            );
+
+          }
+        );
+
+
+      } catch (error) {
+
+        slots.innerHTML = `
+
+          <div class="empty">
+            ${error.message}
+          </div>
+
+        `;
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       SUBMIT REQUEST
+       ===================================================== */
+
+    document
+      .getElementById(
+        "requestForm"
+      )
+      .addEventListener(
+        "submit",
+        async event => {
+
+          event.preventDefault();
+
+
+          if (!timeInput.value) {
+
+            alert(
+              "Please choose an available time."
+            );
+
+            return;
+
+          }
+
+
+          const submitButton =
+            document.getElementById(
+              "submitButton"
+            );
+
+
+          submitButton.disabled =
+            true;
+
+
+          const data =
+            Object.fromEntries(
+              new FormData(
+                event.currentTarget
+              )
+              .entries()
+            );
+
+
+          try {
+
+            const response =
+              await fetch(
+
+                "/.netlify/functions/booking-api?action=request",
+
+                {
+
+                  method: "POST",
+
+                  headers: {
+
+                    "Content-Type":
+                      "application/json"
+
+                  },
+
+                  body:
+                    JSON.stringify(
+                      data
+                    )
+
+                }
+
+              );
+
+
+            const result =
+              await response.json();
+
+
+            if (!response.ok) {
+
+              throw new Error(
+                result.error ||
+                "Unable to submit your appointment request."
+              );
+
+            }
+
+
+            document
+              .getElementById(
+                "mainCard"
+              )
+              .innerHTML = `
+
+                <div class="success">
+
+                  <h2>
+                    Appointment Request Received
+                  </h2>
+
+                  <p>
+                    You requested
+                    <strong>
+                      ${result.dateLabel}
+                    </strong>
+                    at
+                    <strong>
+                      ${result.timeLabel}
+                    </strong>.
+                  </p>
+
+                  <p>
+                    This appointment is
+                    <strong>
+                      not confirmed yet.
+                    </strong>
+                  </p>
+
+                  <p>
+                    The Austin Design Studio will
+                    complete the official booking
+                    and confirm your appointment.
+                  </p>
+
+                </div>
+
+              `;
+
+
+          } catch (error) {
+
+            submitButton.disabled =
+              false;
+
+
+            alert(
+              error.message
+            );
+
+          }
+
+        }
+      );
+
+  </script>
+
+</body>
+</html>
