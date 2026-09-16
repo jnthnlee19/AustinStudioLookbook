@@ -1,45 +1,15 @@
 import { getStore } from "@netlify/blobs";
 import { randomUUID } from "node:crypto";
 
-
-/* =========================================================
-   AUSTIN DESIGN STUDIO
-   BOOKING / APPOINTMENT REQUEST API
-   ========================================================= */
-
-
-/* ---------------------------------------------------------
-   BASIC CONFIGURATION
-   --------------------------------------------------------- */
-
-const APPOINTMENT_TYPES = {
-
-  discovery: {
-    label: "Discovery",
-    capacity: 1
-  },
-
-  virtual: {
-    label: "Virtual Selection",
-    capacity: 2
-  },
-
-  final: {
-    label: "Final",
-    capacity: 2
-  }
-
+const TYPES = {
+  discovery: { label: "Discovery", capacity: 1 },
+  virtual: { label: "Virtual Selection", capacity: 2 },
+  final: { label: "Final", capacity: 2 }
 };
 
+const TEAM = ["Jonathan", "Juan", "Missy"];
 
-const TEAM_MEMBERS = [
-  "Jonathan",
-  "Juan",
-  "Missy"
-];
-
-
-const DAY_NAMES = [
+const DAYS = [
   "Sunday",
   "Monday",
   "Tuesday",
@@ -49,278 +19,96 @@ const DAY_NAMES = [
   "Saturday"
 ];
 
-
-
-/* =========================================================
-   JSON RESPONSE
-   ========================================================= */
-
-function jsonResponse(
-  data,
-  status = 200
-) {
-
+function reply(data, status = 200) {
   return new Response(
-    JSON.stringify(
-      data
-    ),
+    JSON.stringify(data),
     {
       status,
-
       headers: {
-
-        "Content-Type":
-          "application/json",
-
-        "Cache-Control":
-          "no-store"
-
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store"
       }
     }
   );
-
 }
-
-
-
-/* =========================================================
-   NETLIFY BLOB STORE
-   ========================================================= */
 
 function getBookingStore() {
-
   return getStore({
-    name:
-      "austin-studio-booking",
-
-    consistency:
-      "strong"
+    name: "austin-studio-booking",
+    consistency: "strong"
   });
-
 }
 
-
-
-/* =========================================================
-   CLEAN TEXT
-   ========================================================= */
-
-function cleanText(
-  value,
-  maxLength = 300
-) {
-
-  return String(
-    value ?? ""
-  )
+function clean(value, max = 300) {
+  return String(value ?? "")
     .trim()
-    .slice(
-      0,
-      maxLength
-    );
-
+    .slice(0, max);
 }
 
+function dateLabel(value) {
+  if (!value) return "";
 
+  const date =
+    new Date(`${value}T12:00:00`);
 
-/* =========================================================
-   TIME FORMATTING
-   ========================================================= */
-
-function formatTimeLabel(
-  value
-) {
-
-  if (!value) {
-    return "";
+  if (Number.isNaN(date.getTime())) {
+    return value;
   }
 
+  return date.toLocaleDateString(
+    "en-US",
+    {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    }
+  );
+}
 
-  const [
-    hourText,
-    minuteText
-  ] =
-    String(value)
-      .split(":");
+function timeLabel(value) {
+  if (!value) return "";
 
+  const [hText, mText] =
+    String(value).split(":");
 
-  const hour =
-    Number(
-      hourText
-    );
-
-
-  const minute =
-    Number(
-      minuteText
-    );
-
+  const hour = Number(hText);
+  const minute = Number(mText);
 
   if (
     !Number.isFinite(hour) ||
     !Number.isFinite(minute)
   ) {
-
     return value;
-
   }
-
-
-  const suffix =
-    hour >= 12
-      ? "PM"
-      : "AM";
-
-
-  const displayHour =
-    hour % 12 || 12;
-
 
   return (
-    `${displayHour}:` +
+    `${hour % 12 || 12}:` +
     `${String(minute).padStart(2, "0")} ` +
-    suffix
+    `${hour >= 12 ? "PM" : "AM"}`
   );
-
 }
 
-
-
-/* =========================================================
-   DATE FORMATTING
-   ========================================================= */
-
-function formatDateLabel(
-  value
-) {
-
-  if (!value) {
-    return "";
-  }
-
-
+function weekday(dateValue) {
   const date =
-    new Date(
-      `${value}T12:00:00`
-    );
+    new Date(`${dateValue}T12:00:00`);
 
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-
-    return value;
-
-  }
-
-
-  return date.toLocaleDateString(
-    "en-US",
-    {
-      weekday:
-        "long",
-
-      month:
-        "long",
-
-      day:
-        "numeric",
-
-      year:
-        "numeric"
-    }
-  );
-
+  return Number.isNaN(date.getTime())
+    ? -1
+    : date.getDay();
 }
 
+function baseSlots(type, dateValue) {
+  const day = weekday(dateValue);
 
-
-/* =========================================================
-   BASE APPOINTMENT TIMES
-
-   CURRENT RULES:
-
-   CLOSED:
-   Sunday
-   Monday
-
-   DISCOVERY:
-   Tuesday-Friday
-   30-minute appointments
-   1-hour break between appointments
-
-   VIRTUAL:
-   Tuesday-Friday
-   10 AM / 3 PM
-
-   FINAL:
-   Tuesday-Friday
-   10 AM / 3 PM
-
-   Saturday:
-   Final only
-   9 AM / 2 PM
-   ========================================================= */
-
-function getBaseSlots(
-  appointmentType,
-  dateValue
-) {
-
-  const date =
-    new Date(
-      `${dateValue}T12:00:00`
-    );
-
-
-  const day =
-    date.getDay();
-
-
-  /*
-    Sunday / Monday
-  */
-
-  if (
-    day === 0 ||
-    day === 1
-  ) {
-
+  // Sunday / Monday closed
+  if (day === 0 || day === 1) {
     return [];
-
   }
 
-
-  /*
-    DISCOVERY
-
-    30-minute appointment followed by
-    a 1-hour buffer before the next
-    Discovery starts.
-
-    Start times:
-    11:00
-    12:30
-    2:00
-    3:30
-    5:00
-  */
-
-  if (
-    appointmentType ===
-    "discovery"
-  ) {
-
-    if (
-      day === 6
-    ) {
-
-      return [];
-
-    }
-
+  // Discovery: Tue-Fri only
+  if (type === "discovery") {
+    if (day === 6) return [];
 
     return [
       "11:00",
@@ -329,445 +117,156 @@ function getBaseSlots(
       "15:30",
       "17:00"
     ];
-
   }
 
-
-  /*
-    VIRTUAL SELECTION
-  */
-
-  if (
-    appointmentType ===
-    "virtual"
-  ) {
-
-    if (
-      day === 6
-    ) {
-
-      return [];
-
-    }
-
+  // Virtual: Tue-Fri only
+  if (type === "virtual") {
+    if (day === 6) return [];
 
     return [
       "10:00",
       "15:00"
     ];
-
   }
 
-
-  /*
-    FINAL
-  */
-
-  if (
-    appointmentType ===
-    "final"
-  ) {
-
-    if (
-      day === 6
-    ) {
-
+  // Final
+  if (type === "final") {
+    if (day === 6) {
       return [
         "09:00",
         "14:00"
       ];
-
     }
-
 
     return [
       "10:00",
       "15:00"
     ];
-
   }
 
-
   return [];
-
 }
 
-
-
-/* =========================================================
-   READ ALL BLOB RECORDS
-   ========================================================= */
-
-async function listRecords(
-  prefix
-) {
-
-  const store =
-    getBookingStore();
-
-
+async function listRecords(prefix) {
+  const store = getBookingStore();
   const records = [];
 
-
-  let cursor =
-    undefined;
-
+  let cursor;
 
   do {
-
     const result =
       await store.list({
         prefix,
         cursor
       });
 
-
-    for (
-      const blob
-      of result.blobs
-    ) {
-
+    for (const blob of result.blobs) {
       const record =
         await store.get(
           blob.key,
-          {
-            type:
-              "json"
-          }
+          { type: "json" }
         );
-
 
       if (record) {
-
-        records.push(
-          record
-        );
-
+        records.push(record);
       }
-
     }
 
-
-    cursor =
-      result.cursor;
-
+    cursor = result.cursor;
 
   } while (cursor);
 
-
   return records;
-
 }
 
+function ruleMatchesDate(rule, dateValue) {
+  const day = weekday(dateValue);
 
+  if (day < 0) return false;
 
-/* =========================================================
-   RULE DATE CHECK
-   ========================================================= */
-
-function ruleMatchesDate(
-  rule,
-  dateValue
-) {
-
-  const date =
-    new Date(
-      `${dateValue}T12:00:00`
+  if (rule.recurrence === "once") {
+    return (
+      Boolean(rule.startDate) &&
+      rule.startDate === dateValue
     );
-
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-
-    return false;
-
   }
 
-
-  const weekday =
-    date.getDay();
-
-
-  /*
-    Correct weekday?
-  */
-
-  if (
-    Number(
-      rule.weekday
-    ) !==
-    weekday
-  ) {
-
+  if (Number(rule.weekday) !== day) {
     return false;
-
   }
-
-
-  /*
-    Before rule start date?
-  */
 
   if (
     rule.startDate &&
-    dateValue <
-    rule.startDate
+    dateValue < rule.startDate
   ) {
-
     return false;
-
   }
-
-
-  /*
-    After rule end date?
-  */
 
   if (
     rule.endDate &&
-    dateValue >
-    rule.endDate
+    dateValue > rule.endDate
   ) {
-
     return false;
-
   }
-
-
-  /*
-    One-time rule
-  */
-
-  if (
-    rule.recurrence ===
-      "once" &&
-    rule.startDate &&
-    dateValue !==
-      rule.startDate
-  ) {
-
-    return false;
-
-  }
-
 
   return true;
-
 }
 
-
-
-/* =========================================================
-   RULE TIME CHECK
-   ========================================================= */
-
-function ruleMatchesTime(
-  rule,
-  timeValue
-) {
-
-  /*
-    No times means all-day rule.
-  */
-
-  if (
-    !rule.startTime &&
-    !rule.endTime
-  ) {
-
+function ruleMatchesTime(rule, time) {
+  // No times = all day
+  if (!rule.startTime && !rule.endTime) {
     return true;
-
   }
 
-
-  /*
-    If only one time was accidentally
-    entered, don't apply the partial block.
-  */
-
-  if (
-    !rule.startTime ||
-    !rule.endTime
-  ) {
-
+  if (!rule.startTime || !rule.endTime) {
     return false;
-
   }
-
 
   return (
-    timeValue >=
-      rule.startTime &&
-
-    timeValue <
-      rule.endTime
+    time >= rule.startTime &&
+    time < rule.endTime
   );
-
 }
-
-
-
-/* =========================================================
-   COMPLETE RULE CHECK
-   ========================================================= */
 
 function ruleApplies(
   rule,
   dateValue,
-  timeValue
+  time
 ) {
-
   return (
-    ruleMatchesDate(
-      rule,
-      dateValue
-    ) &&
-
-    ruleMatchesTime(
-      rule,
-      timeValue
-    )
+    ruleMatchesDate(rule, dateValue) &&
+    ruleMatchesTime(rule, time)
   );
-
 }
 
-
-
-/* =========================================================
-   CALCULATE AVAILABILITY
-   ========================================================= */
-
-async function calculateAvailability(
-  appointmentType,
-  dateValue
+function availableStaff(
+  type,
+  rules,
+  dateValue,
+  time
 ) {
-
-  const typeConfig =
-    APPOINTMENT_TYPES[
-      appointmentType
-    ];
-
-
-  if (!typeConfig) {
-
-    return [];
-
-  }
-
-
-  const baseSlots =
-    getBaseSlots(
-      appointmentType,
-      dateValue
+  const studioBlocked =
+    rules.some(
+      rule =>
+        rule.kind === "meeting" &&
+        !rule.person &&
+        ruleApplies(
+          rule,
+          dateValue,
+          time
+        )
     );
 
-
-  if (
-    baseSlots.length === 0
-  ) {
-
+  if (studioBlocked) {
     return [];
-
   }
 
-
-  const [
-    requests,
-    rules
-  ] =
-    await Promise.all([
-      listRecords(
-        "requests/"
-      ),
-
-      listRecords(
-        "rules/"
-      )
-    ]);
-
-
-  const availableSlots = [];
-
-
-  for (
-    const time
-    of baseSlots
-  ) {
-
-    let capacity =
-      typeConfig.capacity;
-
-
-    /*
-      -----------------------------------------
-      STAFF OFF
-      -----------------------------------------
-    */
-
-    const peopleOff =
-      new Set();
-
-
-    TEAM_MEMBERS.forEach(
-      person => {
-
-        const off =
-          rules.some(
-            rule =>
-
-              rule.kind ===
-                "off" &&
-
-              rule.person ===
-                person &&
-
-              ruleApplies(
-                rule,
-                dateValue,
-                time
-              )
-          );
-
-
-        if (off) {
-
-          peopleOff.add(
-            person
-          );
-
-        }
-
-      }
-    );
-
-
-    let availableStaff =
-      TEAM_MEMBERS.length -
-      peopleOff.size;
-
-
-
-    /*
-      -----------------------------------------
-      ENTIRE STUDIO BLOCK
-
-      Example:
-      Tuesday Team Meeting
-      -----------------------------------------
-    */
-
-    const studioBlocked =
+  return TEAM.filter(person => {
+    const off =
       rules.some(
         rule =>
-
-          rule.kind ===
-            "meeting" &&
-
-          !rule.person &&
-
+          rule.kind === "off" &&
+          rule.person === person &&
           ruleApplies(
             rule,
             dateValue,
@@ -775,511 +274,263 @@ async function calculateAvailability(
           )
       );
 
+    if (off) return false;
 
-    if (studioBlocked) {
-
-      availableStaff = 0;
-
-    }
-
-
-
-    /*
-      -----------------------------------------
-      INDIVIDUAL MEETING / BLOCK
-
-      Person isn't OFF all day, but isn't
-      available during this particular time.
-      -----------------------------------------
-    */
-
-    const peopleInMeetings =
-      new Set();
-
-
-    TEAM_MEMBERS.forEach(
-      person => {
-
-        const blocked =
-          rules.some(
-            rule =>
-
-              rule.kind ===
-                "meeting" &&
-
-              rule.person ===
-                person &&
-
-              ruleApplies(
-                rule,
-                dateValue,
-                time
-              )
-          );
-
-
-        if (blocked) {
-
-          peopleInMeetings.add(
-            person
-          );
-
-        }
-
-      }
-    );
-
-
-    availableStaff =
-      Math.max(
-        0,
-
-        availableStaff -
-        peopleInMeetings.size
+    const meeting =
+      rules.some(
+        rule =>
+          rule.kind === "meeting" &&
+          rule.person === person &&
+          ruleApplies(
+            rule,
+            dateValue,
+            time
+          )
       );
 
+    if (meeting) return false;
 
-
-    /*
-      -----------------------------------------
-      VIRTUAL ONLY
-
-      Virtual-only employees can take:
-
-      Discovery
-      Virtual Selection
-
-      They cannot take:
-      Final / In-person
-      -----------------------------------------
-    */
-
-    if (
-      appointmentType ===
-      "final"
-    ) {
-
+    if (type === "final") {
       const virtualOnly =
-        new Set();
-
-
-      TEAM_MEMBERS.forEach(
-        person => {
-
-          const virtual =
-            rules.some(
-              rule =>
-
-                rule.kind ===
-                  "virtual" &&
-
-                rule.person ===
-                  person &&
-
-                ruleApplies(
-                  rule,
-                  dateValue,
-                  time
-                )
-            );
-
-
-          if (virtual) {
-
-            virtualOnly.add(
-              person
-            );
-
-          }
-
-        }
-      );
-
-
-      availableStaff =
-        Math.max(
-          0,
-
-          availableStaff -
-          virtualOnly.size
+        rules.some(
+          rule =>
+            rule.kind === "virtual" &&
+            rule.person === person &&
+            ruleApplies(
+              rule,
+              dateValue,
+              time
+            )
         );
 
+      if (virtualOnly) {
+        return false;
+      }
     }
 
+    return true;
+  });
+}
 
+async function calculateAvailability(
+  type,
+  dateValue
+) {
+  if (!TYPES[type]) {
+    return [];
+  }
 
-    /*
-      Capacity can never exceed
-      available staff.
-    */
+  const times =
+    baseSlots(type, dateValue);
 
-    capacity =
-      Math.min(
-        capacity,
-        availableStaff
+  if (!times.length) {
+    return [];
+  }
+
+  const [requests, rules] =
+    await Promise.all([
+      listRecords("requests/"),
+      listRecords("rules/")
+    ]);
+
+  const output = [];
+
+  for (const time of times) {
+    const staff =
+      availableStaff(
+        type,
+        rules,
+        dateValue,
+        time
       );
 
+    const capacity =
+      Math.min(
+        TYPES[type].capacity,
+        staff.length
+      );
 
-
-    /*
-      -----------------------------------------
-      CURRENT REQUESTS
-
-      Requested AND confirmed appointments
-      consume capacity.
-
-      Declined appointments release capacity.
-      -----------------------------------------
-    */
-
-    const usedCapacity =
+    const used =
       requests.filter(
         item =>
-
-          item.type ===
-            appointmentType &&
-
-          item.date ===
-            dateValue &&
-
-          item.time ===
-            time &&
-
-          item.status !==
-            "declined"
-      )
-      .length;
-
-
+          item.type === type &&
+          item.date === dateValue &&
+          item.time === time &&
+          item.status !== "declined"
+      ).length;
 
     const remaining =
       Math.max(
         0,
-
-        capacity -
-        usedCapacity
+        capacity - used
       );
 
-
-    if (
-      remaining > 0
-    ) {
-
-      availableSlots.push({
-
+    if (remaining > 0) {
+      output.push({
         time,
-
-        label:
-          formatTimeLabel(
-            time
-          ),
-
-        remaining
-
+        label: timeLabel(time),
+        capacity,
+        used,
+        remaining,
+        availablePeople: staff
       });
-
     }
-
   }
 
-
-  return availableSlots;
-
+  return output;
 }
-
-
-
-/* =========================================================
-   GET REQUESTS
-   ========================================================= */
 
 async function getRequests() {
-
   const requests =
-    await listRecords(
-      "requests/"
+    await listRecords("requests/");
+
+  return requests.sort((a, b) => {
+    const aValue =
+      `${a.date || ""}T${a.time || "00:00"}`;
+
+    const bValue =
+      `${b.date || ""}T${b.time || "00:00"}`;
+
+    return (
+      new Date(aValue) -
+      new Date(bValue)
     );
-
-
-  return requests.sort(
-    (
-      a,
-      b
-    ) => {
-
-      const aDate =
-        `${a.date || ""}T${a.time || "00:00"}`;
-
-      const bDate =
-        `${b.date || ""}T${b.time || "00:00"}`;
-
-
-      return (
-        new Date(aDate) -
-        new Date(bDate)
-      );
-
-    }
-  );
-
+  });
 }
-
-
-
-/* =========================================================
-   GET RULES
-   ========================================================= */
 
 async function getRules() {
-
   const rules =
-    await listRecords(
-      "rules/"
-    );
+    await listRecords("rules/");
 
+  return rules.sort((a, b) => {
+    const dayDiff =
+      Number(a.weekday || 0) -
+      Number(b.weekday || 0);
 
-  return rules.sort(
-    (
-      a,
-      b
-    ) => {
-
-      const dayDifference =
-        Number(
-          a.weekday || 0
-        ) -
-        Number(
-          b.weekday || 0
-        );
-
-
-      if (
-        dayDifference !== 0
-      ) {
-
-        return dayDifference;
-
-      }
-
-
-      return String(
-        a.startTime || ""
-      )
-        .localeCompare(
-          String(
-            b.startTime || ""
-          )
-        );
-
+    if (dayDiff !== 0) {
+      return dayDiff;
     }
-  );
 
+    return String(
+      a.startTime || ""
+    ).localeCompare(
+      String(b.startTime || "")
+    );
+  });
 }
 
-
-
-/* =========================================================
-   MAIN NETLIFY FUNCTION
-   ========================================================= */
-
-export default async function handler(
-  request
-) {
-
+export default async function handler(request) {
   const requestURL =
-    new URL(
-      request.url
-    );
-
+    new URL(request.url);
 
   const action =
     requestURL
       .searchParams
-      .get(
-        "action"
-      ) || "";
-
+      .get("action") || "";
 
   try {
 
+    // =====================================================
+    // AVAILABILITY
+    // =====================================================
 
-    /* =====================================================
-       AVAILABILITY
-       ===================================================== */
-
-    if (
-      action ===
-      "availability"
-    ) {
-
+    if (action === "availability") {
       const type =
-        cleanText(
+        clean(
           requestURL
             .searchParams
-            .get(
-              "type"
-            ),
+            .get("type"),
           50
         );
 
-
       const date =
-        cleanText(
+        clean(
           requestURL
             .searchParams
-            .get(
-              "date"
-            ),
+            .get("date"),
           20
         );
 
-
-      if (
-        !APPOINTMENT_TYPES[
-          type
-        ]
-      ) {
-
-        return jsonResponse(
+      if (!TYPES[type]) {
+        return reply(
           {
             error:
               "Invalid appointment type."
           },
           400
         );
-
       }
 
-
       if (!date) {
-
-        return jsonResponse(
+        return reply(
           {
             error:
               "A date is required."
           },
           400
         );
-
       }
 
-
-      const slots =
-        await calculateAvailability(
-          type,
-          date
-        );
-
-
-      return jsonResponse({
-        success:
-          true,
-
+      return reply({
+        success: true,
         type,
-
         date,
-
-        slots
+        slots:
+          await calculateAvailability(
+            type,
+            date
+          )
       });
-
     }
 
 
-
-    /* =====================================================
-       CREATE APPOINTMENT REQUEST
-       ===================================================== */
+    // =====================================================
+    // CREATE APPOINTMENT REQUEST
+    // =====================================================
 
     if (
-      action ===
-        "request" &&
-      request.method ===
-        "POST"
+      action === "request" &&
+      request.method === "POST"
     ) {
-
-      const payload =
+      const body =
         await request.json();
 
-
       const type =
-        cleanText(
-          payload?.type,
-          50
-        );
-
+        clean(body?.type, 50);
 
       const date =
-        cleanText(
-          payload?.date,
-          20
-        );
-
+        clean(body?.date, 20);
 
       const time =
-        cleanText(
-          payload?.time,
-          20
-        );
-
+        clean(body?.time, 20);
 
       const name =
-        cleanText(
-          payload?.name,
-          150
-        );
-
+        clean(body?.name, 150);
 
       const email =
-        cleanText(
-          payload?.email,
-          200
-        );
-
+        clean(body?.email, 200);
 
       const phone =
-        cleanText(
-          payload?.phone,
-          80
-        );
-
+        clean(body?.phone, 80);
 
       const community =
-        cleanText(
-          payload?.community,
-          150
-        );
-
+        clean(body?.community, 150);
 
       const address =
-        cleanText(
-          payload?.address,
-          250
-        );
-
+        clean(body?.address, 250);
 
       const notes =
-        cleanText(
-          payload?.notes,
-          1000
-        );
+        clean(body?.notes, 1000);
 
-
-      if (
-        !APPOINTMENT_TYPES[
-          type
-        ]
-      ) {
-
-        return jsonResponse(
+      if (!TYPES[type]) {
+        return reply(
           {
             error:
               "Invalid appointment type."
           },
           400
         );
-
       }
-
 
       if (
         !name ||
@@ -1288,27 +539,14 @@ export default async function handler(
         !date ||
         !time
       ) {
-
-        return jsonResponse(
+        return reply(
           {
             error:
               "Name, email, phone, date, and time are required."
           },
           400
         );
-
       }
-
-
-
-      /*
-        Re-check availability immediately
-        before saving.
-
-        This prevents two customers from
-        taking the last available request
-        spot at the same time.
-      */
 
       const available =
         await calculateAvailability(
@@ -1316,170 +554,606 @@ export default async function handler(
           date
         );
 
-
-      const selectedSlot =
+      const selected =
         available.find(
           slot =>
-            slot.time ===
-            time
+            slot.time === time
         );
 
-
       if (
-        !selectedSlot ||
-        selectedSlot.remaining < 1
+        !selected ||
+        selected.remaining < 1
       ) {
-
-        return jsonResponse(
+        return reply(
           {
             error:
               "That appointment time is no longer available. Please choose another time."
           },
           409
         );
-
       }
 
-
-
-      const id =
-        randomUUID();
-
-
+      const id = randomUUID();
       const now =
-        new Date()
-          .toISOString();
+        new Date().toISOString();
 
+      const appointment = {
+        id,
 
-      const appointment =
+        type,
+
+        typeLabel:
+          TYPES[type].label,
+
+        name,
+        email,
+        phone,
+        community,
+        address,
+        notes,
+
+        date,
+
+        dateLabel:
+          dateLabel(date),
+
+        time,
+
+        timeLabel:
+          timeLabel(time),
+
+        status:
+          "requested",
+
+        assignedTo:
+          "",
+
+        createdAt:
+          now,
+
+        updatedAt:
+          now
+      };
+
+      await getBookingStore()
+        .setJSON(
+          `requests/${id}`,
+          appointment
+        );
+
+      return reply(
         {
-
+          success: true,
           id,
-
-          type,
-
-          typeLabel:
-            APPOINTMENT_TYPES[
-              type
-            ].label,
-
-          name,
-
-          email,
-
-          phone,
-
-          community,
-
-          address,
-
-          notes,
-
-          date,
-
-          dateLabel:
-            formatDateLabel(
-              date
-            ),
-
-          time,
-
-          timeLabel:
-            formatTimeLabel(
-              time
-            ),
-
-          /*
-            REQUESTED
-            CONFIRMED
-            DECLINED
-          */
-
-          status:
-            "requested",
-
-          createdAt:
-            now,
-
-          updatedAt:
-            now
-
-        };
-
-
-      const store =
-        getBookingStore();
-
-
-      await store.setJSON(
-        `requests/${id}`,
-        appointment
-      );
-
-
-      return jsonResponse(
-        {
-          success:
-            true,
-
-          id,
-
-          status:
-            appointment.status,
-
+          status: "requested",
           dateLabel:
             appointment.dateLabel,
-
           timeLabel:
             appointment.timeLabel
         },
         201
       );
-
     }
 
 
+    // =====================================================
+    // LIST REQUESTS
+    // =====================================================
 
-    /* =====================================================
-       LIST APPOINTMENT REQUESTS
-       ===================================================== */
+    if (action === "requests") {
+      return reply({
+        success: true,
+        requests:
+          await getRequests()
+      });
+    }
+
+
+    // =====================================================
+    // UPDATE REQUEST STATUS
+    // =====================================================
 
     if (
-      action ===
-      "requests"
+      action === "status" &&
+      request.method === "POST"
     ) {
+      const body =
+        await request.json();
 
-      const requests =
-        await getRequests();
+      const id =
+        clean(body?.id, 100);
+
+      const status =
+        clean(body?.status, 30);
+
+      if (
+        !id ||
+        ![
+          "requested",
+          "confirmed",
+          "declined"
+        ].includes(status)
+      ) {
+        return reply(
+          {
+            error:
+              "Invalid request status update."
+          },
+          400
+        );
+      }
+
+      const bookingStore =
+        getBookingStore();
+
+      const key =
+        `requests/${id}`;
+
+      const existing =
+        await bookingStore.get(
+          key,
+          { type: "json" }
+        );
+
+      if (!existing) {
+        return reply(
+          {
+            error:
+              "Appointment request not found."
+          },
+          404
+        );
+      }
+
+      existing.status =
+        status;
+
+      existing.updatedAt =
+        new Date().toISOString();
+
+      await bookingStore.setJSON(
+        key,
+        existing
+      );
+
+      return reply({
+        success: true,
+        request: existing
+      });
+    }
 
 
-      return jsonResponse({
-        success:
-          true,
+    // =====================================================
+    // LIST RULES
+    // =====================================================
 
-        requests
+    if (action === "rules") {
+      return reply({
+        success: true,
+        rules:
+          await getRules()
+      });
+    }
+
+
+    // =====================================================
+    // CREATE RULE
+    // =====================================================
+
+    if (
+      action === "rule" &&
+      request.method === "POST"
+    ) {
+      const body =
+        await request.json();
+
+      const kind =
+        clean(body?.kind, 50);
+
+      const person =
+        clean(body?.person, 100);
+
+      const recurrence =
+        clean(
+          body?.recurrence,
+          30
+        ) || "weekly";
+
+      const startTime =
+        clean(
+          body?.startTime,
+          20
+        );
+
+      const endTime =
+        clean(
+          body?.endTime,
+          20
+        );
+
+      const startDate =
+        clean(
+          body?.startDate,
+          20
+        );
+
+      const endDate =
+        clean(
+          body?.endDate,
+          20
+        );
+
+      const label =
+        clean(
+          body?.label,
+          200
+        );
+
+      let ruleWeekday =
+        Number(
+          body?.weekday
+        );
+
+      if (
+        ![
+          "off",
+          "virtual",
+          "meeting"
+        ].includes(kind)
+      ) {
+        return reply(
+          {
+            error:
+              "Invalid rule type."
+          },
+          400
+        );
+      }
+
+      if (
+        ![
+          "weekly",
+          "once"
+        ].includes(recurrence)
+      ) {
+        return reply(
+          {
+            error:
+              "Invalid recurrence type."
+          },
+          400
+        );
+      }
+
+      if (
+        person &&
+        !TEAM.includes(person)
+      ) {
+        return reply(
+          {
+            error:
+              "Invalid team member."
+          },
+          400
+        );
+      }
+
+      if (
+        (startTime && !endTime) ||
+        (!startTime && endTime)
+      ) {
+        return reply(
+          {
+            error:
+              "Enter both Start Time and End Time, or leave both blank for an all-day rule."
+          },
+          400
+        );
+      }
+
+      if (
+        startTime &&
+        endTime &&
+        startTime >= endTime
+      ) {
+        return reply(
+          {
+            error:
+              "End Time must be later than Start Time."
+          },
+          400
+        );
+      }
+
+      if (
+        startDate &&
+        endDate &&
+        startDate > endDate
+      ) {
+        return reply(
+          {
+            error:
+              "End Date must be on or after Start Date."
+          },
+          400
+        );
+      }
+
+      if (
+        recurrence === "once"
+      ) {
+        if (!startDate) {
+          return reply(
+            {
+              error:
+                "A date is required for a one-time rule."
+            },
+            400
+          );
+        }
+
+        ruleWeekday =
+          weekday(startDate);
+      }
+
+      if (
+        !Number.isInteger(
+          ruleWeekday
+        ) ||
+        ruleWeekday < 0 ||
+        ruleWeekday > 6
+      ) {
+        return reply(
+          {
+            error:
+              "A valid weekday is required."
+          },
+          400
+        );
+      }
+
+      const id =
+        randomUUID();
+
+      const now =
+        new Date()
+          .toISOString();
+
+      const rule = {
+        id,
+        kind,
+        person,
+
+        weekday:
+          ruleWeekday,
+
+        weekdayLabel:
+          DAYS[
+            ruleWeekday
+          ] || "",
+
+        recurrence,
+        startTime,
+        endTime,
+        startDate,
+        endDate,
+
+        label:
+          label ||
+          `${person || "Studio"} ${kind}`,
+
+        createdAt:
+          now,
+
+        updatedAt:
+          now
+      };
+
+      await getBookingStore()
+        .setJSON(
+          `rules/${id}`,
+          rule
+        );
+
+      return reply(
+        {
+          success: true,
+          rule
+        },
+        201
+      );
+    }
+
+
+    // =====================================================
+    // DELETE RULE
+    // =====================================================
+
+    if (
+      action === "delete-rule" &&
+      request.method === "POST"
+    ) {
+      const body =
+        await request.json();
+
+      const id =
+        clean(
+          body?.id,
+          100
+        );
+
+      if (!id) {
+        return reply(
+          {
+            error:
+              "Rule ID is required."
+          },
+          400
+        );
+      }
+
+      await getBookingStore()
+        .delete(
+          `rules/${id}`
+        );
+
+      return reply({
+        success: true
+      });
+    }
+
+
+    // =====================================================
+    // CALENDAR DAY
+    // =====================================================
+
+    if (
+      action === "calendar-day"
+    ) {
+      const date =
+        clean(
+          requestURL
+            .searchParams
+            .get("date"),
+          20
+        );
+
+      if (!date) {
+        return reply(
+          {
+            error:
+              "A date is required."
+          },
+          400
+        );
+      }
+
+      const [
+        requests,
+        rules,
+        discovery,
+        virtual,
+        final
+      ] =
+        await Promise.all([
+          getRequests(),
+          getRules(),
+
+          calculateAvailability(
+            "discovery"
+                       ,
+            date
+          ),
+
+          calculateAvailability(
+            "virtual",
+            date
+          ),
+
+          calculateAvailability(
+            "final",
+            date
+          )
+
+        ]);
+
+
+      const dateObject =
+        new Date(
+          `${date}T12:00:00`
+        );
+
+
+      const dayNumber =
+        dateObject.getDay();
+
+
+      return reply({
+
+        success: true,
+
+        date,
+
+        dateLabel:
+          dateLabel(date),
+
+        weekday:
+          dayNumber,
+
+        weekdayLabel:
+          DAYS[
+            dayNumber
+          ] || "",
+
+
+        requests:
+          requests.filter(
+            item =>
+              item.date === date &&
+              item.status !== "declined"
+          ),
+
+
+        rules:
+          rules.filter(
+            rule =>
+              ruleMatchesDate(
+                rule,
+                date
+              )
+          ),
+
+
+        availability: {
+
+          discovery,
+
+          virtual,
+
+          final
+
+        }
+
       });
 
     }
 
 
+    // =====================================================
+    // UNKNOWN ACTION
+    // =====================================================
 
-    if (
-      action ===
-      "requests"
-    ) {
+    return reply(
+      {
+        error:
+          "Unknown booking action."
+      },
+      404
+    );
 
-      const requests =
-        await getRequests();
+
+  } catch (error) {
+
+    console.error(
+      "BOOKING API ERROR:",
+      error
+    );
 
 
-      return jsonResponse({
-        success:
-          true,
+    return reply(
+      {
+        error:
+          error.message ||
+          "Something went wrong with the booking system."
+      },
+      500
+    );
 
-        requests
-      });
+  }
 
-    }
+}
 
-      
+
+/* =========================================================
+   END OF booking-api.mjs
+   ========================================================= */
