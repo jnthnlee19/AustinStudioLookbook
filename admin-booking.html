@@ -4691,7 +4691,161 @@
 
     }
 
+    /* =====================================================
+       COMPATIBILITY HELPERS
+       Connect the calendar code to the original helpers.
+       ===================================================== */
 
+    function toDateInputValue(
+      date
+    ) {
+
+      return dateToValue(
+        date
+      );
+
+    }
+
+
+    function getTuesdayForDate(
+      date
+    ) {
+
+      return getTuesday(
+        date
+      );
+
+    }
+
+
+    function isSameDate(
+      first,
+      second
+    ) {
+
+      return (
+        dateToValue(first) ===
+        dateToValue(second)
+      );
+
+    }
+
+
+    function formatDisplayDate(
+      value
+    ) {
+
+      if (!value) {
+        return "";
+      }
+
+
+      const date =
+        new Date(
+          `${value}T12:00:00`
+        );
+
+
+      return date.toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        }
+      );
+
+    }
+
+
+    function escapeAttribute(
+      value
+    ) {
+
+      return escapeHTML(
+        value
+      );
+
+    }
+
+
+    async function api(
+      action,
+      options = {}
+    ) {
+
+      const query =
+        options.query || {};
+
+
+      const params =
+        new URLSearchParams();
+
+
+      params.set(
+        "action",
+        action
+      );
+
+
+      Object
+        .entries(query)
+        .forEach(
+          ([key, value]) => {
+
+            if (
+              value !== undefined &&
+              value !== null &&
+              value !== ""
+            ) {
+
+              params.set(
+                key,
+                value
+              );
+
+            }
+
+          }
+        );
+
+
+      const fetchOptions = {
+        ...options
+      };
+
+
+      delete fetchOptions.query;
+
+
+      fetchOptions.cache =
+        "no-store";
+
+
+      const response =
+        await fetch(
+          `/.netlify/functions/booking-api?${params.toString()}`,
+          fetchOptions
+        );
+
+
+      const result =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          result.error ||
+          "Something went wrong."
+        );
+
+      }
+
+
+      return result;
+
+    }
 
     /* =====================================================
        INITIAL LOAD
