@@ -26,11 +26,9 @@
       --yellow-soft: #fff8dd;
 
       --cream: #f7f3eb;
-
       --card: #ffffff;
 
       --line: #dfe3e7;
-
       --muted: #707780;
 
       --green: #2d7a54;
@@ -42,9 +40,14 @@
       --blue: #356b9a;
       --blue-soft: #edf5fb;
 
+      --purple: #7255a3;
+      --purple-soft: #f2edfa;
+
+      --gray-soft: #f4f5f6;
+
       --shadow:
         0 12px 34px
-        rgba(31, 47, 70, 0.07);
+        rgba(31,47,70,.07);
 
     }
 
@@ -61,7 +64,8 @@
       background:
         var(--cream);
 
-      color: #292e33;
+      color:
+        #292e33;
 
       font-family:
         "Segoe UI",
@@ -81,9 +85,7 @@
 
 
     button {
-
       cursor: pointer;
-
     }
 
 
@@ -91,17 +93,18 @@
 
       width:
         min(
-          1250px,
-          calc(100% - 28px)
+          1500px,
+          calc(100% - 30px)
         );
 
       margin:
         0 auto;
 
       padding:
-        28px 0 50px;
+        26px 0 50px;
 
     }
+
 
 
     /* =====================================================
@@ -128,10 +131,10 @@
         var(--shadow);
 
       padding:
-        24px 26px;
+        22px 24px;
 
       margin-bottom:
-        18px;
+        17px;
 
     }
 
@@ -142,13 +145,13 @@
         #8b9096;
 
       font-size:
-        0.72rem;
+        .7rem;
 
       font-weight:
         800;
 
       letter-spacing:
-        0.12em;
+        .12em;
 
       text-transform:
         uppercase;
@@ -156,16 +159,33 @@
     }
 
 
+    .header-top {
+
+      display:
+        flex;
+
+      align-items:
+        flex-start;
+
+      justify-content:
+        space-between;
+
+      gap:
+        20px;
+
+    }
+
+
     .header h1 {
 
       margin:
-        5px 0 7px;
+        4px 0 6px;
 
       color:
         var(--navy);
 
       font-size:
-        1.8rem;
+        1.7rem;
 
     }
 
@@ -176,6 +196,9 @@
 
       color:
         var(--muted);
+
+      font-size:
+        .86rem;
 
       line-height:
         1.5;
@@ -192,10 +215,10 @@
         wrap;
 
       gap:
-        8px;
+        7px;
 
       margin-top:
-        17px;
+        15px;
 
     }
 
@@ -209,14 +232,14 @@
         center;
 
       padding:
-        9px 12px;
+        8px 11px;
 
       border:
         1px solid
         #d8dde2;
 
       border-radius:
-        9px;
+        8px;
 
       background:
         #fff;
@@ -228,7 +251,7 @@
         none;
 
       font-size:
-        0.78rem;
+        .75rem;
 
       font-weight:
         750;
@@ -247,38 +270,10 @@
     }
 
 
+
     /* =====================================================
-       MAIN LAYOUT
+       CARDS
        ===================================================== */
-
-    .layout {
-
-      display:
-        grid;
-
-      grid-template-columns:
-        minmax(0, 1.35fr)
-        minmax(340px, 0.75fr);
-
-      gap:
-        18px;
-
-      align-items:
-        start;
-
-    }
-
-
-    .right-column {
-
-      display:
-        grid;
-
-      gap:
-        18px;
-
-    }
-
 
     .card {
 
@@ -290,7 +285,7 @@
         var(--line);
 
       border-radius:
-        16px;
+        15px;
 
       box-shadow:
         var(--shadow);
@@ -313,10 +308,10 @@
         space-between;
 
       gap:
-        12px;
+        14px;
 
       padding:
-        19px 20px 16px;
+        18px 20px 15px;
 
       border-bottom:
         1px solid
@@ -333,7 +328,7 @@
         var(--navy);
 
       font-size:
-        1.1rem;
+        1.08rem;
 
     }
 
@@ -347,17 +342,15 @@
         var(--muted);
 
       font-size:
-        0.78rem;
+        .76rem;
 
     }
 
 
     .card-body {
-
-      padding:
-        18px;
-
+      padding: 18px;
     }
+
 
 
     /* =====================================================
@@ -374,7 +367,7 @@
         8px;
 
       padding:
-        9px 11px;
+        8px 11px;
 
       background:
         #fff;
@@ -383,7 +376,7 @@
         var(--navy);
 
       font-size:
-        0.78rem;
+        .76rem;
 
       font-weight:
         750;
@@ -392,10 +385,7 @@
 
 
     .btn:hover {
-
-      background:
-        #f7f8f9;
-
+      background: #f7f8f9;
     }
 
 
@@ -409,14 +399,6 @@
 
       color:
         #262626;
-
-    }
-
-
-    .btn-yellow:hover {
-
-      background:
-        #eabd31;
 
     }
 
@@ -449,8 +431,373 @@
     }
 
 
+
     /* =====================================================
-       APPOINTMENT REQUESTS
+       CALENDAR
+       ===================================================== */
+
+    .calendar-card {
+
+      margin-bottom:
+        18px;
+
+    }
+
+
+    .calendar-controls {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        7px;
+
+      flex-wrap:
+        wrap;
+
+    }
+
+
+    .week-label {
+
+      color:
+        var(--navy);
+
+      font-size:
+        .86rem;
+
+      font-weight:
+        800;
+
+      margin-right:
+        5px;
+
+    }
+
+
+    .calendar-body {
+
+      padding:
+        14px;
+
+      overflow-x:
+        auto;
+
+    }
+
+
+    .calendar-grid {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(
+          5,
+          minmax(210px, 1fr)
+        );
+
+      gap:
+        10px;
+
+      min-width:
+        1080px;
+
+    }
+
+
+    .calendar-day {
+
+      border:
+        1px solid
+        #e2e5e8;
+
+      border-radius:
+        11px;
+
+      background:
+        #fbfbfb;
+
+      overflow:
+        hidden;
+
+      min-height:
+        340px;
+
+    }
+
+
+    .calendar-day.today {
+
+      border:
+        2px solid
+        var(--yellow);
+
+    }
+
+
+    .day-header {
+
+      padding:
+        11px 12px;
+
+      background:
+        #fff;
+
+      border-bottom:
+        1px solid
+        #e6e9ec;
+
+    }
+
+
+    .day-name {
+
+      color:
+        var(--navy);
+
+      font-size:
+        .72rem;
+
+      font-weight:
+        850;
+
+      text-transform:
+        uppercase;
+
+      letter-spacing:
+        .055em;
+
+    }
+
+
+    .day-date {
+
+      margin-top:
+        2px;
+
+      color:
+        #454c53;
+
+      font-size:
+        .82rem;
+
+      font-weight:
+        700;
+
+    }
+
+
+    .day-content {
+
+      padding:
+        9px;
+
+      display:
+        grid;
+
+      gap:
+        7px;
+
+    }
+
+
+
+    /* =====================================================
+       CALENDAR ITEMS
+       ===================================================== */
+
+    .calendar-item {
+
+      padding:
+        8px 9px;
+
+      border-radius:
+        8px;
+
+      border:
+        1px solid transparent;
+
+      font-size:
+        .7rem;
+
+      line-height:
+        1.35;
+
+    }
+
+
+    .calendar-item-time {
+
+      font-weight:
+        850;
+
+      margin-bottom:
+        2px;
+
+    }
+
+
+    .calendar-item-title {
+
+      font-weight:
+        750;
+
+    }
+
+
+    .calendar-item-note {
+
+      margin-top:
+        2px;
+
+      opacity:
+        .8;
+
+    }
+
+
+    .calendar-item.available {
+
+      background:
+        var(--green-soft);
+
+      color:
+        var(--green);
+
+      border-color:
+        #cfe4d8;
+
+    }
+
+
+    .calendar-item.requested {
+
+      background:
+        var(--yellow-soft);
+
+      color:
+        #79600a;
+
+      border-color:
+        #ead98e;
+
+    }
+
+
+    .calendar-item.confirmed {
+
+      background:
+        var(--blue-soft);
+
+      color:
+        var(--blue);
+
+      border-color:
+        #cbddeb;
+
+    }
+
+
+    .calendar-item.virtual {
+
+      background:
+        var(--purple-soft);
+
+      color:
+        var(--purple);
+
+      border-color:
+        #dcd0ef;
+
+    }
+
+
+    .calendar-item.off {
+
+      background:
+        var(--red-soft);
+
+      color:
+        var(--red);
+
+      border-color:
+        #edcfcb;
+
+    }
+
+
+    .calendar-item.meeting {
+
+      background:
+        #eceff2;
+
+      color:
+        #4f5963;
+
+      border-color:
+        #d9dde1;
+
+    }
+
+
+    .calendar-empty {
+
+      padding:
+        18px 10px;
+
+      text-align:
+        center;
+
+      color:
+        var(--muted);
+
+      font-size:
+        .72rem;
+
+    }
+
+
+
+    /* =====================================================
+       LOWER LAYOUT
+       ===================================================== */
+
+    .lower-grid {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        minmax(0, 1.3fr)
+        minmax(340px, .7fr);
+
+      gap:
+        18px;
+
+      align-items:
+        start;
+
+    }
+
+
+    .right-column {
+
+      display:
+        grid;
+
+      gap:
+        18px;
+
+    }
+
+
+
+    /* =====================================================
+       REQUESTS
        ===================================================== */
 
     .request-list {
@@ -459,7 +806,7 @@
         grid;
 
       gap:
-        11px;
+        10px;
 
     }
 
@@ -471,10 +818,10 @@
         #e3e6e9;
 
       border-radius:
-        11px;
+        10px;
 
       padding:
-        14px;
+        13px;
 
       background:
         #fff;
@@ -487,14 +834,14 @@
       display:
         flex;
 
-      align-items:
-        flex-start;
-
       justify-content:
         space-between;
 
+      align-items:
+        flex-start;
+
       gap:
-        12px;
+        10px;
 
     }
 
@@ -508,48 +855,48 @@
         800;
 
       font-size:
-        0.95rem;
+        .9rem;
 
     }
 
 
     .request-meta {
 
-      margin-top:
-        4px;
-
       color:
         var(--muted);
 
       font-size:
-        0.77rem;
+        .74rem;
 
       line-height:
         1.45;
+
+      margin-top:
+        3px;
 
     }
 
 
     .request-details {
 
-      margin-top:
-        11px;
-
-      padding-top:
-        10px;
-
       border-top:
         1px solid
         #edf0f2;
 
+      margin-top:
+        9px;
+
+      padding-top:
+        9px;
+
       color:
-        #454b51;
+        #4b5157;
 
       font-size:
-        0.78rem;
+        .75rem;
 
       line-height:
-        1.55;
+        1.5;
 
     }
 
@@ -560,28 +907,26 @@
         flex;
 
       gap:
-        7px;
+        6px;
 
       flex-wrap:
         wrap;
 
       margin-top:
-        12px;
+        10px;
 
     }
 
 
+
     /* =====================================================
-       STATUS BADGES
+       BADGES
        ===================================================== */
 
     .status-badge {
 
       display:
         inline-flex;
-
-      align-items:
-        center;
 
       padding:
         5px 8px;
@@ -590,13 +935,13 @@
         999px;
 
       font-size:
-        0.66rem;
+        .64rem;
 
       font-weight:
         850;
 
       letter-spacing:
-        0.035em;
+        .035em;
 
       text-transform:
         uppercase;
@@ -610,7 +955,7 @@
     .status-badge.requested {
 
       background:
-        #fff4c7;
+        var(--yellow-soft);
 
       color:
         #79600a;
@@ -621,10 +966,10 @@
     .status-badge.confirmed {
 
       background:
-        var(--green-soft);
+        var(--blue-soft);
 
       color:
-        var(--green);
+        var(--blue);
 
     }
 
@@ -632,12 +977,131 @@
     .status-badge.declined {
 
       background:
-        #f9e9e7;
+        var(--red-soft);
 
       color:
         var(--red);
 
     }
+
+
+
+    /* =====================================================
+       AVAILABILITY PANEL
+       ===================================================== */
+
+    .availability-date {
+
+      width:
+        100%;
+
+      padding:
+        10px;
+
+      border:
+        1px solid
+        #cfd4d9;
+
+      border-radius:
+        8px;
+
+      margin-bottom:
+        12px;
+
+      outline:
+        none;
+
+    }
+
+
+    .availability-group {
+
+      margin-bottom:
+        15px;
+
+    }
+
+
+    .availability-title {
+
+      color:
+        var(--navy);
+
+      font-size:
+        .76rem;
+
+      font-weight:
+        850;
+
+      text-transform:
+        uppercase;
+
+      letter-spacing:
+        .045em;
+
+      margin-bottom:
+        6px;
+
+    }
+
+
+    .availability-slot {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        space-between;
+
+      gap:
+        10px;
+
+      padding:
+        7px 9px;
+
+      margin-bottom:
+        5px;
+
+      border:
+        1px solid
+        #dce8e1;
+
+      border-radius:
+        7px;
+
+      background:
+        #f7fcf9;
+
+      color:
+        var(--green);
+
+      font-size:
+        .73rem;
+
+    }
+
+
+    .availability-slot strong {
+      color: var(--navy);
+    }
+
+
+    .availability-none {
+
+      color:
+        var(--muted);
+
+      font-size:
+        .74rem;
+
+      padding:
+        7px 0;
+
+    }
+
 
 
     /* =====================================================
@@ -650,19 +1114,19 @@
         grid;
 
       grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+        repeat(
+          2,
+          minmax(0,1fr)
+        );
 
       gap:
-        11px;
+        10px;
 
     }
 
 
     .field.full {
-
-      grid-column:
-        1 / -1;
-
+      grid-column: 1 / -1;
     }
 
 
@@ -678,7 +1142,7 @@
         var(--navy);
 
       font-size:
-        0.7rem;
+        .69rem;
 
       font-weight:
         750;
@@ -722,7 +1186,7 @@
 
       box-shadow:
         0 0 0 3px
-        rgba(243,198,63,.16);
+        rgba(243,198,63,.15);
 
     }
 
@@ -730,18 +1194,19 @@
     .form-note {
 
       margin-top:
-        10px;
+        9px;
 
       color:
         var(--muted);
 
       font-size:
-        0.73rem;
+        .71rem;
 
       line-height:
-        1.5;
+        1.45;
 
     }
+
 
 
     /* =====================================================
@@ -754,7 +1219,7 @@
         grid;
 
       gap:
-        9px;
+        8px;
 
     }
 
@@ -766,10 +1231,10 @@
         #e3e6e9;
 
       border-radius:
-        10px;
+        9px;
 
       padding:
-        12px;
+        11px;
 
     }
 
@@ -780,7 +1245,7 @@
         var(--navy);
 
       font-size:
-        0.85rem;
+        .8rem;
 
       font-weight:
         800;
@@ -790,37 +1255,30 @@
 
     .rule-meta {
 
-      margin-top:
-        4px;
-
       color:
         var(--muted);
 
       font-size:
-        0.74rem;
+        .71rem;
 
       line-height:
-        1.45;
+        1.4;
+
+      margin-top:
+        3px;
 
     }
 
 
     .rule-actions {
-
-      margin-top:
-        9px;
-
+      margin-top: 8px;
     }
 
-
-    /* =====================================================
-       EMPTY / LOADING
-       ===================================================== */
 
     .empty {
 
       padding:
-        26px 15px;
+        25px 12px;
 
       text-align:
         center;
@@ -829,9 +1287,91 @@
         var(--muted);
 
       font-size:
-        0.82rem;
+        .78rem;
 
     }
+
+
+
+    /* =====================================================
+       LEGEND
+       ===================================================== */
+
+    .legend {
+
+      display:
+        flex;
+
+      flex-wrap:
+        wrap;
+
+      gap:
+        7px;
+
+      padding:
+        0 14px 14px;
+
+    }
+
+
+    .legend-item {
+
+      display:
+        inline-flex;
+
+      align-items:
+        center;
+
+      gap:
+        5px;
+
+      color:
+        var(--muted);
+
+      font-size:
+        .67rem;
+
+    }
+
+
+    .legend-dot {
+
+      width:
+        9px;
+
+      height:
+        9px;
+
+      border-radius:
+        3px;
+
+    }
+
+
+    .legend-dot.available {
+      background: #8dc6a6;
+    }
+
+    .legend-dot.requested {
+      background: #e6c352;
+    }
+
+    .legend-dot.confirmed {
+      background: #79a9ce;
+    }
+
+    .legend-dot.virtual {
+      background: #a992cf;
+    }
+
+    .legend-dot.off {
+      background: #d99189;
+    }
+
+    .legend-dot.meeting {
+      background: #aab0b6;
+    }
+
 
 
     /* =====================================================
@@ -839,10 +1379,10 @@
        ===================================================== */
 
     @media (
-      max-width: 850px
+      max-width: 950px
     ) {
 
-      .layout {
+      .lower-grid {
 
         grid-template-columns:
           1fr;
@@ -853,8 +1393,16 @@
 
 
     @media (
-      max-width: 560px
+      max-width: 600px
     ) {
+
+      .header-top {
+
+        flex-direction:
+          column;
+
+      }
+
 
       .form-grid {
 
@@ -897,453 +1445,12 @@
 
     <section class="header">
 
-      <div class="eyebrow">
-        KB Home • Austin Design Studio
-      </div>
+      <div class="header-top">
 
-      <h1>
-        Studio Scheduling Admin
-      </h1>
+        <div>
 
-      <p>
-        Manage appointment requests,
-        recurring staffing rules,
-        and Studio availability.
-        C3 remains the official appointment
-        booking system.
-      </p>
-
-
-      <div class="booking-links">
-
-        <a
-          href="/booking.html?type=discovery"
-          target="_blank"
-          rel="noopener"
-        >
-          Discovery Request Link ↗
-        </a>
-
-
-        <a
-          href="/booking.html?type=virtual"
-          target="_blank"
-          rel="noopener"
-        >
-          Virtual Selection Link ↗
-        </a>
-
-
-        <a
-          href="/booking.html?type=final"
-          target="_blank"
-          rel="noopener"
-        >
-          Final Appointment Link ↗
-        </a>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- =====================================================
-         MAIN
-         ===================================================== -->
-
-    <div class="layout">
-
-
-      <!-- ===================================================
-           APPOINTMENT REQUESTS
-           =================================================== -->
-
-      <section class="card">
-
-        <div class="card-header">
-
-          <div>
-
-            <h2>
-              Appointment Requests
-            </h2>
-
-            <p>
-              Requested appointments hold
-              availability until confirmed
-              or declined.
-            </p>
-
+          <div class="eyebrow">
+            KB Home • Austin Design Studio
           </div>
 
-
-          <button
-            class="btn"
-            type="button"
-            onclick="loadAdminData()"
-          >
-            Refresh
-          </button>
-
-        </div>
-
-
-        <div class="card-body">
-
-          <div
-            class="request-list"
-            id="requestList"
-          >
-
-            <div class="empty">
-              Loading appointment requests...
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-
-      <!-- ===================================================
-           RIGHT COLUMN
-           =================================================== -->
-
-      <div class="right-column">
-
-
-        <!-- ===============================================
-             ADD RULE
-             =============================================== -->
-
-        <section class="card">
-
-          <div class="card-header">
-
-            <div>
-
-              <h2>
-                Add Rule / Block
-              </h2>
-
-              <p>
-                Create one-time or recurring
-                Studio availability rules.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div class="card-body">
-
-            <form id="ruleForm">
-
-              <div class="form-grid">
-
-
-                <div class="field">
-
-                  <label for="ruleKind">
-                    Rule Type
-                  </label>
-
-                  <select
-                    id="ruleKind"
-                    name="kind"
-                    required
-                  >
-
-                    <option value="off">
-                      Team Member Off
-                    </option>
-
-                    <option value="virtual">
-                      Virtual Only
-                    </option>
-
-                    <option value="meeting">
-                      Meeting / Block
-                    </option>
-
-                  </select>
-
-                </div>
-
-
-                <div class="field">
-
-                  <label for="rulePerson">
-                    Team Member
-                  </label>
-
-                  <select
-                    id="rulePerson"
-                    name="person"
-                  >
-
-                    <option value="">
-                      Entire Studio
-                    </option>
-
-                    <option value="Jonathan">
-                      Jonathan
-                    </option>
-
-                    <option value="Juan">
-                      Juan
-                    </option>
-
-                    <option value="Missy">
-                      Missy
-                    </option>
-
-                  </select>
-
-                </div>
-
-
-                <div class="field">
-
-                  <label for="ruleWeekday">
-                    Day
-                  </label>
-
-                  <select
-                    id="ruleWeekday"
-                    name="weekday"
-                    required
-                  >
-
-                    <option value="2">
-                      Tuesday
-                    </option>
-
-                    <option value="3">
-                      Wednesday
-                    </option>
-
-                    <option value="4">
-                      Thursday
-                    </option>
-
-                    <option value="5">
-                      Friday
-                    </option>
-
-                    <option value="6">
-                      Saturday
-                    </option>
-
-                  </select>
-
-                </div>
-
-
-                <div class="field">
-
-                  <label for="ruleRecurrence">
-                    Repeat
-                  </label>
-
-                  <select
-                    id="ruleRecurrence"
-                    name="recurrence"
-                    required
-                  >
-
-                    <option value="weekly">
-                      Every Week
-                    </option>
-
-                    <option value="once">
-                      One Date Only
-                    </option>
-
-                  </select>
-
-                </div>
-
-
-                <div class="field">
-
-                  <label for="ruleStartTime">
-                    Start Time
-                  </label>
-
-                  <input
-                    id="ruleStartTime"
-                    name="startTime"
-                    type="time"
-                  >
-
-                </div>
-
-
-                <div class="field">
-
-                  <label for="ruleEndTime">
-                    End Time
-                  </label>
-
-                  <input
-                    id="ruleEndTime"
-                    name="endTime"
-                    type="time"
-                  >
-
-                </div>
-
-
-                <div class="field">
-
-                  <label for="ruleStartDate">
-                    Start Date
-                  </label>
-
-                  <input
-                    id="ruleStartDate"
-                    name="startDate"
-                    type="date"
-                  >
-
-                </div>
-
-
-                <div class="field">
-
-                  <label for="ruleEndDate">
-                    End Date
-                  </label>
-
-                  <input
-                    id="ruleEndDate"
-                    name="endDate"
-                    type="date"
-                  >
-
-                </div>
-
-
-                <div class="field full">
-
-                  <label for="ruleLabel">
-                    Rule Name
-                  </label>
-
-                  <input
-                    id="ruleLabel"
-                    name="label"
-                    type="text"
-                    placeholder="Example: Missy Virtual Recurring"
-                    required
-                  >
-
-                </div>
-
-              </div>
-
-
-              <div class="form-note">
-
-                For an all-day
-                <strong>Off</strong>
-                or
-                <strong>Virtual Only</strong>
-                rule, leave Start Time and
-                End Time blank.
-
-                <br><br>
-
-                For a meeting or partial-day block,
-                enter the Start Time and End Time.
-
-              </div>
-
-
-              <button
-                class="btn btn-yellow"
-                type="submit"
-                style="margin-top:14px;"
-              >
-                Save Rule
-              </button>
-
-            </form>
-
-          </div>
-
-        </section>
-
-
-
-        <!-- ===============================================
-             EXISTING RULES
-             =============================================== -->
-
-        <section class="card">
-
-          <div class="card-header">
-
-            <div>
-
-              <h2>
-                Rules & Blocks
-              </h2>
-
-              <p>
-                Current recurring and
-                one-time availability rules.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div class="card-body">
-
-            <div
-              class="rule-list"
-              id="ruleList"
-            >
-
-              <div class="empty">
-                Loading rules...
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-      </div>
-
-    </div>
-
-  </main>
-
-
-
-  <script>
-
-    /* =====================================================
-       SMALL HELPERS
-       ===================================================== */
-
-    function escapeHTML(
-      value
-    ) {
-
-      return String(
-        value ?? ""
-      )
-      .replaceAll(
-        "&",
-        "&
+          <h1>
