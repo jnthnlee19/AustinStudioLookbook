@@ -2,7 +2,7 @@ import { getStore } from "@netlify/blobs";
 import { randomUUID } from "node:crypto";
 import { withBookingWriteLock } from "./lib/booking-write-lock.mjs";
 
-import { TYPES, TEAM, weekday, ruleMatchesDate, availability } from '../../assets/booking-schedule.mjs';
+import { TYPES, TEAM, weekday, ruleMatchesDate, availability, assignAppointments } from '../../assets/booking-schedule.mjs';
 
 const DAYS = [
   "Sunday",
@@ -162,7 +162,7 @@ async function getRules() {
 
 export default async function handler(request) {
   const action = new URL(request.url).searchParams.get('action');
-  if (request.method === 'POST' && ['request', 'status', 'rule', 'delete-rule'].includes(action)) {
+  if (request.method === 'POST' && ['request', 'status', 'assign', 'rule', 'delete-rule'].includes(action)) {
     try {
       return await withBookingWriteLock(getBookingStore(), assertLease => handleAction(request, assertLease));
     } catch (error) {
@@ -182,6 +182,29 @@ async function handleAction(request, assertLease = () => {}) {
       .get("action") || "";
 
   try {
+    if (action === 'assign' && request.method === 'POST') {
+      const body = await request.json();
+      const id = clean(body?.id, 100);
+      const assignedTo = clean(body?.assignedTo, 100);
+      if (!id || typeof body?.assignedTo !== 'string' || (assignedTo && !TEAM.includes(assignedTo))) {
+        return reply({ error: 'Choose Jonathan, Juan, Missy, or Unassigned.' }, 400);
+      }
+      const store = getBookingStore();
+      const existing = await store.get(`requests/${id}`, { type: 'json' });
+      if (!existing) return reply({ error: 'Appointment request not found.' }, 404);
+      if (existing.status === 'declined') return reply({ error: 'A declined request cannot be assigned.' }, 409);
+      const updated = { ...existing, assignedTo, updatedAt: new Date().toISOString() };
+      if (assignedTo) {
+        const [requests, rules] = await Promise.all([getRequests(), getRules()]);
+        const active = requests.filter(item => item.id !== id && item.date === existing.date && item.status !== 'declined');
+        if (!assignAppointments([...active, updated], rules, existing.date)) {
+          return reply({ error: 'That assignment conflicts with appointments, time off, a meeting, Virtual Only restrictions, or front-desk coverage. Choose another consultant.' }, 409);
+        }
+      }
+      assertLease();
+      await store.setJSON(`requests/${id}`, updated);
+      return reply({ success: true, request: updated });
+    }
 
     // =====================================================
     // AVAILABILITY
@@ -463,6 +486,11 @@ async function handleAction(request, assertLease = () => {}) {
         const slots = await calculateAvailability(existing.type, existing.date);
         if (!slots.some(slot => slot.time === existing.time && slot.remaining > 0)) {
           return reply({ error: 'That time no longer has capacity. Keep this request declined and select another time.' }, 409);
+        }
+        const [requests, rules] = await Promise.all([getRequests(), getRules()]);
+        const active = requests.filter(item => item.id !== id && item.date === existing.date && item.status !== 'declined');
+        if (!assignAppointments([...active, { ...existing, status }], rules, existing.date)) {
+          return reply({ error: 'The assigned consultant is no longer available for this appointment.' }, 409);
         }
       }
 
