@@ -1,13 +1,8 @@
 import { getStore } from "@netlify/blobs";
 import { randomUUID } from "node:crypto";
+import { withBookingWriteLock } from "./lib/booking-write-lock.mjs";
 
-const TYPES = {
-  discovery: { label: "Discovery", capacity: 1 },
-  virtual: { label: "Virtual Selection", capacity: 2 },
-  final: { label: "Final", capacity: 2 }
-};
-
-const TEAM = ["Jonathan", "Juan", "Missy"];
+import { TYPES, TEAM, weekday, ruleMatchesDate, availability } from '../../assets/booking-schedule.mjs';
 
 const DAYS = [
   "Sunday",
@@ -89,64 +84,6 @@ function timeLabel(value) {
   );
 }
 
-function weekday(dateValue) {
-  const date =
-    new Date(`${dateValue}T12:00:00`);
-
-  return Number.isNaN(date.getTime())
-    ? -1
-    : date.getDay();
-}
-
-function baseSlots(type, dateValue) {
-  const day = weekday(dateValue);
-
-  // Sunday / Monday closed
-  if (day === 0 || day === 1) {
-    return [];
-  }
-
-  // Discovery: Tue-Fri only
-  if (type === "discovery") {
-    if (day === 6) return [];
-
-    return [
-      "11:00",
-      "12:30",
-      "14:00",
-      "15:30",
-      "17:00"
-    ];
-  }
-
-  // Virtual: Tue-Fri only
-  if (type === "virtual") {
-    if (day === 6) return [];
-
-    return [
-      "10:00",
-      "15:00"
-    ];
-  }
-
-  // Final
-  if (type === "final") {
-    if (day === 6) {
-      return [
-        "09:00",
-        "14:00"
-      ];
-    }
-
-    return [
-      "10:00",
-      "15:00"
-    ];
-  }
-
-  return [];
-}
-
 async function listRecords(prefix) {
   const store = getBookingStore();
   const records = [];
@@ -179,205 +116,9 @@ async function listRecords(prefix) {
   return records;
 }
 
-function ruleMatchesDate(rule, dateValue) {
-  const day = weekday(dateValue);
-
-  if (day < 0) return false;
-
-  if (rule.recurrence === "once") {
-    return (
-      Boolean(rule.startDate) &&
-      rule.startDate === dateValue
-    );
-  }
-
-  if (Number(rule.weekday) !== day) {
-    return false;
-  }
-
-  if (
-    rule.startDate &&
-    dateValue < rule.startDate
-  ) {
-    return false;
-  }
-
-  if (
-    rule.endDate &&
-    dateValue > rule.endDate
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
-function ruleMatchesTime(rule, time) {
-  // No times = all day
-  if (!rule.startTime && !rule.endTime) {
-    return true;
-  }
-
-  if (!rule.startTime || !rule.endTime) {
-    return false;
-  }
-
-  return (
-    time >= rule.startTime &&
-    time < rule.endTime
-  );
-}
-
-function ruleApplies(
-  rule,
-  dateValue,
-  time
-) {
-  return (
-    ruleMatchesDate(rule, dateValue) &&
-    ruleMatchesTime(rule, time)
-  );
-}
-
-function availableStaff(
-  type,
-  rules,
-  dateValue,
-  time
-) {
-  const studioBlocked =
-    rules.some(
-      rule =>
-        rule.kind === "meeting" &&
-        !rule.person &&
-        ruleApplies(
-          rule,
-          dateValue,
-          time
-        )
-    );
-
-  if (studioBlocked) {
-    return [];
-  }
-
-  return TEAM.filter(person => {
-    const off =
-      rules.some(
-        rule =>
-          rule.kind === "off" &&
-          rule.person === person &&
-          ruleApplies(
-            rule,
-            dateValue,
-            time
-          )
-      );
-
-    if (off) return false;
-
-    const meeting =
-      rules.some(
-        rule =>
-          rule.kind === "meeting" &&
-          rule.person === person &&
-          ruleApplies(
-            rule,
-            dateValue,
-            time
-          )
-      );
-
-    if (meeting) return false;
-
-    if (type === "final") {
-      const virtualOnly =
-        rules.some(
-          rule =>
-            rule.kind === "virtual" &&
-            rule.person === person &&
-            ruleApplies(
-              rule,
-              dateValue,
-              time
-            )
-        );
-
-      if (virtualOnly) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-}
-
-async function calculateAvailability(
-  type,
-  dateValue
-) {
-  if (!TYPES[type]) {
-    return [];
-  }
-
-  const times =
-    baseSlots(type, dateValue);
-
-  if (!times.length) {
-    return [];
-  }
-
-  const [requests, rules] =
-    await Promise.all([
-      listRecords("requests/"),
-      listRecords("rules/")
-    ]);
-
-  const output = [];
-
-  for (const time of times) {
-    const staff =
-      availableStaff(
-        type,
-        rules,
-        dateValue,
-        time
-      );
-
-    const capacity =
-      Math.min(
-        TYPES[type].capacity,
-        staff.length
-      );
-
-    const used =
-      requests.filter(
-        item =>
-          item.type === type &&
-          item.date === dateValue &&
-          item.time === time &&
-          item.status !== "declined"
-      ).length;
-
-    const remaining =
-      Math.max(
-        0,
-        capacity - used
-      );
-
-    if (remaining > 0) {
-      output.push({
-        time,
-        label: timeLabel(time),
-        capacity,
-        used,
-        remaining,
-        availablePeople: staff
-      });
-    }
-  }
-
-  return output;
+async function calculateAvailability(type, dateValue) {
+  const [requests, rules] = await Promise.all([listRecords('requests/'), listRecords('rules/')]);
+  return availability(type, dateValue, requests, rules).map(slot => ({ ...slot, label: timeLabel(slot.time) }));
 }
 
 async function getRequests() {
@@ -420,6 +161,18 @@ async function getRules() {
 }
 
 export default async function handler(request) {
+  const action = new URL(request.url).searchParams.get('action');
+  if (request.method === 'POST' && ['request', 'status', 'rule', 'delete-rule'].includes(action)) {
+    try {
+      return await withBookingWriteLock(getBookingStore(), assertLease => handleAction(request, assertLease));
+    } catch (error) {
+      return reply({ error: error.message || 'Could not update scheduling.' }, error.status || 500);
+    }
+  }
+  return handleAction(request);
+}
+
+async function handleAction(request, assertLease = () => {}) {
   const requestURL =
     new URL(request.url);
 
@@ -615,6 +368,7 @@ export default async function handler(request) {
           now
       };
 
+      assertLease();
       await getBookingStore()
         .setJSON(
           `requests/${id}`,
@@ -705,12 +459,20 @@ export default async function handler(request) {
         );
       }
 
+      if (existing.status === 'declined' && status !== 'declined') {
+        const slots = await calculateAvailability(existing.type, existing.date);
+        if (!slots.some(slot => slot.time === existing.time && slot.remaining > 0)) {
+          return reply({ error: 'That time no longer has capacity. Keep this request declined and select another time.' }, 409);
+        }
+      }
+
       existing.status =
         status;
 
       existing.updatedAt =
         new Date().toISOString();
 
+      assertLease();
       await bookingStore.setJSON(
         key,
         existing
@@ -851,6 +613,10 @@ export default async function handler(request) {
         );
       }
 
+      if ([startTime, endTime].some(time => time && !/^(?:[01]\d|2[0-3]):(?:00|30)$/.test(time))) {
+        return reply({ error: "Choose times in 30-minute increments." }, 400);
+      }
+
       if (
         startTime &&
         endTime &&
@@ -949,6 +715,7 @@ export default async function handler(request) {
           now
       };
 
+      assertLease();
       await getBookingStore()
         .setJSON(
           `rules/${id}`,
@@ -992,6 +759,7 @@ export default async function handler(request) {
         );
       }
 
+      assertLease();
       await getBookingStore()
         .delete(
           `rules/${id}`
