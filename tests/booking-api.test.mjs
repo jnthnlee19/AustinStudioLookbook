@@ -61,3 +61,54 @@ test('write lock releases after failure and can recover an expired lease', async
   await store.setJSON('locks/booking-writes', { expiresAt: Date.now() - 1 });
   assert.equal(await withBookingWriteLock(store, async () => 'recovered'), 'recovered');
 });
+
+test('assignment persists and can be changed or cleared without changing status', async () => {
+  records.clear();
+  const { id } = await (await post('request', booking('final'))).json();
+  assert.equal((await post('assign', { id, assignedTo: 'Jonathan' })).status, 200);
+  assert.equal((await store.get(`requests/${id}`)).assignedTo, 'Jonathan');
+  assert.equal((await post('assign', { id, assignedTo: 'Juan' })).status, 200);
+  assert.equal((await store.get(`requests/${id}`)).assignedTo, 'Juan');
+  assert.equal((await store.get(`requests/${id}`)).status, 'requested');
+  assert.equal((await post('assign', { id, assignedTo: '' })).status, 200);
+  assert.equal((await store.get(`requests/${id}`)).assignedTo, '');
+  assert.equal((await post('assign', { id, assignedTo: 'Other' })).status, 400);
+  assert.equal((await post('assign', { id })).status, 400);
+  assert.equal((await post('assign', { id: 'missing', assignedTo: 'Juan' })).status, 404);
+  await post('status', { id, status: 'declined' });
+  assert.equal((await post('assign', { id, assignedTo: 'Juan' })).status, 409);
+});
+
+test('assignment prevents double booking while preserving room for unassigned requests', async () => {
+  records.clear();
+  const { id: first } = await (await post('request', booking('final'))).json();
+  const { id: second } = await (await post('request', booking('virtual'))).json();
+  assert.equal((await post('assign', { id: first, assignedTo: 'Jonathan' })).status, 200);
+  assert.equal((await post('assign', { id: second, assignedTo: 'Jonathan' })).status, 409);
+  assert.equal((await post('assign', { id: second, assignedTo: 'Missy' })).status, 200);
+  const { id: discovery } = await (await post('request', { ...booking('discovery'), time: '11:00' })).json();
+  assert.equal((await post('assign', { id: discovery, assignedTo: 'Juan' })).status, 200);
+  assert.equal((await post('assign', { id: discovery, assignedTo: 'Missy' })).status, 409);
+});
+
+test('assignment respects partial meetings, Virtual Only, and physical front desk coverage', async () => {
+  records.clear();
+  const { id } = await (await post('request', booking('virtual'))).json();
+  await post('rule', { kind: 'off', person: 'Jonathan', recurrence: 'once', startDate: '2026-09-16' });
+  await post('rule', { kind: 'virtual', person: 'Missy', recurrence: 'once', startDate: '2026-09-16' });
+  assert.equal((await post('assign', { id, assignedTo: 'Jonathan' })).status, 409);
+  assert.equal((await post('assign', { id, assignedTo: 'Juan' })).status, 409);
+  assert.equal((await post('assign', { id, assignedTo: 'Missy' })).status, 200);
+  await post('rule', { kind: 'meeting', person: 'Missy', recurrence: 'once', startDate: '2026-09-16', startTime: '11:00', endTime: '11:30' });
+  assert.equal((await post('assign', { id, assignedTo: 'Missy' })).status, 409);
+  assert.equal((await post('assign', { id, assignedTo: '' })).status, 200);
+});
+
+test('a declined assigned request cannot be restored onto an unavailable consultant', async () => {
+  records.clear();
+  const { id } = await (await post('request', booking('final'))).json();
+  await post('assign', { id, assignedTo: 'Jonathan' });
+  await post('status', { id, status: 'declined' });
+  await post('rule', { kind: 'off', person: 'Jonathan', recurrence: 'once', startDate: '2026-09-16' });
+  assert.equal((await post('status', { id, status: 'confirmed' })).status, 409);
+});
