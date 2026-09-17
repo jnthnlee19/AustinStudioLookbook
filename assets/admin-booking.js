@@ -39,6 +39,26 @@ function availabilityMarkup(data) {
   }).join('');
 }
 
+function assignmentControl(item) {
+  return `<div class="assignment-control"><label>Consultant<select aria-label="Consultant for ${escapeHTML(item.name)}">${['', ...TEAM].map(person => `<option value="${person}" ${person === (item.assignedTo || '') ? 'selected' : ''}>${person || 'Unassigned'}</option>`).join('')}</select></label><button class="btn" type="button" data-assignment-save="${escapeHTML(item.id)}">Save assignment</button><span class="assignment-feedback" role="status"></span></div>`;
+}
+
+document.addEventListener('click', async event => {
+  const button = event.target.closest('[data-assignment-save]');
+  if (!button) return;
+  const control = button.closest('.assignment-control');
+  const feedback = control.querySelector('.assignment-feedback');
+  button.disabled = true;
+  feedback.textContent = 'Saving…';
+  try {
+    await api('assign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: button.dataset.assignmentSave, assignedTo: control.querySelector('select').value }) });
+    await loadAdminData();
+  } catch (error) {
+    feedback.textContent = error.message;
+    button.disabled = false;
+  }
+});
+
 function dayMarkup(data) {
   const requests = (data.requests || []).filter(item => TYPES[item.type]);
   const rules = data.rules || [];
@@ -54,21 +74,21 @@ function dayMarkup(data) {
   const lanes = TEAM.map(() => []);
   const placed = TEAM.map(() => []);
   let conflicts = !assignments && requests.length > 0;
-  rules.filter(rule => ['off', 'meeting'].includes(rule.kind)).forEach(rule => {
+  rules.filter(rule => ['off', 'meeting', 'virtual'].includes(rule.kind)).forEach(rule => {
     const range = { start: rule.startTime ? minutes(rule.startTime) : start, end: rule.endTime ? minutes(rule.endTime) : end };
     TEAM.forEach((person, lane) => {
       if (rule.person && rule.person !== person) return;
-      placed[lane].push(range);
-      lanes[lane].push(`<div class="schedule-rule ${rule.kind}" style="${position(range)}"><strong>${escapeHTML(rule.person || 'Studio')} ${rule.kind === 'off' ? 'OFF' : 'Meeting / Block'}</strong><span>${escapeHTML(rule.label)}${rule.startTime ? ` · ${formatTime(rule.startTime)}–${formatTime(rule.endTime)}` : ' · All day'}</span></div>`);
+      lanes[lane].push(`<div class="schedule-rule ${rule.kind}" style="${position(range)}"><strong>${escapeHTML(rule.person || 'Studio')} ${{ off: 'OFF', meeting: 'Meeting / Block', virtual: 'Virtual Only' }[rule.kind]}</strong><span>${escapeHTML(rule.label)}${rule.startTime ? ` · ${formatTime(rule.startTime)}–${formatTime(rule.endTime)}` : ' · All day'}</span></div>`);
     });
   });
   const overflow = [];
   requests.forEach((item, index) => {
+    if (!TEAM.includes(item.assignedTo)) return;
     const range = interval(item);
-    let lane = assignments ? TEAM.indexOf(assignments[index]) : placed.findIndex(entries => !entries.some(entry => overlaps(entry, range)));
+    const lane = TEAM.indexOf(item.assignedTo);
     const endTime = timeValue(range.end);
     const description = `${TYPES[item.type].label} · ${item.name} · ${formatTime(item.time)}–${formatTime(endTime)} · ${item.status}${item.assignedTo ? ` · ${item.assignedTo}` : ''}`;
-    if (lane < 0) { overflow.push(description); return; }
+    if (placed[lane].some(entry => overlaps(entry, range))) { overflow.push(description); return; }
     placed[lane].push(range);
     lanes[lane].push(`<div class="schedule-appointment ${item.status === 'confirmed' ? 'confirmed' : 'requested'} ${item.type === 'discovery' ? 'discovery' : ''}" style="${position(range)}" tabindex="0" title="${escapeHTML(description)}" aria-label="${escapeHTML(description)}"><div class="appointment-heading">${TYPES[item.type].label} · ${escapeHTML(item.name)}</div><div class="appointment-time">${formatTime(item.time)}–${formatTime(endTime)}${item.assignedTo ? ` · ${escapeHTML(item.assignedTo)}` : ''}</div>${item.type !== 'discovery' ? `<span class="appointment-status">${item.status === 'confirmed' ? 'C3 Confirmed' : 'Requested'}</span>` : ''}</div>`);
   });
@@ -77,9 +97,10 @@ function dayMarkup(data) {
     const deskRanges = TEAM.map(() => []);
     for (let i = 0; i < boundaries.length - 1; i++) {
       const range = { start: boundaries[i], end: boundaries[i + 1] };
+      if (requests.some(item => !item.assignedTo && item.type !== 'discovery' && overlaps(interval(item), range))) continue;
       if (!requests.some(item => item.type !== 'discovery' && overlaps(interval(item), range))) continue;
       const lane = TEAM.findIndex((person, index) => {
-        const inLongAppointment = requests.some((item, j) => assignments[j] === person && item.type !== 'discovery' && overlaps(interval(item), range));
+        const inLongAppointment = requests.some(item => item.assignedTo === person && item.type !== 'discovery' && overlaps(interval(item), range));
         const unavailable = rules.some(rule => (!rule.person || rule.person === person) && overlaps({ start: rule.startTime ? minutes(rule.startTime) : start, end: rule.endTime ? minutes(rule.endTime) : end }, range));
         return !inLongAppointment && !unavailable;
       });
@@ -88,18 +109,19 @@ function dayMarkup(data) {
       if (previous?.end === range.start) previous.end = range.end;
       else deskRanges[lane].push(range);
     }
-    deskRanges.forEach((ranges, lane) => ranges.forEach(range => lanes[lane].unshift(`<div class="schedule-desk" style="${position(range)}"><strong>Front desk</strong><span>Discoveries welcome</span></div>`)));
+    deskRanges.forEach((ranges, lane) => ranges.forEach(range => lanes[lane].unshift(`<div class="schedule-desk" style="${position(range)}"><strong>Available for front desk</strong><span>Discoveries welcome</span></div>`)));
   }
   const ticks = [];
   for (let time = start; time < end; time += 30) ticks.push(`<div class="time-tick" style="top:${(time - start) / 30 * rowHeight}px">${formatTime(timeValue(time))}</div>`);
   return `<section class="day-schedule">
     <div class="staffing-notes">${allDayRules.map(rule => `<span class="staff-note ${rule.kind}">${escapeHTML(rule.label || `${rule.person || 'Studio'} ${rule.kind}`)}${rule.startTime ? ` · ${formatTime(rule.startTime)}–${formatTime(rule.endTime)}` : ' · All day'}</span>`).join('')}</div>
     <p class="desk-note">One in-person team member stays available for front desk and can still conduct Discoveries. Virtual and Final appointments share capacity.</p>
+    ${requests.some(item => !TEAM.includes(item.assignedTo)) ? `<section class="unassigned-requests"><h3>Unassigned requests</h3><p>These appointments hold capacity but have not been assigned to a consultant.</p>${requests.filter(item => !TEAM.includes(item.assignedTo)).map(item => `<div class="unassigned-request"><strong>${escapeHTML(item.name)} · ${TYPES[item.type].label}</strong><div>${formatTime(item.time)}–${formatTime(timeValue(interval(item).end))} · ${item.status === 'confirmed' ? 'C3 Confirmed' : 'Requested'}</div>${assignmentControl(item)}</div>`).join('')}</section>` : ''}
     ${conflicts ? '<p class="schedule-warning" role="alert">Existing appointments conflict with current staffing rules. Review these bookings; no appointments have been changed.</p>' : ''}
     ${overflow.length ? `<div class="schedule-warning">Additional overlapping bookings: ${overflow.map(escapeHTML).join('<br>')}</div>` : ''}
-    <p class="mobile-scroll-hint">Swipe across to see all three Studio slots.</p>
+    <p class="mobile-scroll-hint">Swipe across to see all three consultants.</p>
     <div class="schedule-scroll"><div class="schedule-inner">
-      <div class="schedule-head"><span>Time</span><strong>Studio Slot 1</strong><strong>Studio Slot 2</strong><strong>Studio Slot 3</strong></div>
+      <div class="schedule-head"><span>Time</span>${TEAM.map(person => `<strong>${person}</strong>`).join('')}</div>
       <div class="schedule-grid" style="height:${height}px"><div class="time-axis">${ticks.join('')}</div>${lanes.map(events => `<div class="schedule-lane">${events.join('')}</div>`).join('')}</div>
     </div></div>
     <details class="day-availability"><summary>Available appointment times</summary>${availabilityMarkup(data.availability || {})}</details>
@@ -107,7 +129,7 @@ function dayMarkup(data) {
 }
 
 function weekMarkup(days) {
-  return days.map(data => `<section class="calendar-day ${data.date === dateToValue(new Date()) ? 'today' : ''}"><button class="week-day-link" type="button" data-date="${data.date}">${formatDisplayDate(data.date)}</button><div class="week-day-content">${(data.rules || []).map(rule => `<div class="calendar-item ${rule.kind}"><strong>${escapeHTML(rule.label)}</strong><div>${rule.startTime ? `${formatTime(rule.startTime)}–${formatTime(rule.endTime)}` : 'All day'}</div></div>`).join('')}${(data.requests || []).map(item => `<div class="calendar-item ${item.status === 'confirmed' ? 'confirmed' : 'requested'}"><strong>${escapeHTML(item.typeLabel || TYPES[item.type]?.label || item.type)}</strong><div>${escapeHTML(item.name)}</div><div>${formatTime(item.time)} · ${TYPES[item.type]?.duration || ''} min</div></div>`).join('')}${availabilityMarkup(data.availability || {})}</div></section>`).join('');
+  return days.map(data => `<section class="calendar-day ${data.date === dateToValue(new Date()) ? 'today' : ''}"><button class="week-day-link" type="button" data-date="${data.date}">${formatDisplayDate(data.date)}</button><div class="week-day-content">${(data.rules || []).map(rule => `<div class="calendar-item ${rule.kind}"><strong>${escapeHTML(rule.label)}</strong><div>${rule.startTime ? `${formatTime(rule.startTime)}–${formatTime(rule.endTime)}` : 'All day'}</div></div>`).join('')}${(data.requests || []).map(item => `<div class="calendar-item ${item.status === 'confirmed' ? 'confirmed' : 'requested'}"><strong>${escapeHTML(item.typeLabel || TYPES[item.type]?.label || item.type)}</strong><div>${escapeHTML(item.name)}</div><div class="week-consultant">${escapeHTML(item.assignedTo || "Unassigned")}</div><div>${formatTime(item.time)} · ${TYPES[item.type]?.duration || ''} min</div></div>`).join('')}${availabilityMarkup(data.availability || {})}</div></section>`).join('');
 }
 
 async function loadCalendar() {
@@ -242,6 +264,7 @@ $('availabilityDate').value = dateToValue(new Date());
                 </div>
 
 
+                ${request.status !== 'declined' ? assignmentControl(request) : ''}
                 <div class="request-details">
 
                   ${
