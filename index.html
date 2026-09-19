@@ -194,36 +194,116 @@
     }
 
     /* =========================
-       HEADER STUDIO LINKS
+       HEADER QUICK LINKS DROPDOWN
        ========================= */
-    .header-actions {
+    .header-tools {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
-      margin-top: 12px;
     }
 
-    .header-link {
+    .quick-links {
+      position: relative;
+    }
+
+    .quick-links-toggle {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 9px 12px;
+      gap: 9px;
       border: 1px solid #d8dde2;
-      border-radius: 9px;
+      border-radius: 10px;
       background: #fff;
       color: var(--navy);
-      text-decoration: none;
-      font-size: .78rem;
-      font-weight: 750;
+      padding: 10px 13px;
+      font: inherit;
+      font-size: .80rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(31, 41, 55, 0.04);
       transition: .18s ease;
     }
 
-    .header-link:hover {
+    .quick-links-toggle:hover,
+    .quick-links.open .quick-links-toggle {
       background: var(--yellow-soft);
       border-color: #ead98e;
-      transform: translateY(-1px);
+    }
+
+    .quick-links-chevron {
+      font-size: .72rem;
+      transition: transform .18s ease;
+    }
+
+    .quick-links.open .quick-links-chevron {
+      transform: rotate(180deg);
+    }
+
+    .quick-links-menu {
+      position: absolute;
+      top: calc(100% + 9px);
+      right: 0;
+      z-index: 1000;
+      width: min(310px, calc(100vw - 32px));
+      padding: 8px;
+      background: #fff;
+      border: 1px solid #dde1e5;
+      border-radius: 13px;
+      box-shadow: 0 18px 45px rgba(31, 41, 55, .16);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: opacity .16s ease, transform .16s ease, visibility .16s;
+    }
+
+    .quick-links.open .quick-links-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .quick-links-menu-label {
+      padding: 7px 9px 6px;
+      color: #969ba1;
+      font-size: .66rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .quick-link-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 11px 10px;
+      border-radius: 8px;
+      color: var(--navy);
+      text-decoration: none;
+      font-size: .82rem;
+      font-weight: 750;
+      transition: .15s ease;
+    }
+
+    .quick-link-item:hover {
+      background: var(--yellow-soft);
+    }
+
+    .quick-link-arrow {
+      color: #a3a7ac;
+      font-size: .78rem;
+    }
+
+    @media (max-width: 820px) {
+      .header-tools {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .quick-links-menu {
+        left: 0;
+        right: auto;
+      }
     }
 
     /* =========================
@@ -1157,15 +1237,52 @@
           </div>
         </div>
 
-        <div class="status-pill">
-          <span class="status-dot"></span>
-          Studio Hub
-<div class="header-actions">
-  <a class="header-link" href="https://kbplanogram.netlify.app/" target="_blank" rel="noopener">Plan-o-Gram ↗</a>
-  <a class="header-link" href="/preview-signin.html" target="_blank" rel="noopener">Preview Sign-In ↗</a>
-  <a class="header-link" href="/sidinglookbook.html" target="_blank" rel="noopener">All Siding Exteriors ↗</a>
-   <a class="header-link" href="/visual-guid-builder.html" target="_blank" rel="noopener">Visual Guide ↗</a>
-</div>
+        <div class="header-tools">
+          <div class="status-pill">
+            <span class="status-dot"></span>
+            Studio Hub
+          </div>
+
+          <div class="quick-links" id="quickLinks">
+            <button
+              class="quick-links-toggle"
+              id="quickLinksToggle"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+              onclick="toggleQuickLinks(event)"
+            >
+              Quick Links
+              <span class="quick-links-chevron">▾</span>
+            </button>
+
+            <div class="quick-links-menu" id="quickLinksMenu">
+              <div class="quick-links-menu-label">Studio Tools</div>
+
+              <a class="quick-link-item" href="https://kbplanogram.netlify.app/" target="_blank" rel="noopener">
+                <span>Plan-o-Gram</span>
+                <span class="quick-link-arrow">↗</span>
+              </a>
+
+              <a class="quick-link-item" href="/preview-signin.html" target="_blank" rel="noopener">
+                <span>Preview Sign-In</span>
+                <span class="quick-link-arrow">↗</span>
+              </a>
+
+              <a class="quick-link-item" href="/sidinglookbook.html" target="_blank" rel="noopener">
+                <span>All Siding Exteriors</span>
+                <span class="quick-link-arrow">↗</span>
+              </a>
+
+              <a class="quick-link-item" href="/visual-guid-builder.html" target="_blank" rel="noopener">
+                <span>Visual Guide</span>
+                <span class="quick-link-arrow">↗</span>
+              </a>
+
+              <!-- Add future links by copying one .quick-link-item block above. -->
+            </div>
+          </div>
+        </div>
       </header>
 
 
@@ -1446,6 +1563,77 @@
 
 
   <script>
+
+    /* =====================================================
+       QUICK LINKS DROPDOWN
+       ===================================================== */
+    function toggleQuickLinks(event) {
+      event.stopPropagation();
+
+      const dropdown =
+        document.getElementById("quickLinks");
+
+      const button =
+        document.getElementById("quickLinksToggle");
+
+      if (!dropdown || !button) {
+        return;
+      }
+
+      const isOpen =
+        dropdown.classList.toggle("open");
+
+      button.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+      );
+    }
+
+    document.addEventListener("click", function(event) {
+      const dropdown =
+        document.getElementById("quickLinks");
+
+      const button =
+        document.getElementById("quickLinksToggle");
+
+      if (
+        dropdown &&
+        !dropdown.contains(event.target)
+      ) {
+        dropdown.classList.remove("open");
+
+        if (button) {
+          button.setAttribute(
+            "aria-expanded",
+            "false"
+          );
+        }
+      }
+    });
+
+    document.addEventListener("keydown", function(event) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      const dropdown =
+        document.getElementById("quickLinks");
+
+      const button =
+        document.getElementById("quickLinksToggle");
+
+      if (dropdown) {
+        dropdown.classList.remove("open");
+      }
+
+      if (button) {
+        button.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+      }
+    });
+
 
     /* =====================================================
        EXCEL UPLOAD
