@@ -513,7 +513,7 @@ function sorted(options){
 
 function imageHTML(o,cls){
   const path=`/images/${encodeURIComponent(o.optionNumber)}.jpg`;
-  return `<div class="${cls}"><img src="${path}" alt="${esc(o.optionNumber)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="placeholder" style="display:none">No image available<br>${esc(o.optionNumber)}</div></div>`;
+  return `<div class="${cls}"><img src="${path}" alt="${esc(o.optionNumber)}" loading="eager" decoding="sync" fetchpriority="high" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="placeholder" style="display:none">No image available<br>${esc(o.optionNumber)}</div></div>`;
 }
 
 function optionHTML(o,compact){
@@ -662,8 +662,48 @@ function printGuide(){
   `;
 
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(document.getElementById("titleInput").value||"Visual Guide")}</title><style>${styles}${printExtra}</style></head><body>${content}<script>
-    function waitForImages(){const imgs=[...document.images];return Promise.all(imgs.map(img=>img.complete?Promise.resolve():new Promise(r=>{img.onload=r;img.onerror=r})));}
-    window.addEventListener("load",async()=>{await waitForImages();setTimeout(()=>window.print(),300)});
+    async function forceLoadAllImages(){
+      const imgs=[...document.images];
+
+      // Ask the browser to load every product image immediately instead of
+      // allowing any lazy/deferred image behavior in the print window.
+      imgs.forEach(img=>{
+        img.loading="eager";
+        img.decoding="sync";
+        try{ img.fetchPriority="high"; }catch(e){}
+      });
+
+      await Promise.all(imgs.map(img=>new Promise(resolve=>{
+        if(img.complete){
+          // complete can be true before decoding/painting is finished.
+          if(img.decode){
+            img.decode().catch(()=>{}).finally(resolve);
+          }else{
+            resolve();
+          }
+          return;
+        }
+
+        const done=()=>{
+          if(img.decode){
+            img.decode().catch(()=>{}).finally(resolve);
+          }else{
+            resolve();
+          }
+        };
+
+        img.addEventListener("load",done,{once:true});
+        img.addEventListener("error",done,{once:true});
+      })));
+
+      // Give the browser two paint cycles after every image has decoded.
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    }
+
+    window.addEventListener("load",async()=>{
+      await forceLoadAllImages();
+      setTimeout(()=>window.print(),1000);
+    });
   <\/script></body></html>`);
   w.document.close();
 }
