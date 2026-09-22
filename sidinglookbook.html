@@ -1029,106 +1029,559 @@
     }
 
 
+/* =========================================================
+   PRINTING
+   ========================================================= */
+
+function resetPrintMode() {
+
+  document.body.classList.remove(
+    "print-current",
+    "print-all"
+  );
+
+}
 
 
-    /* =========================================================
-       PRINTING
-       ========================================================= */
-    function resetPrintMode(){
-      document.body.classList.remove("print-current","print-all");
-    }
+function printCurrentScheme() {
 
-    function printCurrentScheme(){
-      resetPrintMode();
-      document.body.classList.add("print-current");
-      setTimeout(() => window.print(), 60);
-    }
+  resetPrintMode();
 
-    function buildAllSchemePrintout(){
-      const container = document.getElementById("printAllContainer");
-      container.innerHTML = "";
-      schemes.forEach((scheme, index) => {
-        const page = document.createElement("section");
-        page.className = "print-scheme-page";
-        const doors = doorOptions.map(doorName => `
-          <div class="print-door">
-            <div class="print-door-swatch" style="background:${getColor(doorName)}"></div>
-            ${doorName}
-          </div>`).join("");
-        page.innerHTML = `
-          <div class="print-scheme-header">
-            <h1>${scheme.name}</h1>
-            <div>Scheme ${index + 1} of ${schemes.length} · ${scheme.siding} Siding</div>
+  document.body.classList.add(
+    "print-current"
+  );
+
+  setTimeout(
+    () => window.print(),
+    60
+  );
+
+}
+
+
+/* =========================================================
+   BUILD PRINT ALL PAGES
+   ========================================================= */
+
+function buildAllSchemePrintout() {
+
+  const container =
+    document.getElementById(
+      "printAllContainer"
+    );
+
+  container.innerHTML = "";
+
+
+  schemes.forEach(
+    (scheme, index) => {
+
+      const page =
+        document.createElement(
+          "section"
+        );
+
+      page.className =
+        "print-scheme-page";
+
+
+      const doors =
+        doorOptions
+          .map(
+            doorName => `
+
+              <div class="print-door">
+
+                <div
+                  class="print-door-swatch"
+                  style="
+                    background:
+                      ${getColor(
+                        doorName
+                      )}
+                  "
+                ></div>
+
+                ${doorName}
+
+              </div>
+
+            `
+          )
+          .join("");
+
+
+      page.innerHTML = `
+
+        <div class="print-scheme-header">
+
+          <h1>
+            ${scheme.name}
+          </h1>
+
+          <div>
+            Scheme ${index + 1}
+            of ${schemes.length}
+            ·
+            ${scheme.siding} Siding
           </div>
-          <div class="print-main">
-            <img src="${scheme.image}" alt="${scheme.name} exterior rendering">
-            <div class="print-details">
-              <div class="print-detail"><span>Siding</span><strong>${scheme.siding}</strong></div>
-              <div class="print-detail"><span>Trim</span><strong>${scheme.trim}</strong></div>
-              <div class="print-detail"><span>Shutters</span><strong>${scheme.shutters}</strong></div>
-              <div class="print-detail"><span>Garage</span><strong>${scheme.garage}</strong></div>
+
+        </div>
+
+
+        <div class="print-main">
+
+          <img
+            src="${scheme.image}"
+            alt="${scheme.name} exterior rendering"
+            loading="eager"
+            decoding="sync"
+            fetchpriority="high"
+          >
+
+
+          <div class="print-details">
+
+            <div class="print-detail">
+
+              <span>
+                Siding
+              </span>
+
+              <strong>
+                ${scheme.siding}
+              </strong>
+
             </div>
+
+
+            <div class="print-detail">
+
+              <span>
+                Trim
+              </span>
+
+              <strong>
+                ${scheme.trim}
+              </strong>
+
+            </div>
+
+
+            <div class="print-detail">
+
+              <span>
+                Shutters
+              </span>
+
+              <strong>
+                ${scheme.shutters}
+              </strong>
+
+            </div>
+
+
+            <div class="print-detail">
+
+              <span>
+                Garage
+              </span>
+
+              <strong>
+                ${scheme.garage}
+              </strong>
+
+            </div>
+
           </div>
-          <div class="print-door-title">Entry Door Options</div>
-          <div class="print-doors">${doors}</div>
-          <div class="print-note">Images and colors shown are for reference only and may vary from actual materials, paint samples, lighting, photography, and monitor settings.</div>
-        `;
-        container.appendChild(page);
-      });
-    }
 
-    function preloadSchemeImages(){
-      return Promise.all(
-        schemes.map(scheme => new Promise(resolve => {
-          const img = new Image();
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
-          img.src = scheme.image;
-          if (img.complete) resolve();
-        }))
+        </div>
+
+
+        <div class="print-door-title">
+          Entry Door Options
+        </div>
+
+
+        <div class="print-doors">
+          ${doors}
+        </div>
+
+
+        <div class="print-note">
+
+          Images and colors shown are for
+          reference only and may vary from
+          actual materials, paint samples,
+          lighting, photography, and monitor
+          settings.
+
+        </div>
+
+      `;
+
+
+      container.appendChild(
+        page
       );
+
     }
+  );
 
-    function waitForPrintImages(){
-      const images = Array.from(
-        document.querySelectorAll('#printAllContainer img')
-      );
+}
 
-      return Promise.all(
-        images.map(img => {
-          if (img.complete && img.naturalWidth > 0) {
-            return Promise.resolve();
+
+/* =========================================================
+   PRELOAD EVERY SIDING IMAGE
+   ========================================================= */
+
+function preloadSchemeImages() {
+
+  return Promise.all(
+
+    schemes.map(
+
+      scheme =>
+
+        new Promise(
+
+          resolve => {
+
+            const img =
+              new Image();
+
+
+            /*
+              Force every siding rendering
+              to begin loading immediately.
+            */
+
+            img.loading =
+              "eager";
+
+
+            try {
+
+              img.fetchPriority =
+                "high";
+
+            }
+
+            catch (error) {
+
+              /*
+                Older browsers may not support
+                fetchPriority. That's okay.
+              */
+
+            }
+
+
+            /*
+              An image is not considered ready
+              until it has actually loaded and
+              decoded.
+
+              This prevents the first siding
+              image from being skipped.
+            */
+
+            const finish =
+              async () => {
+
+                try {
+
+                  if (
+                    img.decode &&
+                    img.naturalWidth > 0
+                  ) {
+
+                    await img.decode();
+
+                  }
+
+                }
+
+                catch (error) {
+
+                  /*
+                    Continue if decode() isn't
+                    supported by the browser.
+                  */
+
+                }
+
+
+                resolve();
+
+              };
+
+
+            /*
+              Attach listeners BEFORE assigning
+              the image source.
+            */
+
+            img.addEventListener(
+              "load",
+              finish,
+              {
+                once: true
+              }
+            );
+
+
+            img.addEventListener(
+              "error",
+              resolve,
+              {
+                once: true
+              }
+            );
+
+
+            /*
+              Now start loading the image.
+            */
+
+            img.src =
+              scheme.image;
+
+
+            /*
+              The image may already exist in
+              browser cache.
+
+              Only treat it as ready if it has
+              a real natural width.
+            */
+
+            if (
+              img.complete &&
+              img.naturalWidth > 0
+            ) {
+
+              finish();
+
+            }
+
           }
 
-          return new Promise(resolve => {
-            img.addEventListener('load', resolve, { once:true });
-            img.addEventListener('error', resolve, { once:true });
-          });
-        })
+        )
+
+    )
+
+  );
+
+}
+
+
+/* =========================================================
+   WAIT FOR GENERATED PRINT IMAGES
+   ========================================================= */
+
+function waitForPrintImages() {
+
+  const images =
+    Array.from(
+
+      document.querySelectorAll(
+        "#printAllContainer img"
+      )
+
+    );
+
+
+  return Promise.all(
+
+    images.map(
+
+      img =>
+
+        new Promise(
+
+          resolve => {
+
+            /*
+              Wait for the actual image inside
+              the generated print page to be
+              decoded too.
+            */
+
+            const finish =
+              async () => {
+
+                try {
+
+                  if (
+                    img.decode &&
+                    img.naturalWidth > 0
+                  ) {
+
+                    await img.decode();
+
+                  }
+
+                }
+
+                catch (error) {
+
+                  /*
+                    Continue if decoding is not
+                    supported.
+                  */
+
+                }
+
+
+                resolve();
+
+              };
+
+
+            /*
+              Already loaded?
+            */
+
+            if (
+              img.complete &&
+              img.naturalWidth > 0
+            ) {
+
+              finish();
+
+            }
+
+
+            /*
+              Otherwise wait for it.
+            */
+
+            else {
+
+              img.addEventListener(
+                "load",
+                finish,
+                {
+                  once: true
+                }
+              );
+
+
+              img.addEventListener(
+                "error",
+                resolve,
+                {
+                  once: true
+                }
+              );
+
+            }
+
+          }
+
+        )
+
+    )
+
+  );
+
+}
+
+
+/* =========================================================
+   PRINT ALL SCHEMES
+   ========================================================= */
+
+async function printAllSchemes() {
+
+  /*
+    STEP 1:
+    Load and decode every original siding
+    rendering.
+
+    This includes scheme-01.jpeg.
+  */
+
+  await preloadSchemeImages();
+
+
+  /*
+    STEP 2:
+    Build every printable scheme page.
+  */
+
+  buildAllSchemePrintout();
+
+
+  /*
+    STEP 3:
+    Wait for the images inside the newly
+    generated print pages to load and decode.
+  */
+
+  await waitForPrintImages();
+
+
+  /*
+    STEP 4:
+    Switch the page into Print All mode.
+  */
+
+  resetPrintMode();
+
+  document.body.classList.add(
+    "print-all"
+  );
+
+
+  /*
+    STEP 5:
+    Give the browser two complete paint
+    cycles before starting print preview.
+
+    Then wait another 350ms so the FIRST
+    siding image has time to physically
+    render onto page 1.
+  */
+
+  requestAnimationFrame(
+
+    () => {
+
+      requestAnimationFrame(
+
+        () => {
+
+          setTimeout(
+
+            () => window.print(),
+
+            350
+
+          );
+
+        }
+
       );
+
     }
 
-    async function printAllSchemes(){
-      /*
-        Load every rendering before opening the browser's print preview.
-        This prevents schemes that have not yet been clicked from appearing
-        blank in Print All.
-      */
-      await preloadSchemeImages();
-      buildAllSchemePrintout();
-      await waitForPrintImages();
+  );
 
-      resetPrintMode();
-      document.body.classList.add("print-all");
+}
 
-      /* Give the browser one final paint cycle before print preview. */
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => window.print());
-      });
-    }
 
-    window.addEventListener("afterprint", resetPrintMode);
+/* =========================================================
+   RESET AFTER PRINTING
+   ========================================================= */
 
+window.addEventListener(
+  "afterprint",
+  resetPrintMode
+);
+
+    
     /* =========================================================
        INITIAL SCHEME
        ========================================================= */
