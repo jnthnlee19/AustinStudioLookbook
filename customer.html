@@ -4789,12 +4789,18 @@
     }
 
 
-
     /* =========================================================
        VIEW / SORT
        ========================================================= */
 
-    let originalLookbookHTML = "";
+    /*
+       SAFE FILTER STATE
+       Keep the original live DOM nodes instead of saving innerHTML.
+       This preserves checkbox state, quantities, comments, dropdowns,
+       and their existing event listeners.
+    */
+
+    let categoryViewNodes = [];
 
 
     function captureOriginalLookbookHTML() {
@@ -4804,7 +4810,6 @@
           "lookbook-container"
         );
 
-
       if (
         container &&
         !container.classList.contains(
@@ -4812,8 +4817,10 @@
         )
       ) {
 
-        originalLookbookHTML =
-          container.innerHTML;
+        categoryViewNodes =
+          Array.from(
+            container.childNodes
+          );
 
       }
 
@@ -4827,139 +4834,37 @@
           "lookbook-container"
         );
 
-
-      if (!container) {
+      if (
+        !container ||
+        !container.classList.contains(
+          "flat-view"
+        )
+      ) {
         return;
       }
 
+      container.classList.remove(
+        "flat-view"
+      );
 
-      if (
-        container.classList.contains(
-          "flat-view"
-        ) &&
-        originalLookbookHTML
-      ) {
+      container.innerHTML = "";
 
-        container.classList.remove(
-          "flat-view"
-        );
+      categoryViewNodes.forEach(
+        node => {
+          container.appendChild(node);
+        }
+      );
 
-        container.innerHTML =
-          originalLookbookHTML;
-
-        reconnectRestoredCardEvents();
-
-      }
+      updateTotal();
 
     }
 
 
     function reconnectRestoredCardEvents() {
-
-      document
-        .querySelectorAll(
-          ".option"
-        )
-        .forEach(
-          card => {
-
-            const checkbox =
-              card.querySelector(
-                ".option-checkbox"
-              );
-
-            const qty =
-              card.querySelector(
-                ".option-qty"
-              );
-
-            const comment =
-              card.querySelector(
-                ".option-comment"
-              );
-
-
-            if (checkbox) {
-
-              checkbox.addEventListener(
-                "change",
-                function() {
-
-                  card.classList.toggle(
-                    "selected",
-                    checkbox.checked
-                  );
-
-                  updateTotal();
-                  scheduleAutosave();
-
-                  if (
-                    document
-                      .getElementById(
-                        "view-filter"
-                      )
-                      ?.value === "selected"
-                  ) {
-                    applyViewFilter();
-                  }
-
-                }
-              );
-
-            }
-
-
-            if (qty) {
-
-              qty.addEventListener(
-                "input",
-                function() {
-
-                  if (
-                    parseInt(
-                      qty.value
-                    ) < 1
-                  ) {
-                    qty.value = 1;
-                  }
-
-                  updateTotal();
-                  scheduleAutosave();
-
-                }
-              );
-
-            }
-
-
-            if (comment) {
-
-              comment.addEventListener(
-                "input",
-                scheduleAutosave
-              );
-
-            }
-
-
-            card
-              .querySelectorAll(
-                ".variation-select"
-              )
-              .forEach(
-                select => {
-
-                  select.addEventListener(
-                    "change",
-                    scheduleAutosave
-                  );
-
-                }
-              );
-
-          }
-        );
-
+      /*
+         No reconnect is needed now because the same live DOM cards
+         are moved between views instead of cloned or recreated.
+      */
     }
 
 
@@ -4985,70 +4890,57 @@
           "view-filter"
         );
 
-
       const mode =
         select?.value || "all";
-
 
       const container =
         document.getElementById(
           "lookbook-container"
         );
 
-
       if (!container) {
         return;
       }
 
 
-      /*
-        All Options keeps the original Category / Subcategory
-        structure and works with the normal search box.
-      */
-
       if (mode === "all") {
 
         restoreCategoryView();
-
         filterOptions();
-
+        updateTotal();
         return;
 
       }
 
 
       /*
-        Before leaving category view, preserve the current DOM
-        including selections, quantities, comments and variations.
+         If another flat view is already showing, restore the complete
+         categorized view first so every option is available.
       */
 
       if (
-        !container.classList.contains(
+        container.classList.contains(
           "flat-view"
         )
       ) {
 
-        captureOriginalLookbookHTML();
+        restoreCategoryView();
 
       }
 
 
-      const currentCards =
-        Array.from(
-          document.querySelectorAll(
-            ".option"
-          )
-        );
-
-
       /*
-        Clone cards for the flat display so filtering/sorting
-        cannot move or damage the original categorized Lookbook.
+         Capture the actual categorized DOM nodes before moving cards.
       */
 
+      captureOriginalLookbookHTML();
+
+
       let cards =
-        currentCards.map(
-          card => card.cloneNode(true)
+        Array.from(
+          container.querySelectorAll(
+            ".option"
+          )
         );
 
 
@@ -5057,7 +4949,6 @@
         cards =
           cards.filter(
             card => {
-
               const checkbox =
                 card.querySelector(
                   ".option-checkbox"
@@ -5066,7 +4957,6 @@
               return Boolean(
                 checkbox?.checked
               );
-
             }
           );
 
@@ -5087,12 +4977,6 @@
             const bInfo =
               cardSortInfo(b);
 
-
-            /*
-              Unknown prices always come after actual pricing,
-              regardless of ascending or descending sort.
-            */
-
             if (
               aInfo.known !==
               bInfo.known
@@ -5104,16 +4988,12 @@
 
             }
 
-
             if (
               !aInfo.known &&
               !bInfo.known
             ) {
-
               return 0;
-
             }
-
 
             return mode === "price-low"
               ? aInfo.price - bInfo.price
@@ -5123,13 +5003,6 @@
         );
 
       }
-
-
-      container.innerHTML = "";
-
-      container.classList.add(
-        "flat-view"
-      );
 
 
       const query =
@@ -5149,9 +5022,20 @@
             !query ||
             String(
               card.dataset.search || ""
-            )
-              .includes(query)
+            ).includes(query)
         );
+
+
+      /*
+         Move the REAL cards. appendChild moves an existing node;
+         it does not clone it, so live form state stays intact.
+      */
+
+      container.innerHTML = "";
+
+      container.classList.add(
+        "flat-view"
+      );
 
 
       if (!cards.length) {
@@ -5177,15 +5061,9 @@
 
         cards.forEach(
           card => {
-
-            container.appendChild(
-              card
-            );
-
+            container.appendChild(card);
           }
         );
-
-        reconnectRestoredCardEvents();
 
       }
 
@@ -5196,11 +5074,13 @@
         );
 
       if (noResults) {
-        noResults.style.display =
-          "none";
+        noResults.style.display = "none";
       }
 
+      updateTotal();
+
     }
+
 
 
 
