@@ -4788,85 +4788,9 @@
 
     }
 
-
     /* =========================================================
        VIEW / SORT
        ========================================================= */
-
-    /*
-       SAFE FILTER STATE
-       Keep the original live DOM nodes instead of saving innerHTML.
-       This preserves checkbox state, quantities, comments, dropdowns,
-       and their existing event listeners.
-    */
-
-    let categoryViewNodes = [];
-
-
-    function captureOriginalLookbookHTML() {
-
-      const container =
-        document.getElementById(
-          "lookbook-container"
-        );
-
-      if (
-        container &&
-        !container.classList.contains(
-          "flat-view"
-        )
-      ) {
-
-        categoryViewNodes =
-          Array.from(
-            container.childNodes
-          );
-
-      }
-
-    }
-
-
-    function restoreCategoryView() {
-
-      const container =
-        document.getElementById(
-          "lookbook-container"
-        );
-
-      if (
-        !container ||
-        !container.classList.contains(
-          "flat-view"
-        )
-      ) {
-        return;
-      }
-
-      container.classList.remove(
-        "flat-view"
-      );
-
-      container.innerHTML = "";
-
-      categoryViewNodes.forEach(
-        node => {
-          container.appendChild(node);
-        }
-      );
-
-      updateTotal();
-
-    }
-
-
-    function reconnectRestoredCardEvents() {
-      /*
-         No reconnect is needed now because the same live DOM cards
-         are moved between views instead of cloned or recreated.
-      */
-    }
-
 
     function cardSortInfo(card) {
 
@@ -4880,6 +4804,30 @@
           ) || 0
       };
 
+    }
+
+
+    function captureOriginalLookbookHTML() {
+      /*
+         Kept because other parts of the Lookbook already call this
+         function. We no longer need to capture or rebuild anything.
+      */
+    }
+
+
+    function restoreCategoryView() {
+      /*
+         No rebuilding is necessary anymore.
+         The real category structure always stays in the DOM.
+      */
+    }
+
+
+    function reconnectRestoredCardEvents() {
+      /*
+         No reconnecting is necessary because cards are never cloned
+         or recreated.
+      */
     }
 
 
@@ -4903,106 +4851,19 @@
       }
 
 
-      if (mode === "all") {
-
-        restoreCategoryView();
-        filterOptions();
-        updateTotal();
-        return;
-
-      }
-
-
       /*
-         If another flat view is already showing, restore the complete
-         categorized view first so every option is available.
+         IMPORTANT:
+         The categorized Lookbook ALWAYS stays intact.
+
+         We only change display/order inside each existing
+         option-container. This means checkbox state, quantities,
+         comments, dropdown selections and event listeners remain
+         untouched.
       */
 
-      if (
-        container.classList.contains(
-          "flat-view"
-        )
-      ) {
-
-        restoreCategoryView();
-
-      }
-
-
-      /*
-         Capture the actual categorized DOM nodes before moving cards.
-      */
-
-      captureOriginalLookbookHTML();
-
-
-      let cards =
-        Array.from(
-          container.querySelectorAll(
-            ".option"
-          )
-        );
-
-
-      if (mode === "selected") {
-
-        cards =
-          cards.filter(
-            card => {
-              const checkbox =
-                card.querySelector(
-                  ".option-checkbox"
-                );
-
-              return Boolean(
-                checkbox?.checked
-              );
-            }
-          );
-
-      }
-
-
-      if (
-        mode === "price-low" ||
-        mode === "price-high"
-      ) {
-
-        cards.sort(
-          (a, b) => {
-
-            const aInfo =
-              cardSortInfo(a);
-
-            const bInfo =
-              cardSortInfo(b);
-
-            if (
-              aInfo.known !==
-              bInfo.known
-            ) {
-
-              return aInfo.known
-                ? -1
-                : 1;
-
-            }
-
-            if (
-              !aInfo.known &&
-              !bInfo.known
-            ) {
-              return 0;
-            }
-
-            return mode === "price-low"
-              ? aInfo.price - bInfo.price
-              : bInfo.price - aInfo.price;
-
-          }
-        );
-
-      }
+      container.classList.remove(
+        "flat-view"
+      );
 
 
       const query =
@@ -5016,179 +4877,183 @@
         || "";
 
 
-      cards =
-        cards.filter(
-          card =>
-            !query ||
-            String(
-              card.dataset.search || ""
-            ).includes(query)
-        );
-
-
-      /*
-         Move the REAL cards. appendChild moves an existing node;
-         it does not clone it, so live form state stays intact.
-      */
-
-      container.innerHTML = "";
-
-      container.classList.add(
-        "flat-view"
-      );
-
-
-      if (!cards.length) {
-
-        const empty =
-          document.createElement(
-            "div"
-          );
-
-        empty.className =
-          "flat-view-empty";
-
-        empty.textContent =
-          mode === "selected"
-            ? "No selected options match this view."
-            : "No options match this view.";
-
-        container.appendChild(
-          empty
-        );
-
-      } else {
-
-        cards.forEach(
-          card => {
-            container.appendChild(card);
-          }
-        );
-
-      }
-
-
-      const noResults =
-        document.getElementById(
-          "no-results"
-        );
-
-      if (noResults) {
-        noResults.style.display = "none";
-      }
-
-      updateTotal();
-
-    }
-
-
-
-
-    /* =========================================================
-       SEARCH
-       ========================================================= */
-
-    function filterOptions() {
-
-      const viewMode =
-        document
-          .getElementById(
-            "view-filter"
-          )
-          ?.value || "all";
-
-
-      if (viewMode !== "all") {
-
-        applyViewFilter();
-
-        return;
-
-      }
-
-
-      const query =
-        document
-          .getElementById(
-            "search-input"
-          )
-          .value
-          .trim()
-          .toLowerCase();
-
-
       let visibleCount = 0;
 
 
       document
         .querySelectorAll(
-          ".category"
+          "#lookbook-container .category"
         )
         .forEach(
           category => {
 
-
-            let categoryHasMatch =
+            let categoryHasVisible =
               false;
 
 
             category
               .querySelectorAll(
-                ".subcategory"
+                ":scope .subcategory"
               )
               .forEach(
                 subcategory => {
 
-
-                  let subHasMatch =
+                  let subcategoryHasVisible =
                     false;
 
 
-                  subcategory
-                    .querySelectorAll(
-                      ".option"
-                    )
-                    .forEach(
-                      card => {
+                  const optionContainer =
+                    subcategory.querySelector(
+                      ".option-container"
+                    );
 
 
-                        const match =
-                          !query ||
-                          card.dataset.search
-                            .includes(query);
+                  if (!optionContainer) {
+                    return;
+                  }
 
 
-                        card.style.display =
-                          match
-                            ? ""
-                            : "none";
+                  let cards =
+                    Array.from(
+                      optionContainer.querySelectorAll(
+                        ":scope > .option"
+                      )
+                    );
 
 
-                        if (match) {
+                  /*
+                     PRICE SORTING
 
-                          subHasMatch =
-                            true;
+                     We reorder the SAME live cards inside their
+                     existing subcategory. appendChild simply moves
+                     the existing element and preserves all state.
+                  */
 
-                          categoryHasMatch =
-                            true;
+                  if (
+                    mode === "price-low" ||
+                    mode === "price-high"
+                  ) {
 
-                          visibleCount++;
+                    cards.sort(
+                      (a, b) => {
+
+                        const aInfo =
+                          cardSortInfo(a);
+
+                        const bInfo =
+                          cardSortInfo(b);
+
+
+                        if (
+                          aInfo.known !==
+                          bInfo.known
+                        ) {
+
+                          return aInfo.known
+                            ? -1
+                            : 1;
 
                         }
+
+
+                        if (
+                          !aInfo.known &&
+                          !bInfo.known
+                        ) {
+
+                          return 0;
+
+                        }
+
+
+                        return mode === "price-low"
+                          ? aInfo.price - bInfo.price
+                          : bInfo.price - aInfo.price;
 
                       }
                     );
 
 
+                    cards.forEach(
+                      card => {
+
+                        optionContainer.appendChild(
+                          card
+                        );
+
+                      }
+                    );
+
+                  }
+
+
+                  cards.forEach(
+                    card => {
+
+                      const checkbox =
+                        card.querySelector(
+                          ".option-checkbox"
+                        );
+
+
+                      const matchesSearch =
+                        !query ||
+                        String(
+                          card.dataset.search || ""
+                        ).includes(query);
+
+
+                      const matchesView =
+                        mode !== "selected" ||
+                        Boolean(
+                          checkbox?.checked
+                        );
+
+
+                      const visible =
+                        matchesSearch &&
+                        matchesView;
+
+
+                      card.style.display =
+                        visible
+                          ? ""
+                          : "none";
+
+
+                      if (visible) {
+
+                        subcategoryHasVisible =
+                          true;
+
+                        categoryHasVisible =
+                          true;
+
+                        visibleCount++;
+
+                      }
+
+                    }
+                  );
+
+
                   subcategory.style.display =
-                    subHasMatch
+                    subcategoryHasVisible
                       ? ""
                       : "none";
 
 
+                  /*
+                     Open matching sections automatically when
+                     Selected Options or a search is active.
+                  */
+
                   if (
-                    query &&
-                    subHasMatch
+                    subcategoryHasVisible &&
+                    (
+                      mode === "selected" ||
+                      query
+                    )
                   ) {
 
                     subcategory.open =
@@ -5201,14 +5066,17 @@
 
 
             category.style.display =
-              categoryHasMatch
+              categoryHasVisible
                 ? ""
                 : "none";
 
 
             if (
-              query &&
-              categoryHasMatch
+              categoryHasVisible &&
+              (
+                mode === "selected" ||
+                query
+              )
             ) {
 
               category.open =
@@ -5220,17 +5088,35 @@
         );
 
 
-      document
-        .getElementById(
+      const noResults =
+        document.getElementById(
           "no-results"
-        )
-        .style.display =
+        );
+
+
+      if (noResults) {
+
+        noResults.style.display =
           visibleCount === 0
             ? "block"
             : "none";
 
-    }
+      }
 
+
+      updateTotal();
+
+    }
+  
+
+    /* =========================================================
+       SEARCH
+       ========================================================= */
+
+   
+function filterOptions() {
+  applyViewFilter();
+}
 
 
     function clearSearch() {
