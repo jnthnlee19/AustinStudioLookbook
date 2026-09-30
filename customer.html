@@ -3459,6 +3459,35 @@
       const wrap = document.createElement("div");
       wrap.className = "option-variations";
 
+      /*
+         INDEPENDENT DOUBLE DROPDOWNS
+         Example: Trim + Siding where either choice can be selected
+         without changing or limiting the other.
+      */
+      if (config.independent && Array.isArray(config.fields)) {
+
+        config.fields.forEach((fieldConfig, index) => {
+
+          const variation = createVariationField(
+            fieldConfig.label || "Option",
+            index === 0
+              ? "variation-primary"
+              : "variation-secondary"
+          );
+
+          fillVariationSelect(
+            variation.select,
+            fieldConfig.choices || [],
+            `Select ${fieldConfig.label || "Option"}`
+          );
+
+          wrap.appendChild(variation.field);
+
+        });
+
+        return wrap;
+      }
+
       const first = createVariationField(
         config.label || "Option",
         "variation-primary"
