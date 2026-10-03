@@ -2144,6 +2144,9 @@
     let autosaveInFlight = false;
     let autosaveQueued = false;
     let pendingOptionChanges = new Set();
+    let inFlightOptionChanges = new Set();
+    const liveSyncSessionId =
+      (crypto?.randomUUID?.() || `session-${Date.now()}-${Math.random().toString(16).slice(2)}`);
     let liveSyncTimer = null;
     let liveSyncInFlight = false;
     let lastSeenUpdatedAt = null;
@@ -2265,6 +2268,7 @@
 
       const optionNumbers = Array.from(pendingOptionChanges);
       pendingOptionChanges.clear();
+      optionNumbers.forEach(option => inFlightOptionChanges.add(option));
 
       const changes = optionNumbers
         .map(getOptionState)
@@ -2278,6 +2282,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               id: activeCustomerLookbook.id,
+              sessionId: liveSyncSessionId,
               changes
             })
           }
@@ -2295,6 +2300,7 @@
         }
 
         activeCustomerLookbook.updatedAt = result.updatedAt || new Date().toISOString();
+        activeCustomerLookbook.lastSessionId = result.lastSessionId || liveSyncSessionId;
         lastSeenUpdatedAt = activeCustomerLookbook.updatedAt;
 
         const savedTime = new Date(activeCustomerLookbook.updatedAt);
@@ -2309,6 +2315,7 @@
         setAutosaveStatus("error", "⚠ Changes not saved");
 
       } finally {
+        optionNumbers.forEach(option => inFlightOptionChanges.delete(option));
         autosaveInFlight = false;
 
         if (autosaveQueued || pendingOptionChanges.size) {
@@ -2352,8 +2359,11 @@
         document.querySelectorAll(".option").forEach(card => {
           const optionNumber = String(card.dataset.option || "");
 
-          // Never overwrite an option that this browser is currently editing/saving.
-          if (pendingOptionChanges.has(optionNumber)) return;
+          // Never overwrite an option that this browser has not finished saving yet.
+          if (
+            pendingOptionChanges.has(optionNumber) ||
+            inFlightOptionChanges.has(optionNumber)
+          ) return;
 
           const saved = byOption.get(optionNumber);
           const checkbox = card.querySelector(".option-checkbox");
@@ -2428,9 +2438,18 @@
           latestUpdatedAt &&
           latestUpdatedAt !== lastSeenUpdatedAt
         ) {
-          applyRemoteSelections(latest.selections || []);
+          const cameFromThisSession =
+            latest?.lastSessionId &&
+            latest.lastSessionId === liveSyncSessionId;
+
+          // Apply other sessions normally. Our own acknowledged save is already
+          // represented in this tab, so do not repaint the UI from it.
+          if (!cameFromThisSession) {
+            applyRemoteSelections(latest.selections || []);
+          }
           activeCustomerLookbook.selections = latest.selections || [];
           activeCustomerLookbook.updatedAt = latestUpdatedAt;
+          activeCustomerLookbook.lastSessionId = latest?.lastSessionId || null;
           lastSeenUpdatedAt = latestUpdatedAt;
 
           const syncedTime = new Date(latestUpdatedAt);
