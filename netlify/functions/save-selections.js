@@ -252,8 +252,6 @@ export default async function handler(request) {
 
        OPTION NUMBER = UNIQUE KEY
 
-       This is the important part.
-
        We are NOT replacing the entire selections array.
 
        We start with everything currently saved on the
@@ -458,16 +456,6 @@ export default async function handler(request) {
 
     /* =====================================================
        RETURN AUTHORITATIVE SERVER STATE
-
-       The browser receives:
-
-       - confirmation
-       - timestamp
-       - session that made this save
-       - complete current selections
-
-       This helps the live-sync system reconcile multiple
-       open browsers safely.
        ===================================================== */
 
     return jsonResponse(
