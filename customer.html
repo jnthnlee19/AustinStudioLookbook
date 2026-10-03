@@ -836,6 +836,71 @@
     }
 
 
+
+    /* =========================================================
+       MAYBE / CONSIDERING STATE
+       Preview behavior: Maybes are intentionally local-only
+       until the backend is updated to store a status field.
+       ========================================================= */
+
+    .maybe-total {
+      margin-top: 3px;
+      color: #7b6a32;
+      font-size: 0.72rem;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .option.maybe {
+      border: 2px solid #b9aa72;
+      box-shadow: 0 9px 24px rgba(122, 103, 46, 0.10);
+    }
+
+    .option.maybe::after {
+      content: "MAYBE";
+      position: absolute;
+      right: 9px;
+      top: 9px;
+      z-index: 5;
+      background: #efe7c8;
+      color: #5f532b;
+      font-size: 0.62rem;
+      font-weight: 850;
+      letter-spacing: 0.05em;
+      padding: 5px 7px;
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    .option.selected.maybe::after {
+      content: "SELECTED";
+      background: var(--yellow);
+      color: #282828;
+    }
+
+    .maybe-button {
+      border: 1px solid #cfc39a;
+      background: #fffdf5;
+      color: #66592e;
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .maybe-button:hover {
+      background: #f8f2dc;
+    }
+
+    .maybe-button.active {
+      background: #efe7c8;
+      border-color: #a99759;
+      color: #51461f;
+      box-shadow: 0 0 0 2px rgba(169,151,89,.10);
+    }
+
     /* =========================================================
        OPTION IMAGE
        ========================================================= */
@@ -1050,7 +1115,7 @@
     .option-controls {
       display: grid;
 
-      grid-template-columns: 1fr auto;
+      grid-template-columns: auto 1fr auto;
 
       align-items: center;
 
@@ -1747,6 +1812,10 @@
             $0.00
           </div>
 
+          <div id="maybe-bar" class="maybe-total">
+            ☆ 0 Maybes · $0.00
+          </div>
+
           <div
             class="autosave-status saved"
             id="autosave-status"
@@ -1881,6 +1950,8 @@
           >
             <option value="all">All Options</option>
             <option value="selected">Selected Options</option>
+            <option value="maybe">Maybe Options</option>
+            <option value="selected-maybe">Selected + Maybe</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to Low</option>
           </select>
@@ -2386,6 +2457,13 @@
           }
 
           if (checkbox) checkbox.checked = true;
+          card.classList.remove("maybe");
+          const maybeButton = card.querySelector(".maybe-button");
+          if (maybeButton) {
+            maybeButton.classList.remove("active");
+            maybeButton.textContent = "☆ Maybe";
+            maybeButton.setAttribute("aria-pressed", "false");
+          }
           if (qty) qty.value = Math.max(1, parseInt(saved?.qty || 1));
           if (comment) comment.value = saved?.comment || "";
 
@@ -5587,6 +5665,20 @@
 
 
 
+      const maybeButton =
+        document.createElement(
+          "button"
+        );
+
+      maybeButton.type = "button";
+      maybeButton.className = "maybe-button";
+      maybeButton.textContent = "☆ Maybe";
+      maybeButton.setAttribute(
+        "aria-pressed",
+        "false"
+      );
+
+
       const checkLabel =
         document.createElement(
           "label"
@@ -5691,6 +5783,10 @@
 
 
       controls.appendChild(
+        maybeButton
+      );
+
+      controls.appendChild(
         checkLabel
       );
 
@@ -5745,6 +5841,48 @@
          EVENTS
          ======================================================= */
 
+      maybeButton.addEventListener(
+        "click",
+        function() {
+
+          const turningOn =
+            !card.classList.contains("maybe");
+
+          if (turningOn) {
+
+            /*
+              Maybe is mutually exclusive with Selected.
+              If this was selected, remove the real selection first.
+              That change still uses the normal autosave/live-sync path.
+            */
+            if (checkbox.checked) {
+              checkbox.checked = false;
+              checkbox.dispatchEvent(
+                new Event("change", { bubbles: true })
+              );
+            }
+
+            card.classList.add("maybe");
+            maybeButton.classList.add("active");
+            maybeButton.textContent = "★ Maybe";
+            maybeButton.setAttribute("aria-pressed", "true");
+
+          } else {
+
+            card.classList.remove("maybe");
+            maybeButton.classList.remove("active");
+            maybeButton.textContent = "☆ Maybe";
+            maybeButton.setAttribute("aria-pressed", "false");
+
+          }
+
+          updateTotal();
+          applyViewFilter();
+
+        }
+      );
+
+
       checkbox.addEventListener(
         "change",
         function() {
@@ -5753,6 +5891,13 @@
             "selected",
             checkbox.checked
           );
+
+          if (checkbox.checked) {
+            card.classList.remove("maybe");
+            maybeButton.classList.remove("active");
+            maybeButton.textContent = "☆ Maybe";
+            maybeButton.setAttribute("aria-pressed", "false");
+          }
 
 
           updateTotal();
@@ -5861,6 +6006,8 @@
     function updateTotal() {
 
       let total = 0;
+      let maybeTotal = 0;
+      let maybeCount = 0;
 
 
       document
@@ -5883,6 +6030,25 @@
               );
 
 
+            const price =
+              parseFloat(
+                checkbox?.dataset?.price
+              ) || 0;
+
+            const quantity =
+              Math.max(
+                1,
+                parseInt(
+                  qty?.value || 1
+                )
+              );
+
+            if (card.classList.contains("maybe")) {
+              maybeCount++;
+              maybeTotal += price * quantity;
+            }
+
+
             if (
               !checkbox ||
               !checkbox.checked
@@ -5893,23 +6059,14 @@
             }
 
 
-            const price =
+            const selectedPrice =
               parseFloat(
                 checkbox.dataset.price
               ) || 0;
 
 
-            const quantity =
-              Math.max(
-                1,
-                parseInt(
-                  qty?.value || 1
-                )
-              );
-
-
             total +=
-              price * quantity;
+              selectedPrice * quantity;
 
           }
         );
@@ -5928,6 +6085,23 @@
               minimumFractionDigits: 2
             }
           );
+
+      const maybeBar =
+        document.getElementById("maybe-bar");
+
+      if (maybeBar) {
+        maybeBar.textContent =
+          `☆ ${maybeCount} ${maybeCount === 1 ? "Maybe" : "Maybes"} · ${
+            maybeTotal.toLocaleString(
+              undefined,
+              {
+                style: "currency",
+                currency: "USD",
+                minimumFractionDigits: 2
+              }
+            )
+          }`;
+      }
 
     }
 
@@ -6177,11 +6351,20 @@
                         ).includes(query);
 
 
+                      const isSelected =
+                        Boolean(checkbox?.checked);
+
+                      const isMaybe =
+                        card.classList.contains("maybe");
+
                       const matchesView =
-                        mode !== "selected" ||
-                        Boolean(
-                          checkbox?.checked
-                        );
+                        mode === "selected"
+                          ? isSelected
+                          : mode === "maybe"
+                            ? isMaybe
+                            : mode === "selected-maybe"
+                              ? (isSelected || isMaybe)
+                              : true;
 
 
                       const visible =
@@ -6225,7 +6408,7 @@
                   if (
                     subcategoryHasVisible &&
                     (
-                      mode === "selected" ||
+                      ["selected", "maybe", "selected-maybe"].includes(mode) ||
                       query
                     )
                   ) {
@@ -6248,7 +6431,7 @@
             if (
               categoryHasVisible &&
               (
-                mode === "selected" ||
+                ["selected", "maybe", "selected-maybe"].includes(mode) ||
                 query
               )
             ) {
