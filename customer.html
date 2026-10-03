@@ -2143,6 +2143,11 @@
     let autosaveTimer = null;
     let autosaveInFlight = false;
     let autosaveQueued = false;
+    let pendingOptionChanges = new Set();
+    let liveSyncTimer = null;
+    let liveSyncInFlight = false;
+    let lastSeenUpdatedAt = null;
+    let applyingRemoteUpdate = false;
 
 
     function setAutosaveStatus(
@@ -2185,209 +2190,268 @@
     }
 
 
+    function markOptionChanged(target) {
+
+      if (applyingRemoteUpdate) return;
+
+      const card = target?.closest?.(".option");
+      const optionNumber = card?.dataset?.option;
+
+      if (optionNumber) {
+        pendingOptionChanges.add(String(optionNumber));
+      }
+
+      scheduleAutosave();
+    }
+
+
     function scheduleAutosave() {
 
       if (
-        !document.body.classList.contains(
-          "customer-mode"
-        ) ||
+        !document.body.classList.contains("customer-mode") ||
         !activeCustomerLookbook?.id
       ) {
         return;
       }
 
-
-      clearTimeout(
-        autosaveTimer
-      );
-
+      clearTimeout(autosaveTimer);
 
       setAutosaveStatus(
         "saving",
-        "Saving..."
+        pendingOptionChanges.size > 1
+          ? `Saving ${pendingOptionChanges.size} changes...`
+          : "Saving..."
       );
 
+      autosaveTimer = setTimeout(saveCustomerSelections, 900);
+    }
 
-      autosaveTimer =
-        setTimeout(
-          saveCustomerSelections,
-          900
-        );
 
+    function getOptionState(optionNumber) {
+      const card = Array.from(document.querySelectorAll(".option"))
+        .find(item => item.dataset.option === String(optionNumber));
+
+      if (!card) return null;
+
+      const checkbox = card.querySelector(".option-checkbox");
+      const qty = Math.max(1, parseInt(card.querySelector(".option-qty")?.value || 1));
+      const comment = card.querySelector(".option-comment")?.value?.trim() || "";
+      const variation1 = card.querySelector(".variation-primary")?.value?.trim() || "";
+      const variation2 = card.querySelector(".variation-secondary")?.value?.trim() || "";
+
+      return {
+        option: String(optionNumber),
+        selected: Boolean(checkbox?.checked),
+        qty,
+        comment,
+        variation1,
+        variation2
+      };
     }
 
 
     async function saveCustomerSelections() {
 
-      if (!activeCustomerLookbook?.id) {
+      if (!activeCustomerLookbook?.id || pendingOptionChanges.size === 0) {
         return;
       }
-
 
       if (autosaveInFlight) {
-
         autosaveQueued = true;
-
         return;
-
       }
-
 
       autosaveInFlight = true;
 
+      const optionNumbers = Array.from(pendingOptionChanges);
+      pendingOptionChanges.clear();
+
+      const changes = optionNumbers
+        .map(getOptionState)
+        .filter(Boolean);
 
       try {
+        const response = await fetch(
+          "/.netlify/functions/save-selections",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: activeCustomerLookbook.id,
+              changes
+            })
+          }
+        );
 
-        const response =
-          await fetch(
-            "/.netlify/functions/save-selections",
-            {
-              method: "POST",
+        const result = await response.json();
 
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body:
-                JSON.stringify({
-                  id:
-                    activeCustomerLookbook.id,
-
-                  selections:
-                    getCurrentSelections()
-                })
-            }
-          );
-
-
-        const result =
-          await response.json();
-
-
-        if (
-          response.status === 403 &&
-          result.code === "LOOKBOOK_DISABLED"
-        ) {
-
+        if (response.status === 403 && result.code === "LOOKBOOK_DISABLED") {
           showDisabledLookbook();
-
           return;
-
         }
-
 
         if (!response.ok) {
-
-          throw new Error(
-            result.error ||
-            result.message ||
-            "Unable to save selections."
-          );
-
+          throw new Error(result.error || result.message || "Unable to save selections.");
         }
 
+        activeCustomerLookbook.updatedAt = result.updatedAt || new Date().toISOString();
+        lastSeenUpdatedAt = activeCustomerLookbook.updatedAt;
 
-        activeCustomerLookbook.updatedAt =
-          result.updatedAt ||
-          new Date().toISOString();
-
-
-        const savedTime =
-          new Date(
-            activeCustomerLookbook.updatedAt
-          );
-
-
+        const savedTime = new Date(activeCustomerLookbook.updatedAt);
         setAutosaveStatus(
           "saved",
-          `✓ Saved at ${savedTime.toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit"
-          })}`
+          `✓ Saved • Live Sync • ${savedTime.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
         );
-
 
       } catch (error) {
-
-        console.error(
-          "AUTOSAVE ERROR:",
-          error
-        );
-
-
-        setAutosaveStatus(
-          "error",
-          "⚠ Changes not saved"
-        );
-
+        optionNumbers.forEach(option => pendingOptionChanges.add(option));
+        console.error("AUTOSAVE ERROR:", error);
+        setAutosaveStatus("error", "⚠ Changes not saved");
 
       } finally {
-
         autosaveInFlight = false;
 
-
-        if (autosaveQueued) {
-
+        if (autosaveQueued || pendingOptionChanges.size) {
           autosaveQueued = false;
-
           scheduleAutosave();
-
         }
-
       }
-
     }
 
 
     function enableCustomerAutosave() {
 
-      document
-        .getElementById(
-          "lookbook-container"
-        )
-        ?.addEventListener(
-          "change",
-          event => {
+      const container = document.getElementById("lookbook-container");
 
-            if (
-              event.target.matches(
-                ".option-checkbox, .option-qty, .option-comment"
-              )
-            ) {
+      container?.addEventListener("change", event => {
+        if (event.target.matches(
+          ".option-checkbox, .option-qty, .option-comment, .variation-select"
+        )) {
+          markOptionChanged(event.target);
+        }
+      });
 
-              scheduleAutosave();
-
-            }
-
-          }
-        );
-
-
-      document
-        .getElementById(
-          "lookbook-container"
-        )
-        ?.addEventListener(
-          "input",
-          event => {
-
-            if (
-              event.target.matches(
-                ".option-qty, .option-comment"
-              )
-            ) {
-
-              scheduleAutosave();
-
-            }
-
-          }
-        );
-
+      container?.addEventListener("input", event => {
+        if (event.target.matches(".option-qty, .option-comment")) {
+          markOptionChanged(event.target);
+        }
+      });
     }
 
 
+    function applyRemoteSelections(selections) {
+      if (!Array.isArray(selections)) return;
+
+      applyingRemoteUpdate = true;
+
+      try {
+        const byOption = new Map(
+          selections.map(item => [String(item?.option ?? ""), item])
+        );
+
+        document.querySelectorAll(".option").forEach(card => {
+          const optionNumber = String(card.dataset.option || "");
+
+          // Never overwrite an option that this browser is currently editing/saving.
+          if (pendingOptionChanges.has(optionNumber)) return;
+
+          const saved = byOption.get(optionNumber);
+          const checkbox = card.querySelector(".option-checkbox");
+          const qty = card.querySelector(".option-qty");
+          const comment = card.querySelector(".option-comment");
+          const primary = card.querySelector(".variation-primary");
+          const secondary = card.querySelector(".variation-secondary");
+
+          if (!saved) {
+            if (checkbox) checkbox.checked = false;
+            if (qty) qty.value = 1;
+            if (comment) comment.value = "";
+            if (primary) {
+              primary.value = "";
+              primary.dispatchEvent(new Event("change"));
+            }
+            if (secondary) secondary.value = "";
+            card.classList.remove("selected");
+            return;
+          }
+
+          if (checkbox) checkbox.checked = true;
+          if (qty) qty.value = Math.max(1, parseInt(saved?.qty || 1));
+          if (comment) comment.value = saved?.comment || "";
+
+          if (primary) {
+            primary.value = saved?.variation1 || "";
+            primary.dispatchEvent(new Event("change"));
+          }
+
+          if (secondary) secondary.value = saved?.variation2 || "";
+          card.classList.add("selected");
+        });
+
+        updateTotal();
+        applyViewFilter();
+      } finally {
+        applyingRemoteUpdate = false;
+      }
+    }
+
+
+    async function pollLiveUpdates() {
+      if (
+        liveSyncInFlight ||
+        autosaveInFlight ||
+        !activeCustomerLookbook?.id ||
+        document.hidden
+      ) return;
+
+      liveSyncInFlight = true;
+
+      try {
+        const response = await fetch(
+          `/.netlify/functions/get-lookbook?id=${encodeURIComponent(activeCustomerLookbook.id)}`,
+          { headers: { "Accept": "application/json" }, cache: "no-store" }
+        );
+
+        const result = await response.json();
+
+        if (response.status === 403 && result.code === "LOOKBOOK_DISABLED") {
+          showDisabledLookbook();
+          return;
+        }
+
+        if (!response.ok) return;
+
+        const latest = result.lookbook || result;
+        const latestUpdatedAt = latest?.updatedAt || null;
+
+        if (
+          latestUpdatedAt &&
+          latestUpdatedAt !== lastSeenUpdatedAt
+        ) {
+          applyRemoteSelections(latest.selections || []);
+          activeCustomerLookbook.selections = latest.selections || [];
+          activeCustomerLookbook.updatedAt = latestUpdatedAt;
+          lastSeenUpdatedAt = latestUpdatedAt;
+
+          const syncedTime = new Date(latestUpdatedAt);
+          setAutosaveStatus(
+            "saved",
+            `✓ Live update • ${syncedTime.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
+          );
+        }
+
+      } catch (error) {
+        console.warn("LIVE SYNC ERROR:", error);
+      } finally {
+        liveSyncInFlight = false;
+      }
+    }
+
+
+    function startLiveSync() {
+      clearInterval(liveSyncTimer);
+      liveSyncTimer = setInterval(pollLiveUpdates, 2500);
+    }
 
 
     async function loadCustomerLookbook() {
@@ -2461,6 +2525,10 @@
 
         activeCustomerLookbook =
           result.lookbook || result;
+
+
+        lastSeenUpdatedAt =
+          activeCustomerLookbook.updatedAt || null;
 
 
         const workbookBase64 =
@@ -2544,12 +2612,14 @@
         setAutosaveStatus(
           "saved",
           activeCustomerLookbook.updatedAt
-            ? `✓ Saved at ${new Date(activeCustomerLookbook.updatedAt).toLocaleTimeString([], {
+            ? `✓ Saved • Live Sync • ${new Date(activeCustomerLookbook.updatedAt).toLocaleTimeString([], {
                 hour: "numeric",
                 minute: "2-digit"
               })}`
-            : "✓ All changes saved"
+            : "✓ Saved • Live Sync"
         );
+
+        startLiveSync();
 
 
       } catch (error) {
@@ -5648,16 +5718,7 @@
       comment.dataset.option =
         option.optionNumber;
 
-      if (variationControls) {
-        variationControls
-          .querySelectorAll(".variation-select")
-          .forEach(select => {
-            select.addEventListener(
-              "change",
-              scheduleAutosave
-            );
-          });
-      }
+
 
 
 
