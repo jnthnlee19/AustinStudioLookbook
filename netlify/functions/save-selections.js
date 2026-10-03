@@ -4,6 +4,7 @@ import { getStore } from "@netlify/blobs";
 /* =========================================================
    AUSTIN STUDIO LOOKBOOK
    SAVE CUSTOMER SELECTIONS
+   OPTION-LEVEL MERGE / LIVE SYNC VERSION
    ========================================================= */
 
 
@@ -38,6 +39,70 @@ function validLookbookId(
 }
 
 
+/* =========================================================
+   NORMALIZE ONE OPTION RECORD
+   ========================================================= */
+
+function normalizeSelection(
+  selection
+) {
+
+  if (
+    !selection ||
+    typeof selection !== "object"
+  ) {
+    return null;
+  }
+
+
+  const option =
+    String(
+      selection.option || ""
+    )
+    .trim();
+
+
+  if (!option) {
+    return null;
+  }
+
+
+  return {
+
+    option,
+
+    qty:
+      Math.max(
+        1,
+        parseInt(
+          selection.qty || 1
+        ) || 1
+      ),
+
+    comment:
+      String(
+        selection.comment || ""
+      ),
+
+    variation1:
+      String(
+        selection.variation1 || ""
+      ),
+
+    variation2:
+      String(
+        selection.variation2 || ""
+      )
+
+  };
+
+}
+
+
+/* =========================================================
+   MAIN HANDLER
+   ========================================================= */
+
 export default async function handler(
   request
 ) {
@@ -70,11 +135,29 @@ export default async function handler(
       .trim();
 
 
-    const selections =
+    /*
+      NEW FORMAT:
+
+      changes: [
+        {
+          option: "2001428",
+          selected: true,
+          qty: 1,
+          comment: "",
+          variation1: "Black Fox",
+          variation2: "Alabaster"
+        }
+      ]
+
+      Only options included in "changes" are modified.
+      Everything else already saved remains untouched.
+    */
+
+    const changes =
       Array.isArray(
-        payload?.selections
+        payload?.changes
       )
-        ? payload.selections
+        ? payload.changes
         : [];
 
 
@@ -86,6 +169,21 @@ export default async function handler(
         {
           error:
             "This Lookbook ID is invalid."
+        },
+        400
+      );
+
+    }
+
+
+    if (
+      changes.length === 0
+    ) {
+
+      return jsonResponse(
+        {
+          error:
+            "No selection changes were provided."
         },
         400
       );
@@ -131,11 +229,6 @@ export default async function handler(
 
     /* =====================================================
        DISABLED LOOKBOOK CHECK
-
-       Once Studio disables a Lookbook, customer changes
-       should no longer be allowed to save.
-
-       The saved Lookbook data remains untouched.
        ===================================================== */
 
     if (
@@ -158,6 +251,138 @@ export default async function handler(
     }
 
 
+    /* =====================================================
+       BUILD CURRENT SELECTION MAP
+
+       Option number is the unique key.
+       ===================================================== */
+
+    const selectionMap =
+      new Map();
+
+
+    const existingSelections =
+      Array.isArray(
+        current.selections
+      )
+        ? current.selections
+        : [];
+
+
+    existingSelections.forEach(
+      selection => {
+
+        const normalized =
+          normalizeSelection(
+            selection
+          );
+
+
+        if (!normalized) {
+          return;
+        }
+
+
+        selectionMap.set(
+          normalized.option,
+          normalized
+        );
+
+      }
+    );
+
+
+    /* =====================================================
+       MERGE ONLY THE OPTIONS THAT CHANGED
+
+       selected: true
+         = add/update this option
+
+       selected: false
+         = remove this option
+
+       Options NOT included in this request remain untouched.
+       ===================================================== */
+
+    changes.forEach(
+      change => {
+
+        if (
+          !change ||
+          typeof change !== "object"
+        ) {
+          return;
+        }
+
+
+        const option =
+          String(
+            change.option || ""
+          )
+          .trim();
+
+
+        if (!option) {
+          return;
+        }
+
+
+        if (
+          change.selected === false
+        ) {
+
+          selectionMap.delete(
+            option
+          );
+
+          return;
+        }
+
+
+        const normalized =
+          normalizeSelection(
+            {
+              option,
+
+              qty:
+                change.qty,
+
+              comment:
+                change.comment,
+
+              variation1:
+                change.variation1,
+
+              variation2:
+                change.variation2
+            }
+          );
+
+
+        if (!normalized) {
+          return;
+        }
+
+
+        selectionMap.set(
+          option,
+          normalized
+        );
+
+      }
+    );
+
+
+    /* =====================================================
+       TURN MAP BACK INTO SAVED ARRAY
+       ===================================================== */
+
+    const selections =
+      Array.from(
+        selectionMap.values()
+      );
+
+
     const updatedAt =
       new Date()
         .toISOString();
@@ -172,11 +397,16 @@ export default async function handler(
     };
 
 
+    /* =====================================================
+       SAVE MERGED LOOKBOOK
+       ===================================================== */
+
     await store.setJSON(
       key,
       updatedLookbook,
       {
         metadata: {
+
           id,
 
           name:
@@ -191,10 +421,17 @@ export default async function handler(
 
           active:
             current.active !== false
+
         }
       }
     );
 
+
+    /* =====================================================
+       RETURN CURRENT SERVER STATE
+
+       customer.html can use this for live-sync/version tracking.
+       ===================================================== */
 
     return jsonResponse(
       {
@@ -202,7 +439,9 @@ export default async function handler(
 
         id,
 
-        updatedAt
+        updatedAt,
+
+        selections
       }
     );
 
