@@ -857,7 +857,7 @@
     }
 
     .option.maybe::after {
-      content: "MAYBE";
+      content: "BOOKMARKED";
       position: absolute;
       right: 9px;
       top: 9px;
@@ -1755,6 +1755,120 @@
 
     }
 
+  
+    /* =========================================================
+       MAYBE + SELECT BUTTON LAYOUT TEST
+       ========================================================= */
+
+    .option-image {
+      position: relative;
+    }
+
+    .maybe-button {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 6;
+
+      border: 1px solid rgba(38,51,65,.18);
+      background: rgba(255,255,255,.94);
+      color: var(--dark);
+
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+      padding: 0;
+
+      font-size: 1.05rem;
+      font-weight: 900;
+      line-height: 1;
+
+      box-shadow: 0 3px 12px rgba(0,0,0,.10);
+      backdrop-filter: blur(4px);
+    }
+
+    .maybe-button:hover {
+      background: #fff8dd;
+      border-color: #d6bd68;
+    }
+
+    .maybe-button.active {
+      background: #efe7c8;
+      border-color: #a99759;
+      color: #51461f;
+    }
+
+    .option-controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 9px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .check-label {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+
+      min-height: 38px;
+      padding: 9px 12px;
+
+      border: 1px solid #cfd4d8;
+      border-radius: 8px;
+
+      background: #fff;
+      color: var(--dark);
+
+      font-size: 0.77rem;
+      font-weight: 820;
+
+      cursor: pointer;
+      transition:
+        background .16s ease,
+        border-color .16s ease,
+        box-shadow .16s ease,
+        transform .16s ease;
+    }
+
+    .check-label:hover {
+      background: #f7f7f6;
+      border-color: #aeb5bb;
+      transform: translateY(-1px);
+    }
+
+    .option.selected .check-label {
+      background: var(--yellow);
+      border-color: #ddb02d;
+      color: #272727;
+      box-shadow: 0 4px 11px rgba(243,198,63,.18);
+    }
+
+    .option-checkbox {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 1px;
+      height: 1px;
+    }
+
+    .option.selected .check-label span::before {
+      content: "✓ ";
+      font-weight: 900;
+    }
+
+    @media (max-width: 500px) {
+      .maybe-button {
+        top: 8px;
+        left: 8px;
+      }
+    }
+
   </style>
 </head>
 
@@ -1813,7 +1927,7 @@
           </div>
 
           <div id="maybe-bar" class="maybe-total">
-            ☆ 0 Maybes · $0.00
+            ⚑ 0 Bookmarks · $0.00
           </div>
 
           <div
@@ -1950,8 +2064,8 @@
           >
             <option value="all">All Options</option>
             <option value="selected">Selected Options</option>
-            <option value="maybe">Maybe Options</option>
-            <option value="selected-maybe">Selected + Maybe</option>
+            <option value="maybe">Bookmarked Options</option>
+            <option value="selected-maybe">Selected + Bookmarked</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to Low</option>
           </select>
@@ -2445,6 +2559,8 @@
 
           if (!saved) {
             if (checkbox) checkbox.checked = false;
+            const checkText = card.querySelector(".check-label span");
+            if (checkText) checkText.textContent = "SELECT OPTION";
             if (qty) qty.value = 1;
             if (comment) comment.value = "";
             if (primary) {
@@ -2457,12 +2573,16 @@
           }
 
           if (checkbox) checkbox.checked = true;
+          const checkText = card.querySelector(".check-label span");
+          if (checkText) checkText.textContent = "SELECTED";
           card.classList.remove("maybe");
           const maybeButton = card.querySelector(".maybe-button");
           if (maybeButton) {
             maybeButton.classList.remove("active");
-            maybeButton.textContent = "☆ Maybe";
+            maybeButton.textContent = "⚑";
             maybeButton.setAttribute("aria-pressed", "false");
+            maybeButton.setAttribute("aria-label", "Bookmark option");
+            maybeButton.title = "Bookmark";
           }
           if (qty) qty.value = Math.max(1, parseInt(saved?.qty || 1));
           if (comment) comment.value = saved?.comment || "";
@@ -2794,6 +2914,13 @@
           if (checkbox) {
 
             checkbox.checked = true;
+
+            const checkText =
+              card.querySelector(".check-label span");
+
+            if (checkText) {
+              checkText.textContent = "SELECTED";
+            }
 
           }
 
@@ -5185,6 +5312,29 @@
         "option-image";
 
 
+      const maybeButton =
+        document.createElement(
+          "button"
+        );
+
+      maybeButton.type = "button";
+      maybeButton.className = "maybe-button";
+      maybeButton.textContent = "⚑";
+      maybeButton.setAttribute(
+        "aria-pressed",
+        "false"
+      );
+      maybeButton.setAttribute(
+        "aria-label",
+        "Bookmark option"
+      );
+      maybeButton.title = "Bookmark";
+
+      imageArea.appendChild(
+        maybeButton
+      );
+
+
       const image =
         new Image();
 
@@ -5665,20 +5815,6 @@
 
 
 
-      const maybeButton =
-        document.createElement(
-          "button"
-        );
-
-      maybeButton.type = "button";
-      maybeButton.className = "maybe-button";
-      maybeButton.textContent = "☆ Maybe";
-      maybeButton.setAttribute(
-        "aria-pressed",
-        "false"
-      );
-
-
       const checkLabel =
         document.createElement(
           "label"
@@ -5726,7 +5862,7 @@
 
 
       checkText.textContent =
-        "Select Item";
+        "SELECT OPTION";
 
 
       checkLabel.appendChild(
@@ -5781,10 +5917,6 @@
       );
 
 
-
-      controls.appendChild(
-        maybeButton
-      );
 
       controls.appendChild(
         checkLabel
@@ -5864,15 +5996,19 @@
 
             card.classList.add("maybe");
             maybeButton.classList.add("active");
-            maybeButton.textContent = "★ Maybe";
+            maybeButton.textContent = "⚑";
             maybeButton.setAttribute("aria-pressed", "true");
+            maybeButton.setAttribute("aria-label", "Remove bookmark");
+            maybeButton.title = "Bookmarked";
 
           } else {
 
             card.classList.remove("maybe");
             maybeButton.classList.remove("active");
-            maybeButton.textContent = "☆ Maybe";
+            maybeButton.textContent = "⚑";
             maybeButton.setAttribute("aria-pressed", "false");
+            maybeButton.setAttribute("aria-label", "Bookmark option");
+            maybeButton.title = "Bookmark";
 
           }
 
@@ -5892,11 +6028,18 @@
             checkbox.checked
           );
 
+          checkText.textContent =
+            checkbox.checked
+              ? "SELECTED"
+              : "SELECT OPTION";
+
           if (checkbox.checked) {
             card.classList.remove("maybe");
             maybeButton.classList.remove("active");
-            maybeButton.textContent = "☆ Maybe";
+            maybeButton.textContent = "⚑";
             maybeButton.setAttribute("aria-pressed", "false");
+            maybeButton.setAttribute("aria-label", "Bookmark option");
+            maybeButton.title = "Bookmark";
           }
 
 
@@ -6091,7 +6234,7 @@
 
       if (maybeBar) {
         maybeBar.textContent =
-          `☆ ${maybeCount} ${maybeCount === 1 ? "Maybe" : "Maybes"} · ${
+          `☆ ${maybeCount} ${maybeCount === 1 ? "Bookmark" : "Bookmarks"} · ${
             maybeTotal.toLocaleString(
               undefined,
               {
