@@ -4,14 +4,11 @@ import { getStore } from "@netlify/blobs";
 /* =========================================================
    AUSTIN STUDIO LOOKBOOK
    SAVE CUSTOMER SELECTIONS
-   OPTION-LEVEL MERGE / LIVE SYNC VERSION
+   SAFE LIVE-SYNC / OPTION-LEVEL MERGE
    ========================================================= */
 
 
-function jsonResponse(
-  data,
-  status = 200
-) {
+function jsonResponse(data, status = 200) {
 
   return new Response(
     JSON.stringify(data),
@@ -27,9 +24,7 @@ function jsonResponse(
 }
 
 
-function validLookbookId(
-  value
-) {
+function validLookbookId(value) {
 
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
     .test(
@@ -40,12 +35,10 @@ function validLookbookId(
 
 
 /* =========================================================
-   NORMALIZE ONE OPTION RECORD
+   NORMALIZE ONE SELECTION
    ========================================================= */
 
-function normalizeSelection(
-  selection
-) {
+function normalizeSelection(selection) {
 
   if (
     !selection ||
@@ -103,9 +96,7 @@ function normalizeSelection(
    MAIN HANDLER
    ========================================================= */
 
-export default async function handler(
-  request
-) {
+export default async function handler(request) {
 
   if (
     request.method !== "POST"
@@ -135,23 +126,12 @@ export default async function handler(
       .trim();
 
 
-    /*
-      NEW FORMAT:
+    const sessionId =
+      String(
+        payload?.sessionId || ""
+      )
+      .trim();
 
-      changes: [
-        {
-          option: "2001428",
-          selected: true,
-          qty: 1,
-          comment: "",
-          variation1: "Black Fox",
-          variation2: "Alabaster"
-        }
-      ]
-
-      Only options included in "changes" are modified.
-      Everything else already saved remains untouched.
-    */
 
     const changes =
       Array.isArray(
@@ -160,6 +140,10 @@ export default async function handler(
         ? payload.changes
         : [];
 
+
+    /* =====================================================
+       VALIDATE LOOKBOOK ID
+       ===================================================== */
 
     if (
       !validLookbookId(id)
@@ -176,6 +160,10 @@ export default async function handler(
     }
 
 
+    /* =====================================================
+       REQUIRE AT LEAST ONE CHANGE
+       ===================================================== */
+
     if (
       changes.length === 0
     ) {
@@ -191,6 +179,10 @@ export default async function handler(
     }
 
 
+    /* =====================================================
+       OPEN NETLIFY BLOB STORE
+       ===================================================== */
+
     const store =
       getStore({
         name:
@@ -204,6 +196,10 @@ export default async function handler(
     const key =
       `lookbooks/${id}`;
 
+
+    /* =====================================================
+       GET CURRENT SERVER VERSION
+       ===================================================== */
 
     const current =
       await store.get(
@@ -252,9 +248,17 @@ export default async function handler(
 
 
     /* =====================================================
-       BUILD CURRENT SELECTION MAP
+       BUILD MAP OF CURRENT SAVED OPTIONS
 
-       Option number is the unique key.
+       OPTION NUMBER = UNIQUE KEY
+
+       This is the important part.
+
+       We are NOT replacing the entire selections array.
+
+       We start with everything currently saved on the
+       server and only modify the options included in this
+       request.
        ===================================================== */
 
     const selectionMap =
@@ -293,15 +297,16 @@ export default async function handler(
 
 
     /* =====================================================
-       MERGE ONLY THE OPTIONS THAT CHANGED
+       MERGE THIS SESSION'S CHANGES
 
        selected: true
-         = add/update this option
+       Add or update that option.
 
        selected: false
-         = remove this option
+       Remove that option.
 
-       Options NOT included in this request remain untouched.
+       Anything NOT included in this request stays exactly
+       as it currently exists on the server.
        ===================================================== */
 
     changes.forEach(
@@ -327,6 +332,10 @@ export default async function handler(
         }
 
 
+        /* -----------------------------------------
+           OPTION WAS UNSELECTED
+           ----------------------------------------- */
+
         if (
           change.selected === false
         ) {
@@ -338,6 +347,10 @@ export default async function handler(
           return;
         }
 
+
+        /* -----------------------------------------
+           OPTION WAS SELECTED / UPDATED
+           ----------------------------------------- */
 
         const normalized =
           normalizeSelection(
@@ -374,7 +387,7 @@ export default async function handler(
 
 
     /* =====================================================
-       TURN MAP BACK INTO SAVED ARRAY
+       BUILD FINAL SELECTION ARRAY
        ===================================================== */
 
     const selections =
@@ -388,12 +401,25 @@ export default async function handler(
         .toISOString();
 
 
+    /* =====================================================
+       STORE SESSION INFORMATION
+
+       This allows customer.html to recognize which open
+       browser/tab made the most recent save.
+
+       It does NOT identify the customer personally.
+       It is simply a temporary random browser-session ID.
+       ===================================================== */
+
     const updatedLookbook = {
       ...current,
 
       selections,
 
-      updatedAt
+      updatedAt,
+
+      lastSessionId:
+        sessionId || null
     };
 
 
@@ -420,7 +446,10 @@ export default async function handler(
           updatedAt,
 
           active:
-            current.active !== false
+            current.active !== false,
+
+          lastSessionId:
+            sessionId || ""
 
         }
       }
@@ -428,9 +457,17 @@ export default async function handler(
 
 
     /* =====================================================
-       RETURN CURRENT SERVER STATE
+       RETURN AUTHORITATIVE SERVER STATE
 
-       customer.html can use this for live-sync/version tracking.
+       The browser receives:
+
+       - confirmation
+       - timestamp
+       - session that made this save
+       - complete current selections
+
+       This helps the live-sync system reconcile multiple
+       open browsers safely.
        ===================================================== */
 
     return jsonResponse(
@@ -440,6 +477,9 @@ export default async function handler(
         id,
 
         updatedAt,
+
+        lastSessionId:
+          sessionId || null,
 
         selections
       }
