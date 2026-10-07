@@ -1931,6 +1931,43 @@
       background:#fff;border:1px solid var(--line);border-radius:11px;overflow:hidden;
     }
 
+
+    /* Optional sidebar: collapse it to use the full-width Lookbook. */
+    .lookbook-layout.sidebar-collapsed {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .lookbook-layout.sidebar-collapsed > .category-sidebar {
+      display: none;
+    }
+    .category-main-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .category-main-heading #category-view-title {
+      margin: 0;
+    }
+    .sidebar-toggle {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #d5d9dc;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--dark);
+      font-size: 1.3rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .sidebar-toggle:hover { background: var(--yellow-soft); }
+    @media (max-width: 900px) {
+      .lookbook-layout.sidebar-collapsed { grid-template-columns: 1fr; }
+    }
+
   </style>
 </head>
 
@@ -2208,7 +2245,12 @@
         <nav id="category-nav"></nav>
       </aside>
       <section class="category-main">
-        <div id="category-view-title">Options</div>
+        <div class="category-main-heading">
+          <button type="button" id="sidebar-toggle" class="sidebar-toggle"
+                  onclick="toggleCategorySidebar()" aria-label="Hide category sidebar"
+                  aria-expanded="true" title="Hide category sidebar">‹</button>
+          <div id="category-view-title">Options</div>
+        </div>
         <div id="lookbook-container">
           <div class="loading-card">Loading Lookbook...</div>
         </div>
@@ -5060,6 +5102,17 @@
     /* =========================================================
        RENDER LOOKBOOK
        ========================================================= */
+
+    function toggleCategorySidebar() {
+      const layout = document.querySelector(".lookbook-layout");
+      const button = document.getElementById("sidebar-toggle");
+      if (!layout || !button) return;
+      const collapsed = layout.classList.toggle("sidebar-collapsed");
+      button.textContent = collapsed ? "›" : "‹";
+      button.setAttribute("aria-expanded", String(!collapsed));
+      button.setAttribute("aria-label", collapsed ? "Show category sidebar" : "Hide category sidebar");
+      button.title = collapsed ? "Show category sidebar" : "Hide category sidebar";
+    }
 
     function buildCategorySidebar(grouped) {
       const nav = document.getElementById("category-nav");
