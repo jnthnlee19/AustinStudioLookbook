@@ -1874,11 +1874,14 @@
     .lookbook-layout { display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;align-items:start }
     .category-sidebar { position:sticky;top:92px;background:#fff;border:1px solid var(--line);border-radius:12px;max-height:calc(100vh - 110px);overflow:auto }
     .category-sidebar-heading { padding:15px;font-weight:800;font-size:.8rem;border-bottom:1px solid var(--line) }
+    .category-sidebar-actions { display:flex;gap:6px;margin-top:10px }
+    .category-sidebar-actions button { flex:1;border:1px solid #dfe2e5;border-radius:6px;background:#fafaf9;padding:7px 4px;font-size:.7rem;font-weight:700;color:var(--dark) }
+    .category-sidebar-actions button:hover { background:var(--yellow-soft) }
     #category-nav { padding:7px;display:grid;gap:4px }
     .category-nav-button { width:100%;background:transparent;border:0;border-radius:8px;padding:10px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:9px;color:var(--dark);font-weight:700;font-size:.78rem }
     .category-nav-button:hover { background:#f5f5f3 }
     .category-nav-button.active { background:var(--yellow-soft);box-shadow:inset 3px 0 var(--yellow) }
-    .category-nav-button .nav-price { font-size:.72rem;color:#6d737b;white-space:nowrap }
+
     .category-main { min-width:0 }
     #category-view-title { font-size:1.28rem;font-weight:800;color:var(--dark);margin:2px 0 12px }
     #lookbook-container > details.category > summary { display:none }
@@ -2196,7 +2199,12 @@
 
     <div class="lookbook-layout">
       <aside class="category-sidebar" aria-label="Option categories">
-        <div class="category-sidebar-heading">CATEGORIES</div>
+        <div class="category-sidebar-heading">CATEGORIES
+          <div class="category-sidebar-actions">
+            <button type="button" id="expand-sidebar-categories">Expand All</button>
+            <button type="button" id="collapse-sidebar-categories">Minimize All</button>
+          </div>
+        </div>
         <nav id="category-nav"></nav>
       </aside>
       <section class="category-main">
@@ -5069,16 +5077,12 @@
         button.dataset.category = name;
         const label = document.createElement("span");
         label.textContent = name;
-        const price = document.createElement("span");
-        price.className = "nav-price";
-        price.textContent = "$0";
         const chevron = document.createElement("span");
         chevron.className = "nav-chevron";
         chevron.textContent = "›";
-        button.append(label, price, chevron);
+        button.append(label, chevron);
         button.addEventListener("click", () => {
           const wasExpanded = group.classList.contains("expanded");
-          document.querySelectorAll("#category-nav .category-nav-group").forEach(item => item.classList.remove("expanded"));
           group.classList.toggle("expanded", !wasExpanded);
           chevron.textContent = group.classList.contains("expanded") ? "⌄" : "›";
           selectCategory(name);
@@ -5100,7 +5104,17 @@
         group.appendChild(subnav);
         nav.appendChild(group);
       });
+      document.getElementById("expand-sidebar-categories")?.addEventListener("click", () => setSidebarExpanded(true));
+      document.getElementById("collapse-sidebar-categories")?.addEventListener("click", () => setSidebarExpanded(false));
       selectCategory(activeCategoryName, false);
+    }
+
+    function setSidebarExpanded(expanded) {
+      document.querySelectorAll("#category-nav .category-nav-group").forEach(group => {
+        group.classList.toggle("expanded", expanded);
+        const chevron = group.querySelector(".nav-chevron");
+        if (chevron) chevron.textContent = expanded ? "⌄" : "›";
+      });
     }
 
     function selectCategory(name, scroll = true) {
@@ -5149,19 +5163,7 @@
     }
 
     function updateCategoryTotals() {
-      document.querySelectorAll("#lookbook-container > details.category").forEach(category => {
-        let total = 0;
-        category.querySelectorAll(".option").forEach(card => {
-          const check = card.querySelector(".option-checkbox");
-          if (!check?.checked) return;
-          const qty = Math.max(1, parseInt(card.querySelector(".option-qty")?.value || 1) || 1);
-          total += (Number(check.dataset.price) || 0) * qty;
-        });
-        const button = Array.from(document.querySelectorAll("#category-nav .category-nav-button"))
-          .find(item => item.dataset.category === category.dataset.category);
-        const label = button?.querySelector(".nav-price");
-        if (label) label.textContent = total.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
-      });
+      // Category pricing intentionally hidden; selected total remains in header.
     }
 
     function renderLookbook(grouped) {
