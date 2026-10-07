@@ -2430,6 +2430,7 @@
       return {
         option: String(optionNumber),
         selected: Boolean(checkbox?.checked),
+        bookmarked: card.classList.contains("maybe"),
         qty,
         comment,
         variation1,
@@ -2556,10 +2557,11 @@
           const comment = card.querySelector(".option-comment");
           const primary = card.querySelector(".variation-primary");
           const secondary = card.querySelector(".variation-secondary");
+          const checkText = card.querySelector(".check-label span");
+          const maybeButton = card.querySelector(".maybe-button");
 
           if (!saved) {
             if (checkbox) checkbox.checked = false;
-            const checkText = card.querySelector(".check-label span");
             if (checkText) checkText.textContent = "SELECT OPTION";
             if (qty) qty.value = 1;
             if (comment) comment.value = "";
@@ -2568,22 +2570,50 @@
               primary.dispatchEvent(new Event("change"));
             }
             if (secondary) secondary.value = "";
-            card.classList.remove("selected");
+
+            card.classList.remove("selected", "maybe");
+
+            if (maybeButton) {
+              maybeButton.classList.remove("active");
+              maybeButton.textContent = "⚑";
+              maybeButton.setAttribute("aria-pressed", "false");
+              maybeButton.setAttribute("aria-label", "Bookmark option");
+              maybeButton.title = "Bookmark";
+            }
             return;
           }
 
-          if (checkbox) checkbox.checked = true;
-          const checkText = card.querySelector(".check-label span");
-          if (checkText) checkText.textContent = "SELECTED";
-          card.classList.remove("maybe");
-          const maybeButton = card.querySelector(".maybe-button");
-          if (maybeButton) {
-            maybeButton.classList.remove("active");
-            maybeButton.textContent = "⚑";
-            maybeButton.setAttribute("aria-pressed", "false");
-            maybeButton.setAttribute("aria-label", "Bookmark option");
-            maybeButton.title = "Bookmark";
+          // Old saved records did not contain "selected", so preserve them as selections.
+          const isSelected =
+            saved.selected === undefined
+              ? true
+              : saved.selected === true;
+
+          const isBookmarked =
+            saved.bookmarked === true;
+
+          if (checkbox) checkbox.checked = isSelected;
+          if (checkText) {
+            checkText.textContent = isSelected ? "SELECTED" : "SELECT OPTION";
           }
+
+          card.classList.toggle("selected", isSelected);
+          card.classList.toggle("maybe", isBookmarked);
+
+          if (maybeButton) {
+            maybeButton.classList.toggle("active", isBookmarked);
+            maybeButton.textContent = "⚑";
+            maybeButton.setAttribute(
+              "aria-pressed",
+              isBookmarked ? "true" : "false"
+            );
+            maybeButton.setAttribute(
+              "aria-label",
+              isBookmarked ? "Remove bookmark" : "Bookmark option"
+            );
+            maybeButton.title = isBookmarked ? "Bookmarked" : "Bookmark";
+          }
+
           if (qty) qty.value = Math.max(1, parseInt(saved?.qty || 1));
           if (comment) comment.value = saved?.comment || "";
 
@@ -2593,7 +2623,6 @@
           }
 
           if (secondary) secondary.value = saved?.variation2 || "";
-          card.classList.add("selected");
         });
 
         updateTotal();
@@ -2602,7 +2631,6 @@
         applyingRemoteUpdate = false;
       }
     }
-
 
     async function pollLiveUpdates() {
       if (
@@ -2865,7 +2893,6 @@
         return;
       }
 
-
       selections.forEach(
         saved => {
 
@@ -2873,7 +2900,6 @@
             String(
               saved?.option ?? ""
             );
-
 
           const card =
             Array.from(
@@ -2887,46 +2913,92 @@
                 optionNumber
             );
 
-
           if (!card) {
             return;
           }
-
 
           const checkbox =
             card.querySelector(
               ".option-checkbox"
             );
 
+          const checkText =
+            card.querySelector(
+              ".check-label span"
+            );
+
+          const maybeButton =
+            card.querySelector(
+              ".maybe-button"
+            );
 
           const qty =
             card.querySelector(
               ".option-qty"
             );
 
-
           const comment =
             card.querySelector(
               ".option-comment"
             );
 
+          // Backward compatibility: old records had no selected property.
+          const isSelected =
+            saved.selected === undefined
+              ? true
+              : saved.selected === true;
+
+          const isBookmarked =
+            saved.bookmarked === true;
 
           if (checkbox) {
-
-            checkbox.checked = true;
-
-            const checkText =
-              card.querySelector(".check-label span");
-
-            if (checkText) {
-              checkText.textContent = "SELECTED";
-            }
-
+            checkbox.checked = isSelected;
           }
 
+          if (checkText) {
+            checkText.textContent =
+              isSelected
+                ? "SELECTED"
+                : "SELECT OPTION";
+          }
+
+          card.classList.toggle(
+            "selected",
+            isSelected
+          );
+
+          card.classList.toggle(
+            "maybe",
+            isBookmarked
+          );
+
+          if (maybeButton) {
+            maybeButton.classList.toggle(
+              "active",
+              isBookmarked
+            );
+
+            maybeButton.textContent = "⚑";
+
+            maybeButton.setAttribute(
+              "aria-pressed",
+              isBookmarked ? "true" : "false"
+            );
+
+            maybeButton.setAttribute(
+              "aria-label",
+              isBookmarked
+                ? "Remove bookmark"
+                : "Bookmark option"
+            );
+
+            maybeButton.title =
+              isBookmarked
+                ? "Bookmarked"
+                : "Bookmark";
+          }
 
           if (qty) {
-
             qty.value =
               Math.max(
                 1,
@@ -2934,17 +3006,12 @@
                   saved?.qty || 1
                 )
               );
-
           }
-
 
           if (comment) {
-
             comment.value =
               saved?.comment || "";
-
           }
-
 
           const primaryVariation =
             card.querySelector(
@@ -2956,32 +3023,28 @@
               ".variation-secondary"
             );
 
-          if (primaryVariation && saved?.variation1) {
-            primaryVariation.value = saved.variation1;
+          if (primaryVariation) {
+            primaryVariation.value =
+              saved?.variation1 || "";
+
             primaryVariation.dispatchEvent(
               new Event("change")
             );
           }
 
-          if (secondaryVariation && saved?.variation2) {
-            secondaryVariation.value = saved.variation2;
+          if (secondaryVariation) {
+            secondaryVariation.value =
+              saved?.variation2 || "";
           }
-
-
-          card.classList.add(
-            "selected"
-          );
 
         }
       );
-
 
       updateTotal();
 
       captureOriginalLookbookHTML();
 
-}
-
+    }
 
     function showDisabledLookbook() {
 
@@ -6015,6 +6078,10 @@
           updateTotal();
           applyViewFilter();
 
+          markOptionChanged(
+            maybeButton
+          );
+
         }
       );
 
@@ -6878,7 +6945,6 @@ function filterOptions() {
 
       const selections = [];
 
-
       document
         .querySelectorAll(
           ".option"
@@ -6886,22 +6952,27 @@ function filterOptions() {
         .forEach(
           card => {
 
-
             const checkbox =
               card.querySelector(
                 ".option-checkbox"
               );
 
+            const selected =
+              Boolean(
+                checkbox?.checked
+              );
+
+            const bookmarked =
+              card.classList.contains(
+                "maybe"
+              );
 
             if (
-              !checkbox ||
-              !checkbox.checked
+              !selected &&
+              !bookmarked
             ) {
-
               return;
-
             }
-
 
             const qty =
               Math.max(
@@ -6915,7 +6986,6 @@ function filterOptions() {
                 )
               );
 
-
             const comment =
               card
                 .querySelector(
@@ -6924,6 +6994,7 @@ function filterOptions() {
                 ?.value
                 ?.trim()
                 || "";
+
             const variation1 =
               card
                 .querySelector(".variation-primary")
@@ -6938,11 +7009,14 @@ function filterOptions() {
                 ?.trim()
                 || "";
 
-
             selections.push({
 
               option:
                 card.dataset.option,
+
+              selected,
+
+              bookmarked,
 
               qty,
 
@@ -6957,12 +7031,9 @@ function filterOptions() {
           }
         );
 
-
       return selections;
 
     }
-
-
 
     /* =========================================================
        CREATE CUSTOMER LOOKBOOK
@@ -7544,6 +7615,16 @@ function filterOptions() {
               font-size:12px;
             }
 
+            .variation {
+              margin-top:6px;
+              color:#3f464c;
+              font-size:12px;
+            }
+
+            .variation + .variation {
+              margin-top:3px;
+            }
+
             .amount {
               text-align:right;
               white-space:nowrap;
@@ -7737,6 +7818,53 @@ function filterOptions() {
                   || "";
 
 
+                const primaryVariation =
+                  card.querySelector(
+                    ".variation-primary"
+                  );
+
+                const secondaryVariation =
+                  card.querySelector(
+                    ".variation-secondary"
+                  );
+
+                const primaryValue =
+                  primaryVariation
+                    ?.value
+                    ?.trim()
+                    || "";
+
+                const secondaryValue =
+                  secondaryVariation
+                    ?.value
+                    ?.trim()
+                    || "";
+
+                const primaryLabel =
+                  primaryVariation
+                    ?.closest(
+                      ".variation-field"
+                    )
+                    ?.querySelector(
+                      "label"
+                    )
+                    ?.textContent
+                    ?.trim()
+                    || "Option";
+
+                const secondaryLabel =
+                  secondaryVariation
+                    ?.closest(
+                      ".variation-field"
+                    )
+                    ?.querySelector(
+                      "label"
+                    )
+                    ?.textContent
+                    ?.trim()
+                    || "Option";
+
+
                 html += `
 
                   <div class="option">
@@ -7797,6 +7925,38 @@ function filterOptions() {
                               )
                             }
 
+                          </div>
+
+                        `
+                        : ""
+                      }
+
+
+                      ${
+                        primaryValue
+                        ? `
+
+                          <div class="variation">
+                            <strong>
+                              ${escapeHTML(primaryLabel)}:
+                            </strong>
+                            ${escapeHTML(primaryValue)}
+                          </div>
+
+                        `
+                        : ""
+                      }
+
+
+                      ${
+                        secondaryValue
+                        ? `
+
+                          <div class="variation">
+                            <strong>
+                              ${escapeHTML(secondaryLabel)}:
+                            </strong>
+                            ${escapeHTML(secondaryValue)}
                           </div>
 
                         `
