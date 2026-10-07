@@ -1915,7 +1915,9 @@
       .category-main .option-container { grid-template-columns: 1fr; }
     }
     .category-nav-group { display:grid;gap:1px }
-    .category-subnav { display:grid;gap:1px;padding:0 0 6px 14px }
+    .category-subnav { display:none;gap:1px;padding:0 0 6px 14px }
+    .category-nav-group.expanded > .category-subnav { display:grid }
+    .category-nav-button .nav-chevron { color:#8b9095;font-size:1rem;margin-left:2px }
     .category-subnav-button { text-align:left;border:0;background:transparent;border-radius:6px;padding:7px 9px;font-size:.74rem;color:#626971;line-height:1.3 }
     .category-subnav-button:hover { background:#f5f5f3;color:var(--dark) }
     .category-subnav-button.active { background:#f5f0dc;color:#4c411e;font-weight:750 }
@@ -2134,9 +2136,10 @@
 
         <button
           class="btn btn-light"
+          id="show-all-categories-button"
           onclick="toggleAllSections()"
         >
-          Show All / Category
+          View All Options
         </button>
 
 
@@ -5068,8 +5071,17 @@
         const price = document.createElement("span");
         price.className = "nav-price";
         price.textContent = "$0";
-        button.append(label, price);
-        button.addEventListener("click", () => selectCategory(name));
+        const chevron = document.createElement("span");
+        chevron.className = "nav-chevron";
+        chevron.textContent = "›";
+        button.append(label, price, chevron);
+        button.addEventListener("click", () => {
+          const wasExpanded = group.classList.contains("expanded");
+          document.querySelectorAll("#category-nav .category-nav-group").forEach(item => item.classList.remove("expanded"));
+          group.classList.toggle("expanded", !wasExpanded);
+          chevron.textContent = group.classList.contains("expanded") ? "⌄" : "›";
+          selectCategory(name);
+        });
         group.appendChild(button);
 
         const subnav = document.createElement("div");
@@ -5107,12 +5119,16 @@
       });
       const title = document.getElementById("category-view-title");
       if (title) title.textContent = name;
+      updateShowAllButton();
       applyViewFilter();
       if (scroll) document.querySelector(".category-main")?.scrollIntoView({block:"start",behavior:"smooth"});
     }
 
     function selectSubcategory(name, subname) {
       selectCategory(name, false);
+      const group = Array.from(document.querySelectorAll("#category-nav .category-nav-group"))
+        .find(item => item.querySelector(".category-nav-button")?.dataset.category === name);
+      group?.classList.add("expanded");
       const category = Array.from(document.querySelectorAll("#lookbook-container > details.category"))
         .find(item => item.dataset.category === name);
       const subcategory = Array.from(category?.querySelectorAll("details.subcategory") || [])
@@ -6476,6 +6492,11 @@
        EXPAND / COLLAPSE
        ========================================================= */
 
+    function updateShowAllButton() {
+      const button = document.getElementById("show-all-categories-button");
+      if (button) button.textContent = showAllCategories ? "Back to Category" : "View All Options";
+    }
+
     function toggleAllSections() {
       showAllCategories = !showAllCategories;
       const layout = document.querySelector(".lookbook-layout");
@@ -6485,6 +6506,7 @@
       if (showAllCategories) {
         document.querySelectorAll("#lookbook-container details").forEach(item => { item.open = true; });
       }
+      updateShowAllButton();
       applyViewFilter();
     }
 
