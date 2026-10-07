@@ -1869,6 +1869,31 @@
       }
     }
 
+
+    /* Category sidebar - presentation only; saved workbook/prices are unchanged */
+    .lookbook-layout { display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;align-items:start }
+    .category-sidebar { position:sticky;top:92px;background:#fff;border:1px solid var(--line);border-radius:12px;max-height:calc(100vh - 110px);overflow:auto }
+    .category-sidebar-heading { padding:15px;font-weight:800;font-size:.8rem;border-bottom:1px solid var(--line) }
+    #category-nav { padding:7px;display:grid;gap:4px }
+    .category-nav-button { width:100%;background:transparent;border:0;border-radius:8px;padding:10px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:9px;color:var(--dark);font-weight:700;font-size:.78rem }
+    .category-nav-button:hover { background:#f5f5f3 }
+    .category-nav-button.active { background:var(--yellow-soft);box-shadow:inset 3px 0 var(--yellow) }
+    .category-nav-button .nav-price { font-size:.72rem;color:#6d737b;white-space:nowrap }
+    .category-main { min-width:0 }
+    #category-view-title { font-size:1.28rem;font-weight:800;color:var(--dark);margin:2px 0 12px }
+    #lookbook-container > details.category > summary { display:none }
+    #lookbook-container > details.category { border:0;box-shadow:none;overflow:visible;background:transparent }
+    #lookbook-container > details.category > .category-content { padding:0 }
+    #lookbook-container details.subcategory { background:white;border:1px solid var(--line);border-radius:10px;margin:0 0 12px;overflow:hidden }
+    #lookbook-container details.subcategory > summary { margin:0;border-radius:0 }
+    #lookbook-container .option-container { padding:13px }
+    @media(max-width:900px) {
+      .lookbook-layout { grid-template-columns:1fr }
+      .category-sidebar { position:static;max-height:none }
+      #category-nav { grid-template-columns:repeat(2,minmax(0,1fr)) }
+    }
+    @media(max-width:500px) { #category-nav { grid-template-columns:1fr } }
+
   </style>
 </head>
 
@@ -2134,22 +2159,19 @@
          LOOKBOOK CONTENT
          ======================================================= -->
 
-    <div id="lookbook-container">
-
-      <div class="loading-card">
-        Loading Lookbook...
-      </div>
-
+    <div class="lookbook-layout">
+      <aside class="category-sidebar" aria-label="Option categories">
+        <div class="category-sidebar-heading">CATEGORIES</div>
+        <nav id="category-nav"></nav>
+      </aside>
+      <section class="category-main">
+        <div id="category-view-title">Options</div>
+        <div id="lookbook-container">
+          <div class="loading-card">Loading Lookbook...</div>
+        </div>
+        <div class="no-results" id="no-results">No options match your search.</div>
+      </section>
     </div>
-
-
-    <div
-      class="no-results"
-      id="no-results"
-    >
-      No options match your search.
-    </div>
-
 
   </main>
 
@@ -2336,6 +2358,7 @@
     let liveSyncInFlight = false;
     let lastSeenUpdatedAt = null;
     let applyingRemoteUpdate = false;
+    let activeCategoryName = null;
 
 
     function setAutosaveStatus(
@@ -4993,6 +5016,60 @@
        RENDER LOOKBOOK
        ========================================================= */
 
+    function buildCategorySidebar(grouped) {
+      const nav = document.getElementById("category-nav");
+      if (!nav) return;
+      nav.replaceChildren();
+      const names = Object.keys(grouped);
+      if (!names.includes(activeCategoryName)) activeCategoryName = names[0] || null;
+      names.forEach(name => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "category-nav-button";
+        button.dataset.category = name;
+        const label = document.createElement("span");
+        label.textContent = name;
+        const price = document.createElement("span");
+        price.className = "nav-price";
+        price.textContent = "$0";
+        button.append(label, price);
+        button.addEventListener("click", () => selectCategory(name));
+        nav.appendChild(button);
+      });
+      selectCategory(activeCategoryName, false);
+    }
+
+    function selectCategory(name, scroll = true) {
+      if (!name) return;
+      activeCategoryName = name;
+      document.querySelectorAll("#category-nav .category-nav-button").forEach(button => {
+        button.classList.toggle("active", button.dataset.category === name);
+      });
+      document.querySelectorAll("#lookbook-container > details.category").forEach(category => {
+        if (category.dataset.category === name) category.open = true;
+      });
+      const title = document.getElementById("category-view-title");
+      if (title) title.textContent = name;
+      applyViewFilter();
+      if (scroll) document.querySelector(".category-main")?.scrollIntoView({block:"start",behavior:"smooth"});
+    }
+
+    function updateCategoryTotals() {
+      document.querySelectorAll("#lookbook-container > details.category").forEach(category => {
+        let total = 0;
+        category.querySelectorAll(".option").forEach(card => {
+          const check = card.querySelector(".option-checkbox");
+          if (!check?.checked) return;
+          const qty = Math.max(1, parseInt(card.querySelector(".option-qty")?.value || 1) || 1);
+          total += (Number(check.dataset.price) || 0) * qty;
+        });
+        const button = Array.from(document.querySelectorAll("#category-nav .category-nav-button"))
+          .find(item => item.dataset.category === category.dataset.category);
+        const label = button?.querySelector(".nav-price");
+        if (label) label.textContent = total.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+      });
+    }
+
     function renderLookbook(grouped) {
 
       const container =
@@ -5017,6 +5094,9 @@
 
             categoryDetails.className =
               "category";
+
+            categoryDetails.dataset.category = category;
+            categoryDetails.open = true;
 
 
             categoryDetails.dataset.search =
@@ -5063,6 +5143,8 @@
 
                 subDetails.className =
                   "subcategory";
+
+                subDetails.open = true;
 
 
                 const subSummary =
@@ -5130,6 +5212,7 @@
         );
 
 
+      buildCategorySidebar(grouped);
       updateTotal();
 
       captureOriginalLookbookHTML();
@@ -6313,6 +6396,8 @@
           }`;
       }
 
+      updateCategoryTotals();
+
     }
 
     /* =========================================================
@@ -6596,7 +6681,7 @@
                         categoryHasVisible =
                           true;
 
-                        visibleCount++;
+                        if (category.dataset.category === activeCategoryName) visibleCount++;
 
                       }
 
@@ -6633,7 +6718,7 @@
 
 
             category.style.display =
-              categoryHasVisible
+              categoryHasVisible && category.dataset.category === activeCategoryName
                 ? ""
                 : "none";
 
