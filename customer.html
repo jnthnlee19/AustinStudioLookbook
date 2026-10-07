@@ -1869,192 +1869,6 @@
       }
     }
 
-
-    /* =========================================================
-       CATEGORY SIDEBAR / SINGLE CATEGORY VIEW
-       ========================================================= */
-
-    .lookbook-layout {
-      display: grid;
-      grid-template-columns: 255px minmax(0, 1fr);
-      gap: 18px;
-      align-items: start;
-    }
-
-    .category-sidebar {
-      position: sticky;
-      top: 92px;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      box-shadow: 0 3px 12px rgba(31, 41, 55, 0.035);
-      overflow: hidden;
-    }
-
-    .category-sidebar-title {
-      padding: 14px 15px 11px;
-      color: var(--muted);
-      font-size: .69rem;
-      font-weight: 850;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--line);
-      background: #fafaf9;
-    }
-
-    #category-nav {
-      display: flex;
-      flex-direction: column;
-      padding: 6px;
-      gap: 3px;
-    }
-
-    .category-nav-button {
-      width: 100%;
-      border: 0;
-      background: transparent;
-      color: var(--dark);
-      border-radius: 8px;
-      padding: 10px 10px;
-      text-align: left;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .category-nav-button:hover {
-      background: #f5f5f3;
-    }
-
-    .category-nav-button.active {
-      background: var(--yellow-soft);
-      box-shadow: inset 3px 0 0 var(--yellow);
-    }
-
-    .category-nav-name {
-      min-width: 0;
-      font-size: .79rem;
-      font-weight: 760;
-      line-height: 1.25;
-    }
-
-    .category-nav-price {
-      color: var(--muted);
-      font-size: .69rem;
-      font-weight: 750;
-      white-space: nowrap;
-    }
-
-    .category-nav-button.active .category-nav-price {
-      color: #6f5a13;
-    }
-
-    .category-main {
-      min-width: 0;
-    }
-
-    .category-view-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 18px;
-      margin: 0 0 12px;
-      padding: 2px 2px 0;
-    }
-
-    .category-view-title {
-      color: var(--dark);
-      font-size: 1.28rem;
-      font-weight: 800;
-      letter-spacing: -.02em;
-    }
-
-    .category-view-subtotal {
-      color: var(--muted);
-      font-size: .76rem;
-      font-weight: 700;
-      text-align: right;
-      white-space: nowrap;
-    }
-
-    .category-view-subtotal strong {
-      color: var(--dark);
-      font-size: .92rem;
-    }
-
-    /* Category title is now supplied by the sidebar/main heading. */
-    #lookbook-container > details.category > summary {
-      display: none;
-    }
-
-    #lookbook-container > details.category {
-      display: none;
-      border: 0;
-      box-shadow: none;
-      background: transparent;
-      border-radius: 0;
-      overflow: visible;
-    }
-
-    #lookbook-container > details.category.sidebar-active-category {
-      display: block;
-    }
-
-    #lookbook-container > details.category > .category-content {
-      padding: 0;
-    }
-
-    #lookbook-container details.subcategory {
-      margin: 0 0 11px;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 11px;
-      overflow: hidden;
-    }
-
-    #lookbook-container details.subcategory > summary {
-      margin: 0;
-      border: 0;
-      border-radius: 0;
-      padding: 13px 15px;
-    }
-
-    #lookbook-container .option-container {
-      padding: 14px;
-    }
-
-    @media (max-width: 900px) {
-      .lookbook-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .category-sidebar {
-        position: static;
-      }
-
-      #category-nav {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 500px) {
-      #category-nav {
-        grid-template-columns: 1fr;
-      }
-
-      .category-view-heading {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .category-view-subtotal {
-        text-align: left;
-      }
-    }
-
   </style>
 </head>
 
@@ -2320,56 +2134,20 @@
          LOOKBOOK CONTENT
          ======================================================= -->
 
-    <div class="lookbook-layout">
+    <div id="lookbook-container">
 
-      <aside class="category-sidebar" aria-label="Option categories">
+      <div class="loading-card">
+        Loading Lookbook...
+      </div>
 
-        <div class="category-sidebar-title">
-          Categories
-        </div>
-
-        <nav id="category-nav"></nav>
-
-      </aside>
+    </div>
 
 
-      <section class="category-main">
-
-        <div class="category-view-heading">
-
-          <div
-            class="category-view-title"
-            id="category-view-title"
-          >
-            Options
-          </div>
-
-          <div
-            class="category-view-subtotal"
-            id="category-view-subtotal"
-          ></div>
-
-        </div>
-
-
-        <div id="lookbook-container">
-
-          <div class="loading-card">
-            Loading Lookbook...
-          </div>
-
-        </div>
-
-
-        <div
-          class="no-results"
-          id="no-results"
-        >
-          No options match your search.
-        </div>
-
-      </section>
-
+    <div
+      class="no-results"
+      id="no-results"
+    >
+      No options match your search.
     </div>
 
 
@@ -2558,7 +2336,6 @@
     let liveSyncInFlight = false;
     let lastSeenUpdatedAt = null;
     let applyingRemoteUpdate = false;
-    let activeCategoryName = null;
 
 
     function setAutosaveStatus(
@@ -3262,8 +3039,6 @@
 
         }
       );
-
-      buildCategorySidebar(grouped);
 
       updateTotal();
 
@@ -5243,12 +5018,6 @@
             categoryDetails.className =
               "category";
 
-            categoryDetails.dataset.category =
-              category;
-
-            categoryDetails.open =
-              true;
-
 
             categoryDetails.dataset.search =
               category.toLowerCase();
@@ -5294,9 +5063,6 @@
 
                 subDetails.className =
                   "subcategory";
-
-                subDetails.open =
-                  true;
 
 
                 const subSummary =
@@ -5371,346 +5137,6 @@
     }
 
 
-
-
-    /* =========================================================
-       CATEGORY SIDEBAR
-       ========================================================= */
-
-    function buildCategorySidebar(grouped) {
-
-      const nav =
-        document.getElementById(
-          "category-nav"
-        );
-
-      if (!nav) {
-        return;
-      }
-
-      nav.innerHTML = "";
-
-      const categories =
-        Object.keys(
-          grouped || {}
-        );
-
-      categories.forEach(
-        category => {
-
-          const button =
-            document.createElement(
-              "button"
-            );
-
-          button.type =
-            "button";
-
-          button.className =
-            "category-nav-button";
-
-          button.dataset.category =
-            category;
-
-          const name =
-            document.createElement(
-              "span"
-            );
-
-          name.className =
-            "category-nav-name";
-
-          name.textContent =
-            category;
-
-          const price =
-            document.createElement(
-              "span"
-            );
-
-          price.className =
-            "category-nav-price";
-
-          price.textContent =
-            "$0";
-
-          button.appendChild(
-            name
-          );
-
-          button.appendChild(
-            price
-          );
-
-          button.addEventListener(
-            "click",
-            function() {
-
-              selectCategory(
-                category
-              );
-
-            }
-          );
-
-          nav.appendChild(
-            button
-          );
-
-        }
-      );
-
-
-      if (
-        !activeCategoryName ||
-        !categories.includes(
-          activeCategoryName
-        )
-      ) {
-
-        activeCategoryName =
-          categories[0] || null;
-
-      }
-
-
-      selectCategory(
-        activeCategoryName,
-        false
-      );
-
-    }
-
-
-    function selectCategory(
-      categoryName,
-      scrollToTop = true
-    ) {
-
-      if (!categoryName) {
-        return;
-      }
-
-      activeCategoryName =
-        categoryName;
-
-
-      document
-        .querySelectorAll(
-          "#category-nav .category-nav-button"
-        )
-        .forEach(
-          button => {
-
-            button.classList.toggle(
-              "active",
-              button.dataset.category ===
-                categoryName
-            );
-
-          }
-        );
-
-
-      document
-        .querySelectorAll(
-          "#lookbook-container > details.category"
-        )
-        .forEach(
-          category => {
-
-            const isActive =
-              category.dataset.category ===
-                categoryName;
-
-            category.classList.toggle(
-              "sidebar-active-category",
-              isActive
-            );
-
-            if (isActive) {
-              category.open = true;
-            }
-
-          }
-        );
-
-
-      const title =
-        document.getElementById(
-          "category-view-title"
-        );
-
-      if (title) {
-        title.textContent =
-          categoryName;
-      }
-
-
-      applyViewFilter();
-
-      updateCategoryTotals();
-
-
-      if (scrollToTop) {
-
-        const main =
-          document.querySelector(
-            ".category-main"
-          );
-
-        main?.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-
-      }
-
-    }
-
-
-    function getCategorySelectedTotal(
-      category
-    ) {
-
-      let total = 0;
-
-      category
-        .querySelectorAll(
-          ".option"
-        )
-        .forEach(
-          card => {
-
-            const checkbox =
-              card.querySelector(
-                ".option-checkbox"
-              );
-
-            if (
-              !checkbox ||
-              !checkbox.checked
-            ) {
-              return;
-            }
-
-            const qty =
-              Math.max(
-                1,
-                parseInt(
-                  card.querySelector(
-                    ".option-qty"
-                  )?.value || 1
-                )
-              );
-
-            const price =
-              parseFloat(
-                checkbox.dataset.price || 0
-              ) || 0;
-
-            total +=
-              price * qty;
-
-          }
-        );
-
-      return total;
-
-    }
-
-
-    function updateCategoryTotals() {
-
-      const categories =
-        Array.from(
-          document.querySelectorAll(
-            "#lookbook-container > details.category"
-          )
-        );
-
-
-      categories.forEach(
-        category => {
-
-          const categoryName =
-            category.dataset.category || "";
-
-          const total =
-            getCategorySelectedTotal(
-              category
-            );
-
-          const price =
-            Array.from(
-              document.querySelectorAll(
-                "#category-nav .category-nav-button"
-              )
-            )
-            .find(
-              button =>
-                button.dataset.category ===
-                  categoryName
-            )
-            ?.querySelector(
-              ".category-nav-price"
-            );
-
-          if (price) {
-
-            price.textContent =
-              total.toLocaleString(
-                undefined,
-                {
-                  style: "currency",
-                  currency: "USD",
-                  maximumFractionDigits: 0
-                }
-              );
-
-          }
-
-        }
-      );
-
-
-      const activeCategory =
-        categories.find(
-          category =>
-            category.dataset.category ===
-              activeCategoryName
-        );
-
-      const subtotal =
-        document.getElementById(
-          "category-view-subtotal"
-        );
-
-      if (
-        subtotal &&
-        activeCategory
-      ) {
-
-        const total =
-          getCategorySelectedTotal(
-            activeCategory
-          );
-
-        subtotal.innerHTML =
-          `Selected in category: <strong>${
-            total.toLocaleString(
-              undefined,
-              {
-                style: "currency",
-                currency: "USD",
-                minimumFractionDigits: 2
-              }
-            )
-          }</strong>`;
-
-      }
-
-    }
 
 
     /* =========================================================
@@ -6887,8 +6313,6 @@
           }`;
       }
 
-      updateCategoryTotals();
-
     }
 
     /* =========================================================
@@ -7172,12 +6596,7 @@
                         categoryHasVisible =
                           true;
 
-                        if (
-                          category.dataset.category ===
-                            activeCategoryName
-                        ) {
-                          visibleCount++;
-                        }
+                        visibleCount++;
 
                       }
 
@@ -7213,13 +6632,8 @@
               );
 
 
-            const isActiveCategory =
-              category.dataset.category ===
-                activeCategoryName;
-
             category.style.display =
-              categoryHasVisible &&
-              isActiveCategory
+              categoryHasVisible
                 ? ""
                 : "none";
 
