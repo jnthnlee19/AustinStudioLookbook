@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 
 /* =========================================================
    AUSTIN STUDIO LOOKBOOK
-   SAVE CUSTOMER SELECTIONS
+   SAVE CUSTOMER SELECTIONS + BOOKMARKS
    SAFE LIVE-SYNC / OPTION-LEVEL MERGE
    ========================================================= */
 
@@ -35,7 +35,11 @@ function validLookbookId(value) {
 
 
 /* =========================================================
-   NORMALIZE ONE SELECTION
+   NORMALIZE ONE SAVED OPTION
+
+   Backward compatibility:
+   Older saved records did not have a "selected" property.
+   Those records were selections, so they remain selected.
    ========================================================= */
 
 function normalizeSelection(selection) {
@@ -60,9 +64,23 @@ function normalizeSelection(selection) {
   }
 
 
+  const selected =
+    selection.selected === undefined
+      ? true
+      : selection.selected === true;
+
+
+  const bookmarked =
+    selection.bookmarked === true;
+
+
   return {
 
     option,
+
+    selected,
+
+    bookmarked,
 
     qty:
       Math.max(
@@ -252,11 +270,9 @@ export default async function handler(request) {
 
        OPTION NUMBER = UNIQUE KEY
 
-       We are NOT replacing the entire selections array.
-
-       We start with everything currently saved on the
-       server and only modify the options included in this
-       request.
+       Selected options AND bookmarked options live in the
+       same array. We only remove an option when it is
+       neither selected nor bookmarked.
        ===================================================== */
 
     const selectionMap =
@@ -295,13 +311,13 @@ export default async function handler(request) {
 
 
     /* =====================================================
-       MERGE THIS SESSION'S CHANGES
+       MERGE THIS SESSION'S OPTION-LEVEL CHANGES
 
-       selected: true
-       Add or update that option.
+       selected OR bookmarked:
+       Add/update the option.
 
-       selected: false
-       Remove that option.
+       neither selected nor bookmarked:
+       Remove the option.
 
        Anything NOT included in this request stays exactly
        as it currently exists on the server.
@@ -330,12 +346,21 @@ export default async function handler(request) {
         }
 
 
+        const selected =
+          change.selected === true;
+
+
+        const bookmarked =
+          change.bookmarked === true;
+
+
         /* -----------------------------------------
-           OPTION WAS UNSELECTED
+           OPTION IS NEITHER SELECTED NOR BOOKMARKED
            ----------------------------------------- */
 
         if (
-          change.selected === false
+          !selected &&
+          !bookmarked
         ) {
 
           selectionMap.delete(
@@ -347,13 +372,17 @@ export default async function handler(request) {
 
 
         /* -----------------------------------------
-           OPTION WAS SELECTED / UPDATED
+           OPTION IS SELECTED OR BOOKMARKED
            ----------------------------------------- */
 
         const normalized =
           normalizeSelection(
             {
               option,
+
+              selected,
+
+              bookmarked,
 
               qty:
                 change.qty,
@@ -385,7 +414,7 @@ export default async function handler(request) {
 
 
     /* =====================================================
-       BUILD FINAL SELECTION ARRAY
+       BUILD FINAL SAVED OPTION ARRAY
        ===================================================== */
 
     const selections =
@@ -402,11 +431,8 @@ export default async function handler(request) {
     /* =====================================================
        STORE SESSION INFORMATION
 
-       This allows customer.html to recognize which open
-       browser/tab made the most recent save.
-
-       It does NOT identify the customer personally.
-       It is simply a temporary random browser-session ID.
+       Allows customer.html to recognize which browser/tab
+       made the most recent save for live sync.
        ===================================================== */
 
     const updatedLookbook = {
