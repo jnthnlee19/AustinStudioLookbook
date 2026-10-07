@@ -2394,6 +2394,7 @@
     let lastSeenUpdatedAt = null;
     let applyingRemoteUpdate = false;
     let activeCategoryName = null;
+    let activeSubcategoryName = null;
     let showAllCategories = false;
 
 
@@ -5105,6 +5106,7 @@
     function selectCategory(name, scroll = true) {
       if (!name) return;
       activeCategoryName = name;
+      activeSubcategoryName = null;
       showAllCategories = false;
       const layout = document.querySelector(".lookbook-layout");
       layout?.classList.remove("show-all-categories");
@@ -5126,6 +5128,10 @@
 
     function selectSubcategory(name, subname) {
       selectCategory(name, false);
+      activeSubcategoryName = subname;
+      const title = document.getElementById("category-view-title");
+      if (title) title.textContent = name + " / " + subname;
+      applyViewFilter();
       const group = Array.from(document.querySelectorAll("#category-nav .category-nav-group"))
         .find(item => item.querySelector(".category-nav-button")?.dataset.category === name);
       group?.classList.add("expanded");
@@ -6499,6 +6505,7 @@
 
     function toggleAllSections() {
       showAllCategories = !showAllCategories;
+      if (showAllCategories) activeSubcategoryName = null;
       const layout = document.querySelector(".lookbook-layout");
       layout?.classList.toggle("show-all-categories", showAllCategories);
       const title = document.getElementById("category-view-title");
@@ -6760,7 +6767,8 @@
                         categoryHasVisible =
                           true;
 
-                        if (showAllCategories || category.dataset.category === activeCategoryName) visibleCount++;
+                        if (showAllCategories || (category.dataset.category === activeCategoryName &&
+                            (!activeSubcategoryName || subcategory.querySelector(":scope > summary")?.textContent === activeSubcategoryName))) visibleCount++;
 
                       }
 
@@ -6768,10 +6776,13 @@
                   );
 
 
+                  const subcategoryName = subcategory.querySelector(":scope > summary")?.textContent;
+                  const matchesSubcategory = showAllCategories ||
+                    !activeSubcategoryName ||
+                    (category.dataset.category === activeCategoryName &&
+                     subcategoryName === activeSubcategoryName);
                   subcategory.style.display =
-                    subcategoryHasVisible
-                      ? ""
-                      : "none";
+                    subcategoryHasVisible && matchesSubcategory ? "" : "none";
 
 
                   /*
