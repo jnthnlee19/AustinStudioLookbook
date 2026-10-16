@@ -3484,6 +3484,21 @@
         ...Object.fromEntries(Object.entries(existingFlooring).filter(([key]) => key !== "Included Floors"))
       };
 
+      // Always display MO Flooring in ascending workbook price order.
+      // Included Floors stays first; prices remain hidden from customers.
+      for (const [subcategory, options] of Object.entries(grouped[flooringCategory])) {
+        if (subcategory === "Included Floors" || !Array.isArray(options)) continue;
+        options.sort((a, b) => {
+          const numericPrice = option => {
+            const raw = String(option.amount ?? "").trim();
+            if (!raw || /\b(TBD|included|no\s*charge)\b/i.test(raw)) return Infinity;
+            const cleaned = raw.replace(/[$,\s]/g, "");
+            return /^\d+(?:\.\d+)?$/.test(cleaned) ? Number(cleaned) : Infinity;
+          };
+          return numericPrice(a) - numericPrice(b);
+        });
+      }
+
       renderLookbook(grouped);
 
     }
