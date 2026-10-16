@@ -3433,7 +3433,9 @@
               row[9] || "",
 
             amount:
-              row[13]
+              row[13],
+
+            isMOFlooring: /^MO\s+Flooring$/i.test(currentCategory.trim())
 
           });
 
@@ -5349,6 +5351,8 @@
       card.dataset.option =
         option.optionNumber;
 
+      card.dataset.moFlooring = option.isMOFlooring ? "1" : "0";
+
 
       card.dataset.search =
         [
@@ -5770,7 +5774,9 @@
         );
 
 
-      if (hasSavedPriceOverride) {
+      if (option.isMOFlooring) {
+        price.textContent = "Pricing Available at Selection Appointment";
+      } else if (hasSavedPriceOverride) {
 
         price.textContent =
           savedPriceOverride.trim();
@@ -5904,6 +5910,7 @@
 
 
       checkbox.dataset.price =
+        option.isMOFlooring ? 0 :
         hasSavedPriceOverride
           ? parsePrice(
               savedPriceOverride
@@ -6241,7 +6248,7 @@
 
 
             const price =
-              parseFloat(
+              card.dataset.moFlooring === "1" ? 0 : parseFloat(
                 checkbox?.dataset?.price
               ) || 0;
 
@@ -7753,7 +7760,7 @@ function filterOptions() {
 
 
                 const price =
-                  parseFloat(
+                  card.dataset.moFlooring === "1" ? 0 : parseFloat(
                     checkbox
                       ?.dataset
                       ?.price
@@ -7998,13 +8005,13 @@ function filterOptions() {
                       <strong>
 
                         ${
-                          lineTotal.toLocaleString(
+                          (card.dataset.moFlooring === "1" ? "Pricing Available at Selection Appointment" : lineTotal.toLocaleString(
                             undefined,
                             {
                               style:"currency",
                               currency:"USD"
                             }
-                          )
+                          ))
                         }
 
                       </strong>
