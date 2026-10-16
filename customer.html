@@ -3442,6 +3442,48 @@
       }
 
 
+      // Permanent included flooring options for every home, regardless of workbook.
+      // Place them first within MO Flooring, without duplicating workbook entries.
+      const flooringCategory = Object.keys(grouped).find(
+        name => /^MO\s+Flooring$/i.test(name.trim())
+      ) || "MO Flooring";
+      const existingFlooring = grouped[flooringCategory] || {};
+      const includedOptions = [
+        {
+          optionNumber: "2018056",
+          description: "Belmont Court",
+          salesDesc: "Carpet — Included Floors",
+          amount: 0,
+          isMOFlooring: true,
+          isIncludedFlooring: true
+        },
+        {
+          optionNumber: "2022333",
+          description: "Stella Vista Ceramic Tile 18X18",
+          salesDesc: "Tile — Included in Kitchen, Entry, Bathrooms, and Laundry",
+          amount: 0,
+          isMOFlooring: true,
+          isIncludedFlooring: true
+        }
+      ];
+      const includedIds = new Set(includedOptions.map(option => option.optionNumber));
+      // Remove matching workbook rows so the permanent options appear only once.
+      Object.values(existingFlooring).forEach(options => {
+        if (Array.isArray(options)) {
+          for (let i = options.length - 1; i >= 0; i--) {
+            if (includedIds.has(String(options[i].optionNumber))) options.splice(i, 1);
+          }
+        }
+      });
+      const includedSection = [
+        ...includedOptions,
+        ...(existingFlooring["Included Floors"] || [])
+      ];
+      grouped[flooringCategory] = {
+        "Included Floors": includedSection,
+        ...Object.fromEntries(Object.entries(existingFlooring).filter(([key]) => key !== "Included Floors"))
+      };
+
       renderLookbook(grouped);
 
     }
@@ -5352,6 +5394,7 @@
         option.optionNumber;
 
       card.dataset.moFlooring = option.isMOFlooring ? "1" : "0";
+      card.dataset.includedFlooring = option.isIncludedFlooring ? "1" : "0";
 
 
       card.dataset.search =
@@ -5774,7 +5817,9 @@
         );
 
 
-      if (option.isMOFlooring) {
+      if (option.isIncludedFlooring) {
+        price.textContent = "Included";
+      } else if (option.isMOFlooring) {
         price.textContent = "Pricing Available at Selection Appointment";
       } else if (hasSavedPriceOverride) {
 
@@ -8005,7 +8050,7 @@ function filterOptions() {
                       <strong>
 
                         ${
-                          (card.dataset.moFlooring === "1" ? "Pricing Available at Selection Appointment" : lineTotal.toLocaleString(
+                          (card.dataset.includedFlooring === "1" ? "Included" : card.dataset.moFlooring === "1" ? "Pricing Available at Selection Appointment" : lineTotal.toLocaleString(
                             undefined,
                             {
                               style:"currency",
