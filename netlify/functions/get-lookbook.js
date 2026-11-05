@@ -158,6 +158,8 @@ export default async function handler(
     }
 
 
+    lookbook.pricing = await store.get(`pricing/${id}`, { type: "json" }) || { revision: 0, options: {} };
+
     return jsonResponse(
       {
         success: true,
