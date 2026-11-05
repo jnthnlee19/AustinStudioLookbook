@@ -91,27 +91,6 @@ function calculateSelectedTotal(
   lookbook
 ) {
 
-  /*
-    Future-friendly:
-
-    If we later decide to save selectedTotal directly
-    into the Lookbook record, this function will use it
-    automatically.
-  */
-
-  if (
-    typeof lookbook?.selectedTotal ===
-      "number" &&
-    Number.isFinite(
-      lookbook.selectedTotal
-    )
-  ) {
-
-    return lookbook.selectedTotal;
-
-  }
-
-
   const workbookBase64 =
     lookbook?.workbook;
 
@@ -186,6 +165,8 @@ function calculateSelectedTotal(
       Data begins at row index 14.
     */
 
+    let currentCategory = "";
+
     for (
       let i = 14;
       i < sheet.length;
@@ -204,6 +185,10 @@ function calculateSelectedTotal(
         row[2];
 
 
+      if (optionNumber && !description) {
+        currentCategory = String(optionNumber).split(" > ")[0].trim();
+      }
+
       /*
         Category/header rows do not
         have a description in column C,
@@ -219,10 +204,9 @@ function calculateSelectedTotal(
         pricesByOption.set(
           String(
             optionNumber
-          ),
-          parsePrice(
-            row[13]
-          )
+          ).trim(),
+          /^MO\s+Flooring$/i.test(currentCategory) ? 0 :
+          parsePrice(lookbook.priceOverrides?.[String(optionNumber).trim()] ?? row[13])
         );
 
       }
@@ -230,16 +214,23 @@ function calculateSelectedTotal(
     }
 
 
+    // Permanent included flooring cards do not use workbook amounts.
+    pricesByOption.set("2018056", 0);
+    pricesByOption.set("2022333", 0);
+
     let total = 0;
 
 
     selections.forEach(
       selection => {
 
+        // Older records omit selected; those entries were selections.
+        if (!selection || (selection.selected !== undefined && selection.selected !== true)) return;
+
         const option =
           String(
             selection?.option ?? ""
-          );
+          ).trim();
 
 
         if (!option) {
@@ -247,10 +238,10 @@ function calculateSelectedTotal(
         }
 
 
-        const price =
-          pricesByOption.get(
-            option
-          ) || 0;
+        const consultantPrice = lookbook.pricing?.options?.[option]?.amount;
+        const price = typeof consultantPrice === "number" && Number.isFinite(consultantPrice) && consultantPrice >= 0
+          ? consultantPrice
+          : (pricesByOption.get(option) || 0);
 
 
         const qty =
@@ -380,6 +371,16 @@ export default async function handler(
               }
 
 
+              // Read the same pricing record used by customer.html.
+              lookbook.pricing = await store.get(
+                `pricing/${lookbook.id}`, { type: "json" }
+              );
+
+              const selectionUpdatedAt = lookbook.updatedAt || lookbook.createdAt || "";
+              const priceUpdatedAt = lookbook.pricing?.updatedAt || "";
+              const updatedAt = Date.parse(priceUpdatedAt) > (Date.parse(selectionUpdatedAt) || 0)
+                ? priceUpdatedAt : selectionUpdatedAt;
+
               const selectedTotal =
                 calculateSelectedTotal(
                   lookbook
@@ -399,10 +400,7 @@ export default async function handler(
                   lookbook.createdAt ||
                   "",
 
-                updatedAt:
-                  lookbook.updatedAt ||
-                  lookbook.createdAt ||
-                  "",
+                updatedAt,
 
                 selectedTotal,
 
