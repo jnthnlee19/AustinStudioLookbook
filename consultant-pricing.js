@@ -2,7 +2,7 @@ let consultantExpires = 0;
 let consultantTimer;
 let customerPricing = { revision: 0, options: {} };
 let priceSaveInFlight = false;
-const pricingMoney = amount => amount.toLocaleString("en-US", { style: "currency", currency: "USD" });
+let appliedPricingRevision = -1;
 const pricingTime = date => new Date(date).toLocaleString("en-US", { timeZoneName: "short" });
 
 function pricingPrintHistory(card) {
@@ -57,7 +57,9 @@ function setupCardPricing(card) {
 
 function applyCustomerPricing(pricing) {
   if (priceSaveInFlight || (pricing?.revision || 0) < customerPricing.revision) return;
+  if ((pricing?.revision || 0) === appliedPricingRevision) return;
   customerPricing = pricing || { revision: 0, options: {} };
+  appliedPricingRevision = customerPricing.revision;
   document.querySelectorAll(".option").forEach(card => {
     const update = customerPricing.options[card.dataset.option];
     const price = card.querySelector(".price");
