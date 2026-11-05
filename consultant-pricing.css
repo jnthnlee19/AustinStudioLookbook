@@ -1,0 +1,16 @@
+.pricing-footer { padding: 28px 17px 40px; text-align: center; color: var(--muted); }
+.pricing-footer small { display: block; margin-bottom: 8px; }
+.pricing-edit { display: none; margin: 8px 0; align-self: flex-start; }
+.consultant-unlocked .pricing-edit { display: inline-block; }
+.pricing-history { font-size: .75rem; color: #626a72; line-height: 1.5; }
+.pricing-history details { margin: 5px 0; }
+.pricing-history summary { cursor: pointer; }
+.pricing-dialog { width: min(460px, calc(100% - 32px)); border: 1px solid var(--line); border-top: 4px solid var(--yellow); border-radius: 14px; padding: 24px; color: var(--text); }
+.pricing-dialog::backdrop { background: rgba(20,30,40,.5); }
+.pricing-dialog h2 { margin-top: 0; font-size: 1.2rem; }
+.pricing-dialog p { line-height: 1.5; font-size: .88rem; }
+.pricing-dialog input { width: 100%; padding: 11px; margin: 8px 0; border: 1px solid #b8bfc6; border-radius: 8px; }
+.pricing-dialog label { font-weight: 700; }
+.pricing-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.pricing-error { color: #a33b34; min-height: 1.3em; font-size: .85rem; }
+@media print { .pricing-footer, .pricing-edit, .pricing-dialog { display: none !important; } }

@@ -1870,6 +1870,7 @@
     }
 
   </style>
+  <link rel="stylesheet" href="/consultant-pricing.css">
 </head>
 
 
@@ -2659,6 +2660,7 @@
 
         const latest = result.lookbook || result;
         const latestUpdatedAt = latest?.updatedAt || null;
+        applyCustomerPricing(latest.pricing);
 
         if (
           latestUpdatedAt &&
@@ -2848,6 +2850,7 @@
         loadHouseInfo(sheet);
 
         buildLookbook(sheet);
+        applyCustomerPricing(activeCustomerLookbook.pricing);
 
         restoreSavedSelections(
           activeCustomerLookbook.selections || []
@@ -6270,6 +6273,7 @@
       );
 
 
+      setupCardPricing(card);
       return card;
 
     }
@@ -6308,7 +6312,7 @@
 
 
             const price =
-              card.dataset.moFlooring === "1" ? 0 : parseFloat(
+              card.dataset.moFlooring === "1" && card.dataset.consultantPriced !== "1" ? 0 : parseFloat(
                 checkbox?.dataset?.price
               ) || 0;
 
@@ -7483,6 +7487,7 @@ function filterOptions() {
 
                 <div class="amount">
                   ${escapeHTML(displayAmount)}
+                  ${pricingPrintHistory(card)}
                 </div>
 
               </div>
@@ -7820,7 +7825,7 @@ function filterOptions() {
 
 
                 const price =
-                  card.dataset.moFlooring === "1" ? 0 : parseFloat(
+                  card.dataset.moFlooring === "1" && card.dataset.consultantPriced !== "1" ? 0 : parseFloat(
                     checkbox
                       ?.dataset
                       ?.price
@@ -8007,6 +8012,7 @@ function filterOptions() {
                             <strong>
                               ${escapeHTML(primaryLabel)}:
                             </strong>
+                      ${pricingPrintHistory(card)}
                             ${escapeHTML(primaryValue)}
                           </div>
 
@@ -8065,7 +8071,7 @@ function filterOptions() {
                       <strong>
 
                         ${
-                          (card.dataset.includedFlooring === "1" ? "Included" : card.dataset.moFlooring === "1" ? "Pricing Available at Selection Appointment" : lineTotal.toLocaleString(
+                          (card.dataset.consultantPriced !== "1" && card.dataset.includedFlooring === "1" ? "Included" : card.dataset.consultantPriced !== "1" && card.dataset.moFlooring === "1" ? "Pricing Available at Selection Appointment" : lineTotal.toLocaleString(
                             undefined,
                             {
                               style:"currency",
@@ -8275,5 +8281,33 @@ function filterOptions() {
   </script>
 
 
+
+  <footer class="pricing-footer">
+    <small id="pricing-status" aria-live="polite">Consultant access</small>
+    <button type="button" id="pricing-unlock" class="btn btn-light">Unlock</button>
+  </footer>
+  <dialog id="pricing-login" class="pricing-dialog" aria-labelledby="pricing-login-title">
+    <form id="pricing-login-form">
+      <h2 id="pricing-login-title">Unlock consultant pricing</h2>
+      <p>Enter the Studio password to update prices for this customer's Lookbook.</p>
+      <label for="pricing-password">Studio password</label>
+      <input id="pricing-password" type="password" autocomplete="current-password" required autofocus>
+      <div id="pricing-login-error" class="pricing-error" role="alert"></div>
+      <div class="pricing-actions"><button type="button" class="btn btn-light pricing-cancel">Cancel</button><button type="submit" class="btn btn-primary">Unlock</button></div>
+    </form>
+  </dialog>
+  <dialog id="price-editor" class="pricing-dialog" aria-labelledby="price-editor-title">
+    <form id="price-editor-form">
+      <h2 id="price-editor-title">Update price</h2>
+      <p id="price-editor-description"></p>
+      <p id="price-editor-original"></p><p id="price-editor-current"></p>
+      <label for="consultant-price">New unit price ($)</label>
+      <input id="consultant-price" type="number" min="0" max="100000000" step="0.01" required>
+      <p>This price applies only to this customer. Selected quantities are included in the quote total.</p>
+      <div id="price-editor-error" class="pricing-error" role="alert"></div>
+      <div class="pricing-actions"><button type="button" class="btn btn-light pricing-cancel">Cancel</button><button type="submit" class="btn btn-primary">Save price</button></div>
+    </form>
+  </dialog>
+  <script src="/consultant-pricing.js"></script>
 </body>
 </html>
